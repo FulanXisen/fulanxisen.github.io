@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>FulanXisen&#39;s blog</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="">
+    <meta name="generator" content="Hugo 0.160.1">
+    
+    
+    
+      <meta name="robots" content="index, follow">
+    
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.efe4d852f731d5d1fbb87718387202a97aafd768cdcdaed0662bbe6982e91824.css" >
+
+
+
+
+    
+
+
+    
+      
+
+    
+
+    
+    
+      <link href="/tags/dbus/index.xml" rel="alternate" type="application/rss+xml" title="FulanXisen&#39;s blog" />
+      <link href="/tags/dbus/index.xml" rel="feed" type="application/rss+xml" title="FulanXisen&#39;s blog" />
+      
+    
+
+    
+      <link rel="canonical" href="https://fulanxisen.github.io/tags/dbus/">
+    
+
+    
+    
+    <meta property="og:url" content="https://fulanxisen.github.io/tags/dbus/">
+  <meta property="og:site_name" content="FulanXisen&#39;s blog">
+  <meta property="og:title" content="DBus">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="website">
+
+  <meta itemprop="name" content="DBus">
+  <meta itemprop="datePublished" content="2023-09-21T22:39:17+08:00">
+  <meta itemprop="dateModified" content="2023-09-21T22:39:17+08:00">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="DBus">
+
+      
+      
+    
+	
+  </head><body class="ma0 avenir bg-near-white production is-term">
+    
+
+  <header>
+    <div class="pb3-m pb6-l bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l center items-center justify-between">
+    <a href="/" class="f3 fw2 hover-white white-90 dib no-underline">
+      
+        FulanXisen&#39;s blog
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      <div class="ananke-socials"></div>
+
+    </div>
+  </div>
+</nav>
+
+      <div class="tc-l pv3 ph3 ph4-ns">
+        <h1 class="f2 f-subheadline-l fw2 light-silver mb0 lh-title">
+          DBus
+        </h1>
+        
+      </div>
+    </div>
+  </header>
+
+
+    <main class="pb7" role="main">
+      
+  <article class="pa3 pa4-ns nested-copy-line-height">
+    <section class="cf ph3 ph5-l pv3 pv4-l f4 tc-l center measure-wide lh-copy nested-links mid-gray"></section>
+    <section class="flex-ns mt5 flex-wrap justify-around">
+      
+        <div class="w-100 w-30-l mb4 relative bg-white">
+          <div class="w-100 mb4 nested-copy-line-height relative bg-white">
+  <div class="mb3 pa4 gray overflow-hidden bg-white">
+    <span class="f6 db">Posts</span>
+    <h1 class="f3 near-black">
+      <a href="/posts/linux-dbus/" class="link black dim">
+        Linux DBus IPC System
+      </a>
+    </h1>
+    <div class="nested-links f5 lh-copy nested-copy-line-height">
+      <h2 id="1-概述">1. 概述<a href="#overview"></a></h2>
+<p><a href="https://linux.die.net/man/1/dbus-daemon">DBus</a>是一个消息总线系统，允许不同的进程在分布式环境中进行通信。它是Linux世界广泛采用的强大工具，使应用程序能够无缝共享数据并相互交互。</p>
+<p>在本教程中，我们将详细探讨DBus，并了解它在<a href="/linux/default-desktop-environment-start-up#setup-procedure">Linux桌面环境</a>中的使用方式。</p>
+<h2 id="2-dbus">2. DBus<a href="#dbus"></a></h2>
+<p>DBus是一个进程间通信（<a href="/linux/ipc-performance-comparison#overview">IPC</a>）系统，允许在单个系统或不同系统上运行的两个或多个进程之间进行通信。它为这些进程提供了一种简单、标准和安全的交换数据和命令的方式。因此，它消除了队复杂、容易出错的通信机制的需求，如套接字(<a href="/linux/communicate-with-unix-sockets#introduction-to-sockets">sockets</a>)或管道(<a href="/linux/anonymous-named-pipes#what-is-a-pipe">pipes</a>)。</p>
+<p>此外，由于具有语言独立性，我们可以通过多种编程语言（如C、C++、Python等）使用DBus。这种灵活性使不同的系统组件能够协同工作，从而更容易创建复杂的应用程序。</p>
+<p>此外，通过DBus，我们可以构建一个用于系统范围事件和通知的消息系统，允许应用程序订阅事件，如设备插入或移除、网络更改和电源事件。</p>
+<h3 id="21-components">2.1. Components<a href="#1-components"></a></h3>
+<p>DBus系统由三个主要组件组成 - 总线(bus)、服务(service)和接口(interface)。</p>
+<p>第一个组件, 总线, 是所有支持DBus的应用程序的主要通信点，负责在应用程序之间路由消息，使标准化的服务注册和发现变得更容易。有两种类型的总线可用 - 系统总线(system bus)和会话总线(session bus)。</p>
+<p>第二个组件，服务，是为其他应用程序提供一个或多个接口的应用程序。服务会自行注册到总线上，使其他应用程序能够发现它们。</p>
+<p>最后的组件，接口, 是一个服务向外部公开的方法(methods)、信号(signals)和属性(properties)的集合。方法是其他应用程序可调用的函数，信号是服务发出的用于通知其他应用程序发生更改的事件，而属性是其他应用程序可以读取或写入的值。</p>
+<p>除了这三个主要组件，DBus还包括对象的概念，对象是服务的实例，公开一个或多个接口。对象具有用于在总线上寻址它们的唯一对象路径。</p>
+<h3 id="22-architecture">2.2. Architecture<a href="#2-architecture"></a></h3>
+<p>DBus具有客户端-服务器架构，服务器充当消息总线，客户端发送和接收消息。服务器负责维护所有可用服务和对象的注册表，而客户端可以通过服务器访问这些服务和对象。</p>
+<p>我们应该注意，DBus使用模块化架构，不同的组件负责不同的任务。架构的核心是<strong>消息总线守护进程</strong>，负责管理不同进程之间的通信。守护进程维护所有可用服务和对象的注册表，并在客户端和服务器之间路由消息。</p>
+<p>但是，要与消息总线守护进程交互，应用程序可以使用<strong>客户端库</strong>，这些库提供了用于发送和接收消息、注册服务以及监听事件的API。</p>
+<p>最后，服务提供者向消息总线守护进程注册其服务，使其他应用程序能够访问它们。</p>
+<h2 id="3-dbus-in-linux-desktop-environments">3. DBus in Linux Desktop Environments<a href="#dbus-in-linux-desktop-environments"></a></h2>
+<p>大多数桌面环境都集成了DBus。因此，我们可以使用不同的编程语言和环境开发系统应用程序，并通过DBus进行交互。</p>
+<h3 id="31-gnome">3.1. GNOME<a href="#1-gnome"></a></h3>
+<p>让我们从GNOME的示例开始，这是最流行的桌面环境。GNOME广泛使用DBus来促进应用程序之间的通信。例如，在GNOME中更改音量时，声音小部件通过DBus发送消息给声音守护进程以调整音量。</p>
+<p>类似地，当我们插入USB驱动器时，文件管理器通过DBus向系统守护进程发送消息以挂载驱动器。</p>
+<p>此外，GNOME Shell的扩展广泛使用DBus。Shell扩展可以添加新功能或更改桌面的外观和感觉。DBus建立了GNOME Shell与Shell扩展之间的通信。例如，在GNOME Shell中单击网络图标时，会通过DBus发送消息给网络管理器以显示可用的Wi-Fi网络。</p>
+<h3 id="32-kde-and-xfce">3.2. KDE and Xfce<a href="#2-kde-and-xfce"></a></h3>
+<p>在 <em><a href="https://docs.kde.org/">KDE</a> &amp;</em> <em><a href="https://docs.xfce.org/">Xfce</a></em> 桌面环境中，系统应用程序使用一组DBus接口进行交互。例如，这两个桌面环境的<a href="/linux/network-manager#network-manager-components">NetworkManager</a>小部件都使用DBus与NetworkManager服务通信并管理网络连接。</p>
+<p>此外，KDE和Xfce Power Management系统提供了一个DBus接口来监视系统电源状态并调整电源设置。它们还提供了一个DBus接口来管理显示亮度。</p>
+<p>此外，KDE Plasma Desktop Shell广泛使用DBus，允许应用程序与桌面互动并向其他应用程序公开各种系统服务。例如，Plasma通知系统使用DBus向其他应用程序发送通知，使它们能够向用户显示消息。</p>
+<p>类似地，Xfce会话管理器使用DBus允许应用程序注册为启动应用程序，并在我们登录Linux时自动启动。它还使用DBus在我们注销并重新登录时保存和恢复用户会话。</p>
+<h2 id="4-using-dbus">4. Using DBus<a href="#using-dbus"></a></h2>
+<p>现在我们了解了DBus以及它在Linux桌面中的使用，让我们探讨它在Linux系统中的实际用途。</p>
+<h3 id="41-with-system-services">4.1. With System Services<a href="#1-with-system-services"></a></h3>
+<p>DBus最常见的用途是与系统服务进行交互。系统服务和守护进程通过DBus接口公开其功能，允许其他应用程序和服务与它们连接。</p>
+    </div>
+    <a href="/posts/linux-dbus/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
+  </div>
+</div>
+
+        </div>
+      
+    </section>
+    </article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white white-70 dn dib-ns pv2 ph3 no-underline" href="https://fulanxisen.github.io/" >
+    &copy;  FulanXisen's blog 2026 
+  </a>
+    <div><div class="ananke-socials"></div>
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>

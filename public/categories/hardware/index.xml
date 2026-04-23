@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Hardware on My New Hugo Project</title>
-    <link>http://localhost:1313/categories/hardware/</link>
-    <description>Recent content in Hardware on My New Hugo Project</description>
+    <title>Hardware on FulanXisen&#39;s blog</title>
+    <link>https://fulanxisen.github.io/categories/hardware/</link>
+    <description>Recent content in Hardware on FulanXisen&#39;s blog</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <atom:link href="http://localhost:1313/categories/hardware/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://fulanxisen.github.io/categories/hardware/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>A Practical guide to ARM Cortex-M Exception Handling</title>
-      <link>http://localhost:1313/posts/armv-m-exception/</link>
+      <link>https://fulanxisen.github.io/posts/armv-m-exception/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/posts/armv-m-exception/</guid>
+      <guid>https://fulanxisen.github.io/posts/armv-m-exception/</guid>
       <description>&lt;p&gt;几乎所有嵌入式系统都在某种程度上依赖于处理异步事件的能力。&#xA;例如，它从加速度计读取外部传感器数据，以便计算步数&#xA;或处理周期性计时器事件以触发RTOS的上下文切换。&lt;/p&gt;&#xA;&lt;p&gt;在本文中，我们将深入研究ARM Cortex-M 的Exception Model如何支持异步事件的处理。&#xA;本文将介绍支持的不同异常类型、术语(NVIC、ISR、Priority)、configuration registers及其常用设置、与Exception有关的Advanced Topic以及一些用C编写的examples。&lt;/p&gt;&#xA;&lt;blockquote&gt;&#xA;&lt;p&gt;注意:在大多数情况下，所有Cortex-M处理器(ARMv6-M、ARMv7-M和ARMv8-M体系结构)的异常处理机制是相同的。本文将在下面的相关章节中指出它们的差异。&lt;/p&gt;&#xA;&lt;/blockquote&gt;&#xA;&lt;h2 id=&#34;arm-exception-model-overview&#34;&gt;ARM Exception Model Overview&lt;a href=&#34;#arm-exception-model-overview&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&#xA;&lt;p&gt;ARM specification将Exception定义为“a condition that changes the normal flow of control in a program” &lt;a href=&#34;#fn:4&#34;&gt;1&lt;/a&gt;.&lt;/p&gt;&#xA;&lt;p&gt;你会经常看到&amp;quot;Exception&amp;quot;和&amp;quot;Interrupt&amp;quot;交替出现. 在ARM文档中, &amp;ldquo;Interrupt&amp;quot;用来描述&amp;quot;Exception&amp;quot;的一种.&#xA;Exception包含以下3部分标识信息:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;strong&gt;Exception Number&lt;/strong&gt; - 表示特定类型Exception的唯一编号(从1开始).&#xA;这个编号也用作&lt;strong&gt;Vector Table&lt;/strong&gt;的offset, 这种类型的Exception对应routine的address可以在这里找到.&#xA;这样的routine通常被称为&lt;strong&gt;Exception Handler&lt;/strong&gt;或者&lt;strong&gt;Interrupt Service Routine&lt;/strong&gt; (&lt;strong&gt;ISR&lt;/strong&gt;),它是在Exception触发时会被执行的函数.&#xA;当Exception被触发时,ARM硬件会自动的从&lt;strong&gt;Vector Table&lt;/strong&gt;中寻找对应的函数指针并执行.&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;Priority Level&lt;/strong&gt; / &lt;strong&gt;Priority Number&lt;/strong&gt; - 每种Exception都有一个优先级.&#xA;大部分exception的Priority Number是可配置的. 反直觉的地方是, 更小的priority number意味着更高的优先级.&#xA;所以如果priority level 1的exception和priority level 2的exception同时发生, priority level 1的exception会先被处理.&#xA;当本文说一个exception有最高优先级时, 意味着这个exception有最小的&lt;strong&gt;Priority Number&lt;/strong&gt;.&#xA;如果两个exception有相同的&lt;strong&gt;Priority Number&lt;/strong&gt;, &lt;strong&gt;Exception Number&lt;/strong&gt;更小的那个会先被处理.&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;Synchronous&lt;/strong&gt; 或 &lt;strong&gt;Asynchronous&lt;/strong&gt; - 有一些exception触发时被立即被处理(例如 &lt;code&gt;SVCall&lt;/code&gt;), 称为 &lt;em&gt;synchronous&lt;/em&gt;.&#xA;另一些exception触发时不会被立刻处理, 称为 &lt;em&gt;asynchronous&lt;/em&gt;.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;一个exception可以处于以下4种状态中的一种:&lt;/p&gt;</description>
     </item>
   </channel>

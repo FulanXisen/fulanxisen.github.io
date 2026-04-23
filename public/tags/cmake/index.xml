@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>CMake on FulanXisen&#39;s blog</title>
+    <link>https://fulanxisen.github.io/tags/cmake/</link>
+    <description>Recent content in CMake on FulanXisen&#39;s blog</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 03 May 2023 23:38:47 +0800</lastBuildDate>
+    <atom:link href="https://fulanxisen.github.io/tags/cmake/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Example of Embedded CMakeLists Files</title>
+      <link>https://fulanxisen.github.io/posts/p05-example-of-embedded-cmakelists-files/</link>
+      <pubDate>Wed, 03 May 2023 23:38:47 +0800</pubDate>
+      <guid>https://fulanxisen.github.io/posts/p05-example-of-embedded-cmakelists-files/</guid>
+      <description>&lt;h1 id=&#34;the-most-thoroughly-commented-embedded-cmakelists-file&#34;&gt;The most thoroughly commented embedded CMakeLists file&lt;/h1&gt;&#xA;&lt;p&gt;January 05, 2023 - &lt;a href=&#34;https://dnedic.github.io/tags/cmake/&#34;&gt;CMake&lt;/a&gt; &lt;a href=&#34;https://dnedic.github.io/tags/build-system/&#34;&gt;Build System&lt;/a&gt; &lt;a href=&#34;https://dnedic.github.io/tags/embedded/&#34;&gt;Embedded&lt;/a&gt; &lt;a href=&#34;https://dnedic.github.io/tags/stm32/&#34;&gt;STM32&lt;/a&gt;&lt;/p&gt;&#xA;&lt;p&gt;Many embedded software engineers have had to deal with build systems that are either non cross-platform or a part of the IDE they are using, don&amp;rsquo;t offer easy composability or per-library configuration, provide no testing support or ways to generate or package files without using a third party scripting language.&lt;/p&gt;&#xA;&lt;p&gt;&lt;a href=&#34;https://cmake.org/&#34;&gt;CMake&lt;/a&gt; is a build system that offers solutions to many of those problems and is already well adopted in the world of traditional software development. Inspired by &lt;a href=&#34;https://blog.thea.codes/the-most-thoroughly-commented-linker-script/&#34;&gt;The most thoroughly commented linker script&lt;/a&gt; blogpost and having used CMake in two different professional environments, I have decided to write an overview of a minimal CMakeLists file for an embedded project.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

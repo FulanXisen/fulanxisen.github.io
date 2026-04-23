@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>Linux DBus IPC System | FulanXisen&#39;s blog</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="DBus is an inter-process communication system in Linux environment for both singleton and distributed system.">
+    <meta name="generator" content="Hugo 0.160.1">
+    
+    
+    
+      <meta name="robots" content="index, follow">
+    
+    <meta name="author" content="福岚溪森">
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.efe4d852f731d5d1fbb87718387202a97aafd768cdcdaed0662bbe6982e91824.css" >
+
+
+
+
+    
+
+
+    
+      
+
+    
+
+    
+
+    
+      <link rel="canonical" href="https://canonical.url/to/page">
+    
+
+    
+    
+    <meta property="og:url" content="https://fulanxisen.github.io/posts/linux-dbus/">
+  <meta property="og:site_name" content="FulanXisen&#39;s blog">
+  <meta property="og:title" content="Linux DBus IPC System">
+  <meta property="og:description" content="DBus is an inter-process communication system in Linux environment for both singleton and distributed system.">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2023-09-21T22:39:17+08:00">
+    <meta property="article:modified_time" content="2023-09-21T22:39:17+08:00">
+    <meta property="article:tag" content="DBus">
+    <meta property="article:tag" content="IPC">
+    <meta property="article:tag" content="Linux">
+
+  <meta itemprop="name" content="Linux DBus IPC System">
+  <meta itemprop="description" content="DBus is an inter-process communication system in Linux environment for both singleton and distributed system.">
+  <meta itemprop="datePublished" content="2023-09-21T22:39:17+08:00">
+  <meta itemprop="dateModified" content="2023-09-21T22:39:17+08:00">
+  <meta itemprop="wordCount" content="419">
+  <meta itemprop="keywords" content="DBus,IPC,Linux">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Linux DBus IPC System">
+  <meta name="twitter:description" content="DBus is an inter-process communication system in Linux environment for both singleton and distributed system.">
+
+      
+      
+    
+	
+  </head><body class="ma0 avenir bg-near-white production is-page is-page page-linux-dbus">
+    
+   
+  
+
+  <header>
+    <div class="bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l center items-center justify-between">
+    <a href="/" class="f3 fw2 hover-white white-90 dib no-underline">
+      
+        FulanXisen&#39;s blog
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      <div class="ananke-socials"></div>
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+
+  <article class="page-linux-dbus flex-l mw7 center ph3 flex-wrap justify-between">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked ttu">
+          
+        Posts
+      </aside><div id="sharing" class="mt3 ananke-socials"></div>
+<h1 class="f1 athelas mt3 mb1">Linux DBus IPC System</h1>
+      
+      <p class="tracked"><strong>福岚溪森</strong>
+      </p>
+      
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2023-09-21T22:39:17+08:00">September 21, 2023</time>
+      
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-100-l"><h2 id="1-概述">1. 概述<a href="#overview"></a></h2>
+<p><a href="https://linux.die.net/man/1/dbus-daemon">DBus</a>是一个消息总线系统，允许不同的进程在分布式环境中进行通信。它是Linux世界广泛采用的强大工具，使应用程序能够无缝共享数据并相互交互。</p>
+<p>在本教程中，我们将详细探讨DBus，并了解它在<a href="/linux/default-desktop-environment-start-up#setup-procedure">Linux桌面环境</a>中的使用方式。</p>
+<h2 id="2-dbus">2. DBus<a href="#dbus"></a></h2>
+<p>DBus是一个进程间通信（<a href="/linux/ipc-performance-comparison#overview">IPC</a>）系统，允许在单个系统或不同系统上运行的两个或多个进程之间进行通信。它为这些进程提供了一种简单、标准和安全的交换数据和命令的方式。因此，它消除了队复杂、容易出错的通信机制的需求，如套接字(<a href="/linux/communicate-with-unix-sockets#introduction-to-sockets">sockets</a>)或管道(<a href="/linux/anonymous-named-pipes#what-is-a-pipe">pipes</a>)。</p>
+<p>此外，由于具有语言独立性，我们可以通过多种编程语言（如C、C++、Python等）使用DBus。这种灵活性使不同的系统组件能够协同工作，从而更容易创建复杂的应用程序。</p>
+<p>此外，通过DBus，我们可以构建一个用于系统范围事件和通知的消息系统，允许应用程序订阅事件，如设备插入或移除、网络更改和电源事件。</p>
+<h3 id="21-components">2.1. Components<a href="#1-components"></a></h3>
+<p>DBus系统由三个主要组件组成 - 总线(bus)、服务(service)和接口(interface)。</p>
+<p>第一个组件, 总线, 是所有支持DBus的应用程序的主要通信点，负责在应用程序之间路由消息，使标准化的服务注册和发现变得更容易。有两种类型的总线可用 - 系统总线(system bus)和会话总线(session bus)。</p>
+<p>第二个组件，服务，是为其他应用程序提供一个或多个接口的应用程序。服务会自行注册到总线上，使其他应用程序能够发现它们。</p>
+<p>最后的组件，接口, 是一个服务向外部公开的方法(methods)、信号(signals)和属性(properties)的集合。方法是其他应用程序可调用的函数，信号是服务发出的用于通知其他应用程序发生更改的事件，而属性是其他应用程序可以读取或写入的值。</p>
+<p>除了这三个主要组件，DBus还包括对象的概念，对象是服务的实例，公开一个或多个接口。对象具有用于在总线上寻址它们的唯一对象路径。</p>
+<h3 id="22-architecture">2.2. Architecture<a href="#2-architecture"></a></h3>
+<p>DBus具有客户端-服务器架构，服务器充当消息总线，客户端发送和接收消息。服务器负责维护所有可用服务和对象的注册表，而客户端可以通过服务器访问这些服务和对象。</p>
+<p>我们应该注意，DBus使用模块化架构，不同的组件负责不同的任务。架构的核心是<strong>消息总线守护进程</strong>，负责管理不同进程之间的通信。守护进程维护所有可用服务和对象的注册表，并在客户端和服务器之间路由消息。</p>
+<p>但是，要与消息总线守护进程交互，应用程序可以使用<strong>客户端库</strong>，这些库提供了用于发送和接收消息、注册服务以及监听事件的API。</p>
+<p>最后，服务提供者向消息总线守护进程注册其服务，使其他应用程序能够访问它们。</p>
+<h2 id="3-dbus-in-linux-desktop-environments">3. DBus in Linux Desktop Environments<a href="#dbus-in-linux-desktop-environments"></a></h2>
+<p>大多数桌面环境都集成了DBus。因此，我们可以使用不同的编程语言和环境开发系统应用程序，并通过DBus进行交互。</p>
+<h3 id="31-gnome">3.1. GNOME<a href="#1-gnome"></a></h3>
+<p>让我们从GNOME的示例开始，这是最流行的桌面环境。GNOME广泛使用DBus来促进应用程序之间的通信。例如，在GNOME中更改音量时，声音小部件通过DBus发送消息给声音守护进程以调整音量。</p>
+<p>类似地，当我们插入USB驱动器时，文件管理器通过DBus向系统守护进程发送消息以挂载驱动器。</p>
+<p>此外，GNOME Shell的扩展广泛使用DBus。Shell扩展可以添加新功能或更改桌面的外观和感觉。DBus建立了GNOME Shell与Shell扩展之间的通信。例如，在GNOME Shell中单击网络图标时，会通过DBus发送消息给网络管理器以显示可用的Wi-Fi网络。</p>
+<h3 id="32-kde-and-xfce">3.2. KDE and Xfce<a href="#2-kde-and-xfce"></a></h3>
+<p>在 <em><a href="https://docs.kde.org/">KDE</a> &amp;</em> <em><a href="https://docs.xfce.org/">Xfce</a></em> 桌面环境中，系统应用程序使用一组DBus接口进行交互。例如，这两个桌面环境的<a href="/linux/network-manager#network-manager-components">NetworkManager</a>小部件都使用DBus与NetworkManager服务通信并管理网络连接。</p>
+<p>此外，KDE和Xfce Power Management系统提供了一个DBus接口来监视系统电源状态并调整电源设置。它们还提供了一个DBus接口来管理显示亮度。</p>
+<p>此外，KDE Plasma Desktop Shell广泛使用DBus，允许应用程序与桌面互动并向其他应用程序公开各种系统服务。例如，Plasma通知系统使用DBus向其他应用程序发送通知，使它们能够向用户显示消息。</p>
+<p>类似地，Xfce会话管理器使用DBus允许应用程序注册为启动应用程序，并在我们登录Linux时自动启动。它还使用DBus在我们注销并重新登录时保存和恢复用户会话。</p>
+<h2 id="4-using-dbus">4. Using DBus<a href="#using-dbus"></a></h2>
+<p>现在我们了解了DBus以及它在Linux桌面中的使用，让我们探讨它在Linux系统中的实际用途。</p>
+<h3 id="41-with-system-services">4.1. With System Services<a href="#1-with-system-services"></a></h3>
+<p>DBus最常见的用途是与系统服务进行交互。系统服务和守护进程通过DBus接口公开其功能，允许其他应用程序和服务与它们连接。</p>
+<p>例如，NetworkManager服务提供了一个DBus API来配置网络连接。我们可以使用<a href="https://manpages.debian.org/bullseye/dbus/dbus-send.1.en.html"><em>dbus-send</em></a>命令行工具向NetworkManager服务发送消息以配置网络连接。</p>
+<p>让我们看一个<strong>如何使用DBus连接到Wi-Fi网络</strong>的示例：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>$ dbus-send --system --type<span style="color:#f92672">=</span>method_call <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span>    --dest<span style="color:#f92672">=</span>org.freedesktop.NetworkManager <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span>    /org/freedesktop/NetworkManager <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span>    org.freedesktop.NetworkManager.AddAndActivateConnection <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#39;{&#34;connection&#34;: {&#34;type&#34;: &#34;802-11-wireless&#34;, &#34;uuid&#34;: &#34;MyWifiConnection&#34;, &#34;id&#34;: &#34;My Wifi&#34;, &#34;ssid&#34;: &#34;MyWifiSSID&#34;}}&#39;</span>
+</span></span></code></pre></div><p>为了更好地理解这一点，让我们详细看看上面的_dbus-send_命令与上面的交互：</p>
+<ul>
+<li><em>dbus-send</em><br>
+从命令行发送DBus消息</li>
+<li><em>&ndash;system</em><br>
+指定我们要将消息发送到系统范围的DBus守护进程，而不是到特定用户会话守护进程</li>
+<li><em>&ndash;type=method_call</em><br>
+指定我们要在目标对象上调用方法，而不仅仅是读取或写入属性</li>
+<li><em>&ndash;dest=org.freedesktop.NetworkManager</em><br>
+设置我们要发送消息的DBus服务的唯一名称</li>
+<li><em>/org/freedesktop/NetworkManager</em><br>
+指定我们要发送消息的_NetworkManager_服务的对象路径</li>
+<li><em>org.freedesktop.NetworkManager.AddAndActivateConnection</em><br>
+定义我们要在_NetworkManager_对象上调用的接口和方法名称</li>
+<li><em>‘{“connection”: {“type”: “802-11-wireless”, “uuid”: “MyWifiConnection”, “id”: “My Wifi”, “ssid”: “MyWifiSSID”}}’</em><br>
+是对_AddAndActivateConnection_方法的参数，这是一个描述我们要添加的新网络连接的JSON格式字符串
+通过这种方式，我们可以使用DBus连接到Wi-Fi网络，甚至可以使用其他命令来管理连接。</li>
+</ul>
+<h3 id="42-with-system-power-management">4.2. With System Power Management<a href="#2-with-system-power-management"></a></h3>
+<p>我们还可以使用DBus与系统电源管理进行交互，这允许我们控制与系统电源相关的功能，如关机、重启和挂起。让我们看一个如何使用DBus关机Linux系统的示例：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>$ dbus-send --system --print-reply --dest<span style="color:#f92672">=</span>org.freedesktop.login1 /org/freedesktop/login1 org.freedesktop.login1.Manager.PowerOff boolean:true
+</span></span></code></pre></div><p>在这里，我们使用DBus发送消息给系统的登录管理器以关闭系统。</p>
+<p>类似地，我们可以使用以下命令重新启动或挂起系统：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>$ dbus-send --system --print-reply --dest<span style="color:#f92672">=</span>org.freedesktop.login1 /org/freedesktop/login1 org.freedesktop.login1.Manager.Reboot boolean:true
+</span></span><span style="display:flex;"><span>$ dbus-send --system --print-reply --dest<span style="color:#f92672">=</span>org.freedesktop.login1 /org/freedesktop/login1 org.freedesktop.login1.Manager.Suspend boolean:true
+</span></span></code></pre></div><p>总的来说，DBus可以成为我们与Linux系统的不同组件进行交互的强大工具。借助其简单而灵活的API，我们可以使用它来控制Linux环境中的几乎任何内容。</p>
+<h2 id="5-signal-communication-using-dbus">5. Signal Communication Using DBus<a href="#signal-communication-using-dbus"></a></h2>
+<p>与之前的交互类似，DBus还为我们提供了两种应用程序之间的通信方法 - 方法调用和信号。</p>
+<p>我们可以使用方法调用来调用远程进程中的方法或函数并获得返回值。DBus方法调用可以是同步的或异步的。同步的方法调用会阻塞调用进程，直到远程方法返回一个值。异步方法调用不会阻塞调用进程，而会立即返回，允许调用进程继续其工作。</p>
+<p><strong>DBus信号本质上是异步的</strong>。我们可以使用信号向远程进程发送异步消息。当一个进程发出信号时，它会广播给所有感兴趣的方。此外，感兴趣的方可以通过监听特定接口和对象路径上的信号来订阅接收特定事件的信号。</p>
+<h3 id="51-sending-a-signal">5.1. Sending a Signal<a href="#1-sending-a-signal"></a></h3>
+<p>让我们看看如何通过DBus发送信号。要开始使用DBus协议在应用程序之间进行信号通信，我们需要安装 <em>python-dbus</em> 包：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>$ pip install dbus-python
+</span></span></code></pre></div><p>安装后，我们可以在Python中使用 <em>dbus</em> 模块库与DBus进行交互并通过其通道(pathway)发送信号：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>    <span style="color:#75715e">#!/usr/bin/env python3</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">import</span> dbus
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">import</span> dbus.service
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">from</span> dbus.mainloop.glib <span style="color:#f92672">import</span> DBusGMainLoop
+</span></span></code></pre></div><p>首先，我们定义一个新的DBus服务，它使用继承自DBus服务对象的类来设置具有唯一名称的DBus服务，并定义一个名为 <em>ExampleSignal</em> 的信号，它带有一个参数 <em>message</em>：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ExampleDBusService</span>(dbus<span style="color:#f92672">.</span>service<span style="color:#f92672">.</span>Object):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__init__</span>(self):
+</span></span><span style="display:flex;"><span>        bus_name <span style="color:#f92672">=</span> dbus<span style="color:#f92672">.</span>service<span style="color:#f92672">.</span>BusName(<span style="color:#e6db74">&#39;com.example.DBusExample&#39;</span>, bus<span style="color:#f92672">=</span>dbus<span style="color:#f92672">.</span>SessionBus())
+</span></span><span style="display:flex;"><span>        dbus<span style="color:#f92672">.</span>service<span style="color:#f92672">.</span>Object<span style="color:#f92672">.</span><span style="color:#a6e22e">__init__</span>(self, bus_name, <span style="color:#e6db74">&#39;/com/example/DBusExample&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@dbus.service.signal</span>(<span style="color:#e6db74">&#39;com.example.DBusExample&#39;</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">ExampleSignal</span>(self, message):
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">&#39;Signal sent:&#39;</span>, message)
+</span></span></code></pre></div><p>然后，为了使用我们定义的DBus服务，我们需要启动DBus主循环(<code>DBusGMainLoop</code>)并创建 <em>ExampleDBusService</em> 类的实例：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>DBusGMainLoop(set_as_default<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>ExampleDBusService()
+</span></span></code></pre></div><p>一旦创建了 <em>ExampleDBusService</em> 实例，我们可以使用来自DBus包的 <em>SessionBus()</em> 对象连接到它。接下来，我们获取对DBus服务对象的引用，以允许与之前定义的DBus服务进行交互：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>bus <span style="color:#f92672">=</span> dbus<span style="color:#f92672">.</span>SessionBus()
+</span></span><span style="display:flex;"><span>dbus_service <span style="color:#f92672">=</span> bus<span style="color:#f92672">.</span>get_object(<span style="color:#e6db74">&#39;com.example.DBusExample&#39;</span>, <span style="color:#e6db74">&#39;/com/example/DBusExample&#39;</span>)
+</span></span></code></pre></div><p>现在，我们可以通过创建一个DBus接口对象向DBus服务发送信号，最后，我们在此对象上调用 <em>ExampleSignal</em> 方法并传递一个参数 - 我们的消息：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>    dbus_iface <span style="color:#f92672">=</span> dbus<span style="color:#f92672">.</span>Interface(dbus_service, <span style="color:#e6db74">&#39;com.example.DBusExample&#39;</span>)
+</span></span><span style="display:flex;"><span>    dbus_iface<span style="color:#f92672">.</span>ExampleSignal(<span style="color:#e6db74">&#39;hello world&#39;</span>)
+</span></span></code></pre></div><p>这将导致调用 <em>ExampleSignal</em> 方法并传递我们的信号消息 - 在这种情况下，是&rsquo;hello world&rsquo;。</p>
+<h3 id="52-testing-the-signal-sender">5.2. Testing the Signal Sender<a href="#2-testing-the-signal-sender"></a></h3>
+<p>现在，我们更好地了解了Python脚本的功能。让我们逐步执行它的步骤。</p>
+<p>我们首先将此代码脚本保存为扩展名为 <em>.py</em> 的文件。在本示例中，我们将其保存为 <em>send_signal.py.</em> 然后，让我们在保存文件的目录中打开终端：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>$ ls
+</span></span><span style="display:flex;"><span>Documents  Downloads send_signal.py
+</span></span></code></pre></div><p>现在，既然我们在文件的目录中，让我们使用chmod命令将文件设置为可执行：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>$ chmod +x send_signal.py
+</span></span></code></pre></div><p>最后，让我们运行脚本：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>$ python3 send_signal.py
+</span></span><span style="display:flex;"><span>Signal sent: hello world
+</span></span></code></pre></div><p>正如我们所看到的，脚本运行并显示输出。这样，我们成功地通过DBus发送了一个信号。</p>
+<h3 id="53-receiving-a-signal">5.3. Receiving a Signal<a href="#3-receiving-a-signal"></a></h3>
+<p>另一方面，要在DBus系统上接收信号，我们创建一个信号处理程序，用于监听特定接口和对象路径上的信号。在这种情况下，与我们发送信号的脚本类似，我们使用了相应的库来接收信号：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e">#!/usr/bin/env python3</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> dbus
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> dbus.service
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> dbus.mainloop.glib <span style="color:#f92672">import</span> DBusGMainLoop
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> gi.repository <span style="color:#f92672">import</span> GLib
+</span></span></code></pre></div><p>我们首先定义一个类 <em>ExampleSignalReceiver</em> , 它继承自DBus服务对象。这个类负责接收发送到DBus的信号。在这个类内部，我们定义了两个方法   <em>ExampleSignal</em> 和 <em>ExampleMethod</em>. <em>ExampleSignal</em> 方法将在信号被发送到DBus上时被调用, 而 <em>ExampleMethod</em> 将用于调用DBus上的一个方法：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ExampleSignalReceiver</span>(dbus<span style="color:#f92672">.</span>service<span style="color:#f92672">.</span>Object):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__init__</span>(self):
+</span></span><span style="display:flex;"><span>        bus_name <span style="color:#f92672">=</span> dbus<span style="color:#f92672">.</span>service<span style="color:#f92672">.</span>BusName(<span style="color:#e6db74">&#39;com.example.DBusExample&#39;</span>, bus<span style="color:#f92672">=</span>dbus<span style="color:#f92672">.</span>SessionBus())
+</span></span><span style="display:flex;"><span>        dbus<span style="color:#f92672">.</span>service<span style="color:#f92672">.</span>Object<span style="color:#f92672">.</span><span style="color:#a6e22e">__init__</span>(self, bus_name, <span style="color:#e6db74">&#39;/com/example/DBusExample&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@dbus.service.signal</span>(<span style="color:#e6db74">&#39;com.example.DBusExample&#39;</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">ExampleSignal</span>(self, message):
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">&#39;Signal received:&#39;</span>, message)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@dbus.service.method</span>(<span style="color:#e6db74">&#39;com.example.DBusExample&#39;</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">ExampleMethod</span>(self):
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">&#39;Method called&#39;</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#e6db74">&#39;Example response&#39;</span>
+</span></span></code></pre></div><p>为了启动DBus主循环，我们调用<a href="https://en.wikipedia.org/wiki/GLib">GLib</a>主循环，这是当前线程的默认主循环，并创建 <em>ExampleSignalReceiver</em> 类的实例以接收发送到DBus的信号:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>    DBusGMainLoop(set_as_default<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>    ExampleSignalReceiver()
+</span></span></code></pre></div><p>接下来，我们创建一个<strong>DBus会话总线对象</strong>并<strong>添加一个信号接收器</strong>来监听DBus上的信号。<em>ExampleSignalReceiver.ExampleSignal</em> 方法用作 <em>ExampleSignal</em> 信号的信号处理程序。此外，<em>dbus_interface</em> 参数指定信号所属的DBus接口，而 <em>signal_name</em> 参数指定信号的名称：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>bus <span style="color:#f92672">=</span> dbus<span style="color:#f92672">.</span>SessionBus()
+</span></span><span style="display:flex;"><span>bus<span style="color:#f92672">.</span>add_signal_receiver(
+</span></span><span style="display:flex;"><span>    ExampleSignalReceiver<span style="color:#f92672">.</span>ExampleSignal,
+</span></span><span style="display:flex;"><span>    dbus_interface<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;com.example.DBusExample&#39;</span>,
+</span></span><span style="display:flex;"><span>    signal_name<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;ExampleSignal&#39;</span>
+</span></span><span style="display:flex;"><span>)
+</span></span></code></pre></div><p>最后，我们启动GLib主循环以监听DBus上的传入信号：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>    loop <span style="color:#f92672">=</span> GLib<span style="color:#f92672">.</span>MainLoop()
+</span></span><span style="display:flex;"><span>    loop<span style="color:#f92672">.</span>run()
+</span></span></code></pre></div><p>通过这样做，我们的脚本将无限地运行，以继续通过DBus接收信号消息。</p>
+<h3 id="54-testing-the-receiver">5.4. Testing the Receiver<a href="#4-testing-the-receiver"></a></h3>
+<p>现在，我们更好地了解了脚本。让我们将其保存，例如保存为 <em>receive_signal.py.</em> 然后，我们导航到其目录，使其可执行，并运行脚本：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>    $ python3 receive_signal.py
+</span></span><span style="display:flex;"><span>    Signal received: hello world
+</span></span></code></pre></div><p>正如我们所看到的，脚本执行并显示我们发送的信号消息。每当我们通过DBus接收信号时，输出都会显示在终端上。然而，我们可以首先运行 <em>receive_signal.py</em> 脚本来设置信号接收器，然后运行 <em>send_signal.py</em> 脚本来发送信号。</p>
+<p>注意, 如果我们想要通过DBus系统持续的接收消息, 我们需要保持 <em>receive_signal.py</em> 脚本始终运行.</p>
+<p>以上只是我们能通过DBus进行IPC的简单例子. 还有很多高级场景, 例如在进程间传输复杂数据结构, 以及为通信创建自定义的接口和对象.</p>
+<h2 id="6-dbus-limitations">6. DBus Limitations<a href="#dbus-limitations"></a></h2>
+<p>尽管DBus在我们已经看到并实施的用途中非常有用，但它也存在一些挑战。让我们看一下在使用DBus时常见的一些挑战。</p>
+<h3 id="61-security-concerns">6.1. Security Concerns<a href="#1-security-concerns"></a></h3>
+<p>由于DBus是一个系统级组件，它可以直接访问我们的系统资源，并有潜在可能用于执行恶意代码。因此，确保合适的保护DBus并确保只有受信任的应用程序可以访问DBus非常重要。</p>
+<p>幸运的是，DBus具有内置的安全功能，如消息过滤和身份验证机制，以减轻安全顾虑。我们可以配置应用程序只接受来自受信任来源的消息，并验证消息内容，以确保其符合特定的模式或格式。</p>
+<h3 id="62-compatibility-issues">6.2. Compatibility Issues<a href="#2-compatibility-issues"></a></h3>
+<p>虽然DBus是现代Linux桌面环境的标准组件，但不同的环境可能以略有不同的方式实现DBus，这可能导致应用程序之间的兼容性问题。</p>
+<p>例如，为GNOME开发的应用程序如果依赖于KDE中不存在的特定DBus API或功能，则可能无法在KDE上正常工作。为了解决这些兼容性问题，很重要的是我们在开发应用程序时考虑到兼容性，并在不同环境中进行彻底测试。</p>
+<h3 id="63-performance-considerations">6.3. Performance Considerations<a href="#3-performance-considerations"></a></h3>
+<p>应用程序之间的DBus通信也可能对系统性能产生重大影响，特别是如果大量应用程序同时通过DBus进行通信。由于DBus使用异步消息传递机制，因此比其他IPC机制（如远程过程调用(<a href="https://en.wikipedia.org/wiki/Remote_procedure_call">RPC</a>)）更高效。</p>
+<p>然而，过度使用DBus仍然可能导致性能下降。因此，为了优化性能，很重要的是我们尽量减少发送和接收的DBus消息数量，并确保应用程序有效地使用DBus。此外，我们还应确保DBus消息能够快速处理，不会阻塞应用程序的主线程或引起过多的CPU使用。</p>
+<h3 id="64-debugging-and-troubleshooting">6.4. Debugging and Troubleshooting<a href="#4-debugging-and-troubleshooting"></a></h3>
+<p>最后，在使用DBus时，调试和故障排除可能会具有挑战性。由于它是一个底层系统组件，因此诊断与DBus通信相关的问题可能会很困难。</p>
+<p>然而，为了解决这一挑战，很重要的是我们要对DBus的内部工具有良好的理解，例如 <a href="https://manpages.debian.org/bullseye/dbus/dbus-monitor.1.en.html"><em>dbus-monitor</em></a>和 <em>dbus-send</em> ，以调试和排除DBus相关的问题。我们还应记录DBus错误消息并使用错误处理机制来检测和处理与DBus通信相关的潜在问题。</p>
+<h2 id="7-conclusion">7. Conclusion<a href="#conclusion"></a></h2>
+<p>在本文中，我们探讨了DBus以及在Linux系统中如何实际使用它进行进程间通信。我们首先讨论了DBus的基础知识，包括其架构和组件。接下来，我们讨论了DBus在各种桌面环境中的集成，如GNOME、KDE和Xfce。</p>
+<p>然后，我们探讨了DBus的一些实际应用，包括如何将其用于系统范围的通知和管理电源管理设置。最后，我们讨论了在使用DBus时可能遇到的一些挑战。</p>
+<p>通过正确的知识和技能，我们可以利用DBus构建健壮高效的Linux桌面应用程序，满足现代用户的需求。</p>
+<ul class="pa0">
+  
+   <li class="list di">
+     <a href="/tags/dbus/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">DBus</a>
+   </li>
+  
+   <li class="list di">
+     <a href="/tags/ipc/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">IPC</a>
+   </li>
+  
+   <li class="list di">
+     <a href="/tags/linux/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">Linux</a>
+   </li>
+  
+</ul>
+
+      
+    </div></article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white white-70 dn dib-ns pv2 ph3 no-underline" href="https://fulanxisen.github.io/" >
+    &copy;  FulanXisen's blog 2026 
+  </a>
+    <div><div class="ananke-socials"></div>
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>

@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>FulanXisen&#39;s blog</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="">
+    <meta name="generator" content="Hugo 0.160.1">
+    
+    
+    
+      <meta name="robots" content="index, follow">
+    
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.efe4d852f731d5d1fbb87718387202a97aafd768cdcdaed0662bbe6982e91824.css" >
+
+
+
+
+    
+
+
+    
+      
+
+    
+
+    
+    
+      <link href="/posts/index.xml" rel="alternate" type="application/rss+xml" title="FulanXisen&#39;s blog" />
+      <link href="/posts/index.xml" rel="feed" type="application/rss+xml" title="FulanXisen&#39;s blog" />
+      
+    
+
+    
+      <link rel="canonical" href="https://fulanxisen.github.io/posts/">
+    
+
+    
+    
+    <meta property="og:url" content="https://fulanxisen.github.io/posts/">
+  <meta property="og:site_name" content="FulanXisen&#39;s blog">
+  <meta property="og:title" content="Posts">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="website">
+
+  <meta itemprop="name" content="Posts">
+  <meta itemprop="datePublished" content="2025-04-24T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-04-24T00:00:00+00:00">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Posts">
+
+      
+      
+    
+	
+  </head><body class="ma0 avenir bg-near-white production is-section is-section">
+    
+
+  <header>
+    <div class="pb3-m pb6-l bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l center items-center justify-between">
+    <a href="/" class="f3 fw2 hover-white white-90 dib no-underline">
+      
+        FulanXisen&#39;s blog
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      <div class="ananke-socials"></div>
+
+    </div>
+  </div>
+</nav>
+
+      <div class="tc-l pv3 ph3 ph4-ns">
+        <h1 class="f2 f-subheadline-l fw2 light-silver mb0 lh-title">
+          Posts
+        </h1>
+        
+      </div>
+    </div>
+  </header>
+
+
+    <main class="pb7" role="main">
+      
+  <article class="pa3 pa4-ns nested-copy-line-height">
+    <section class="cf ph3 ph5-l pv3 pv4-l f4 tc-l center measure-wide lh-copy nested-links mid-gray"></section>
+    <section class="flex-ns mt5 flex-wrap justify-around">
+      
+        <div class="w-100 w-30-l mb4 relative bg-white">
+          <div class="w-100 mb4 nested-copy-line-height relative bg-white">
+  <div class="mb3 pa4 gray overflow-hidden bg-white">
+    <span class="f6 db">Posts</span>
+    <h1 class="f3 near-black">
+      <a href="/posts/p01-cortex-m-fault/" class="link black dim">
+        How to debug a HardFault on an ARM Cortex-M MCU
+      </a>
+    </h1>
+    <div class="nested-links f5 lh-copy nested-copy-line-height">
+      <h2 id="how-to-debug-a-hardfault-on-an-arm-cortex-m-mcu">How to debug a HardFault on an ARM Cortex-M MCU<a href="#how-to-debug-a-hardfault-on-an-arm-cortex-m-mcu"></a></h2>
+<p>20 Nov 2019 by <a href="/authors/chris">Chris Coleman</a></p>
+<p>Faults happen on embedded devices all the time for a variety of reasons – ranging from something as simple as a NULL pointer dereference to something more unexpected like running a faulty code path only when in a zero-g environment on the Tower of Terror in Disneyland<a href="#fn:14">1</a>. It’s important for any embedded engineer to understand how to debug and resolve this class of issue quickly.</p>
+    </div>
+    <a href="/posts/p01-cortex-m-fault/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
+  </div>
+</div>
+
+        </div>
+      
+        <div class="w-100 w-30-l mb4 relative bg-white">
+          <div class="w-100 mb4 nested-copy-line-height relative bg-white">
+  <div class="mb3 pa4 gray overflow-hidden bg-white">
+    <span class="f6 db">Posts</span>
+    <h1 class="f3 near-black">
+      <a href="/posts/ieee745/" class="link black dim">
+        IEEE 745 floating point representation
+      </a>
+    </h1>
+    <div class="nested-links f5 lh-copy nested-copy-line-height">
+      <p>32-bit 表示一个单精度浮点数 float</p>
+<p>$V=(-1)^s \times M \times 2^E$
+<figure><img src="/posts/ieee745/float.png"><figcaption>
+      <h4>Bit Segments</h4>
+    </figcaption>
+</figure>
+</p>
+<p>32-bit 分为3部分： S, E, M</p>
+<ul>
+<li>S: 符号位，1bit，0 表示正数， -1 表示负数</li>
+<li>E: 指数位，8bit，取值[-127, 128].</li>
+<li>M: 尾数位，23bit，取值[0, $2^{23}-1$].</li>
+</ul>
+<p>指数的底固定为2，指数有正数也有负数，但指数部分没有符号位，取一个中间值，小于中间值的表示负数，等于中间值的表示0，大于中间值的表示正数，中间值的定义如下：Bias=$2^{k-1}$-1, k表示E的bit数。实际的E为E-Bias.</p>
+<p>尾数部分隐藏了小数点前的1，实际为1.M。M转换为十进制从高位开始计算： $1+b_{22}\times\frac{1}{2}+b_{21}\times\frac{1}{4}+&hellip;+b_{0}\times\frac{1}{2^{23}}$</p>
+<p>规格化的表示，E不是全0，也不是全1，M任意取值</p>
+<p>E全为0时，表示+0.0, -0.0和接近0.0的值</p>
+<p>E全为1，M全为0时，表示无穷，符号位区分正无穷和负无穷</p>
+<p>E全为1，M不全为0时，表示NaN，不是一个数。</p>
+    </div>
+    <a href="/posts/ieee745/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
+  </div>
+</div>
+
+        </div>
+      
+        <div class="w-100 w-30-l mb4 relative bg-white">
+          <div class="w-100 mb4 nested-copy-line-height relative bg-white">
+  <div class="mb3 pa4 gray overflow-hidden bg-white">
+    <span class="f6 db">Posts</span>
+    <h1 class="f3 near-black">
+      <a href="/posts/aes/" class="link black dim">
+        AES对称加密
+      </a>
+    </h1>
+    <div class="nested-links f5 lh-copy nested-copy-line-height">
+      <h1 id="aes">AES</h1>
+<p>对称密钥加密中最流行的算法之一, 除加密以外还可以用于构建消息认证码, 伪随机函数等密码工具</p>
+<p>AES的区块长度固定为128比特，密钥长度则可以是128，192或256比特</p>
+<h2 id="分组密码工作模式">分组密码工作模式</h2>
+<p>使用同一个区块密码密钥对多于一块的数据进行加密</p>
+<p>区块密码自身只能加密长度等于密码区块长度的单块数据，若要加密变长数据，则数据必须先被划分为一些单独的密码块</p>
+<p>最后一块数据也需要使用合适填充方式将数据扩展到符合密码块大小的长度</p>
+<p>一种工作模式描述了加密每一数据块的过程，并常常使用基于一个通常称为初始化向量的附加输入值以进行随机化，以保证安全。</p>
+<h2 id="初始化向量iv">初始化向量IV</h2>
+<p>许多工作模式中用于将加密随机化的一个位块，由此即使同样的明文被多次加密也会产生不同的密文，避免了较慢的重新产生密钥的过程。</p>
+<p>初始化向量与密钥相比有不同的安全性需求，因此IV通常无须保密，然而在大多数情况中，不应当在使用同一密钥的情况下两次使用同一个IV. 对于CBC和CFB，重用IV会导致泄露明文首个块的某些信息，亦包括两个不同消息中相同的前缀。 对于OFB和CTR而言，重用IV会导致完全失去安全性。</p>
+<p>在CBC模式中，IV在加密时必须是无法预测的. SSL2.0使用的采用上一个消息的最后一块密文作为下一个消息的IV，是不安全的</p>
+<h2 id="padding">Padding</h2>
+<p>ECB和CBC需要最后一块在加密前进行填充</p>
+<ul>
+<li>在明文的最后填充空字符以使其长度为块长度的整数倍</li>
+<li>在数据后添加一个1位，再添加足够的0位直到满足块长度的要求</li>
+<li>添加一个值为128的字节（十六进制的80），再以0字节填满最后一个块</li>
+<li>向最后一个块填充n个值均为n的字节</li>
+<li>密文窃取</li>
+<li>等等</li>
+</ul>
+<h2 id="常用模式">常用模式</h2>
+<h3 id="电子密码本ecb">电子密码本（ECB）</h3>
+<p>需要加密的消息按照块密码的块大小被分为数个块，并对每个块进行独立加密。</p>
+<p>缺点在于同样的明文块会被加密成相同的密文块；它不能很好的隐藏数据模式。在某些场合，这种方法不能提供严格的数据保密性，因此并不推荐用于密码协议中。</p>
+<p>易受到重放攻击的影响，因为每个块是以完全相同的方式解密的.</p>
+<h3 id="密码块链接cbc">密码块链接（CBC）</h3>
+<p>每个明文块先与前一个密文块进行异或后，再进行加密. 为了保证每条消息的唯一性，在第一个块中需要使用初始化向量。</p>
+<p>主要缺点在于加密过程是串行的，无法被并行化，而且消息必须被填充到块大小的整数倍。在解密时，从两个邻接的密文块中即可得到一个明文块。因此，解密过程可以被并行化.</p>
+<h3 id="填充密码块链接pcbc">填充密码块链接（PCBC）</h3>
+<p>每个明文块先与前一个明文块和密文块进行异或后再进行加密, 互换两个邻接的密文块不会对后续块的解密造成影响</p>
+<h3 id="密文反馈cfbcipher-feedback">密文反馈（CFB，Cipher feedback）</h3>
+<p>类似于CBC，可以将块密码变为自同步的流密码；工作过程亦非常相似，CFB的解密过程几乎就是颠倒的CBC的加密过程</p>
+<h3 id="输出反馈模式output-feedback-ofb">输出反馈模式（Output feedback, OFB）</h3>
+<p>将块密码变成同步的流密码。它产生密钥流的块，然后将其与明文块进行异或，得到密文。
+与其它流密码一样，密文中一个位的翻转会使明文中同样位置的位也产生翻转。这种特性使得许多错误校正码，例如奇偶校验位，即使在加密前计算，而在加密后进行校验也可以得出正确结果。
+每个使用OFB的输出块与其前面所有的输出块相关，因此不能并行化处理。然而，由于明文和密文只在最终的异或过程中使用，因此可以事先对IV进行加密，最后并行的将明文或密文进行并行的异或处理。</p>
+<h3 id="计数器模式ctr">计数器模式（CTR）</h3>
+<p>CTR模式的特征类似于OFB，但它允许在解密时进行随机存取。由于加密和解密过程均可以进行并行处理，CTR适合运用于多处理器的硬件上。</p>
+<h3 id="其他">其他</h3>
+<p>消息认证码（MAC）通常由块密码得到，例如CBC-MAC（英语：CBC-MAC），OMAC（英语：One-key_MAC）和PMAC（英语：PMAC_(cryptography)）。</p>
+<p>认证加密也采用块密码作为其中的一部，其同时使用加密和MAC以提供保密性和数据完整性，例如IAPM（英语：IAPM_(mode)），CCM（英语：CCM_mode），CWC（英语：CWC_mode），EAX（英语：EAX_mode），GCM（英语：Galois/Counter_Mode）和OCB（英语：OCB_mode）。</p>
+    </div>
+    <a href="/posts/aes/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
+  </div>
+</div>
+
+        </div>
+      
+        <div class="w-100 w-30-l mb4 relative bg-white">
+          <div class="w-100 mb4 nested-copy-line-height relative bg-white">
+  <div class="mb3 pa4 gray overflow-hidden bg-white">
+    <span class="f6 db">Posts</span>
+    <h1 class="f3 near-black">
+      <a href="/posts/my-first-post-2/" class="link black dim">
+        My First Post
+      </a>
+    </h1>
+    <div class="nested-links f5 lh-copy nested-copy-line-height">
+      <h1 id="welcome">Welcome</h1>
+<p>The first post of hugo</p>
+<h2 id="this-is-a-second-header">This is a second header</h2>
+<h3 id="the-third">The third</h3>
+<h4 id="the-fouth">The fouth</h4>
+<h5 id="fifty">Fifty</h5>
+<h6 id="six">Six?</h6>
+<p>amazing</p>
+<p>A math equation: \(c^2 = a^2 + b^2\)</p>
+<p>full line equation:
+$$ e^e = \pi
+$$</p>
+<h2 id="a-table">A Table</h2>
+<table>
+  <thead>
+      <tr>
+          <th>a</th>
+          <th>a</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>b</td>
+          <td>b</td>
+      </tr>
+  </tbody>
+</table>
+<h2 id="a-complex-latex-equation">A complex latex equation</h2>
+<p>$$\begin{array}{cc}
+a &amp; b \\
+c &amp; d
+\end{array}$$</p>
+<p>$$\begin{bmatrix}
+a &amp; b \newline
+c &amp; d
+\end{bmatrix}$$</p>
+    </div>
+    <a href="/posts/my-first-post-2/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
+  </div>
+</div>
+
+        </div>
+      
+        <div class="w-100 w-30-l mb4 relative bg-white">
+          <div class="w-100 mb4 nested-copy-line-height relative bg-white">
+  <div class="mb3 pa4 gray overflow-hidden bg-white">
+    <span class="f6 db">Posts</span>
+    <h1 class="f3 near-black">
+      <a href="/posts/otandcylicgroup/" class="link black dim">
+        Oblivious Transfer and Cyclic Group
+      </a>
+    </h1>
+    <div class="nested-links f5 lh-copy nested-copy-line-height">
+      <h2 id="cyclic-group">Cyclic Group</h2>
+<h3 id="定义">定义</h3>
+<p>$$\langle\mathbb{G},q,g \rangle$$</p>
+<p>\(\mathbb{G}=\langle \mathbb{Z}_{n}, \cdot  \rangle\)</p>
+<p>\(\mathbb{Z}_{n} \)是一个集合, {$0$&hellip;$n-1$}.</p>
+<p>\(\cdot\)是集合中的运算符.</p>
+<p>对\(\mathbb{G}\)中的元素$a$进行$k$次幂运算表示为\(a^{k}=a \cdot a &hellip;\cdot a\), 即$k$个$a$进行$\cdot$运算.</p>
+<p>若群$\mathbb{G}$的每一个元素都是$\mathbb{G}$的某一个固定元素$a$的幂，则称$\mathbb{G}$为循环群.</p>
+<p>$q$是$\mathbb{G}$的order, $q$的值等于$\mathbb{G}$中元素的个数, 也记为$|\mathbb{G}|$.</p>
+<p>$g$是$\mathbb{G}$的generator(生成元), $\mathbb{G}$中的所有元素都能由$g$通过幂运算生成.</p>
+<p>由群$\mathbb{G}$, 阶$q$和生成元$g$, 即可定义一个循环群.</p>
+<h3 id="如何寻找一个生成元">如何寻找一个生成元</h3>
+<p>如果$\mathbb{G}$有素数阶$p$, 则$\mathbb{G}$中除了identity之外的所有元素都是$\mathbb{G}$的生成元.</p>
+<p>如果$p$是素数, 则$\mathbb{Z}_{p}^{*}$是阶为$p-1$的循环群.</p>
+<p>假设$\mathbb{G}$阶非素数$p$, 可以均匀的从$\mathbb{G}$中采样元素, 直到这个元素是一个生成元.</p>
+<ul>
+<li>
+<p>$\mathbb{G}$的阶$q$有素数因数$\{p_{i}\}^k_{i=1}$, 检查元素$h$是否为生成元</p>
+<ul>
+<li>for $i = 1$ to $k$ : if $h^{q/p_{i}}=1$ return &ldquo;$h$ is not a generator&rdquo;</li>
+<li>return &ldquo;$h$ is a generator&rdquo;</li>
+</ul>
+</li>
+<li>
+<p>$\mathbb{G}$有阶$q$,生成元$g$, 则任意一个元素可以表示为$h=g^{x}$.</p>
+<ul>
+<li>当gcd($x,q$)=1时, $h$也是$\mathbb{G}$的一个生成元.</li>
+</ul>
+</li>
+</ul>
+<h2 id="oblivious-transfer-from-cyclic-group">Oblivious Transfer from Cyclic Group</h2>
+<p>Reference:</p>
+<blockquote>
+<p>More efficient oblivious transfer and extensions for faster secure computation</p>
+    </div>
+    <a href="/posts/otandcylicgroup/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
+  </div>
+</div>
+
+        </div>
+      
+        <div class="w-100 w-30-l mb4 relative bg-white">
+          <div class="w-100 mb4 nested-copy-line-height relative bg-white">
+  <div class="mb3 pa4 gray overflow-hidden bg-white">
+    <span class="f6 db">Posts</span>
+    <h1 class="f3 near-black">
+      <a href="/posts/device-rpi-4b/" class="link black dim">
+        
+      </a>
+    </h1>
+    <div class="nested-links f5 lh-copy nested-copy-line-height">
+      <h3 id="ssh-to-rpi-ethernet-cable">SSH to RPI (Ethernet Cable)</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ssh fanyx@pi.local
+</span></span></code></pre></div><p>where <code>pi</code> is the hostname of rpi.</p>
+<p>This instruction doesn&rsquo;t need a address.</p>
+    </div>
+    <a href="/posts/device-rpi-4b/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
+  </div>
+</div>
+
+        </div>
+      
+        <div class="w-100 w-30-l mb4 relative bg-white">
+          <div class="w-100 mb4 nested-copy-line-height relative bg-white">
+  <div class="mb3 pa4 gray overflow-hidden bg-white">
+    <span class="f6 db">Posts</span>
+    <h1 class="f3 near-black">
+      <a href="/posts/linux-kernel-module-programming-guide/" class="link black dim">
+        
+      </a>
+    </h1>
+    <div class="nested-links f5 lh-copy nested-copy-line-height">
+      <h1 id="linux-kernel-module-programming-guide">Linux Kernel Module Programming Guide</h1>
+<p>[TOC]</p>
+<h2 id="easy-begin">Easy Begin</h2>
+<h3 id="内核模块包">内核模块包</h3>
+<p>编程内核模块首先要安装内核模块包<code>kmod</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo apt-get install build-essential kmod
+</span></span></code></pre></div><h3 id="命令行的内核模块相关命令">命令行的内核模块相关命令</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo lsmod <span style="color:#75715e"># 查看所有加载进内核的模块</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo cat /proc/modules <span style="color:#75715e"># 和lsmod有什么不同</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo modinfo ABC_x.ko <span style="color:#75715e"># 查看模块ABC的信息</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo insmod ABC_x.ko <span style="color:#75715e"># 向内核中加载模块ABC</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo rmmod ABC-x <span style="color:#75715e"># 从内核中卸载模块ABC, 注意ABC_x.ko名称中的&#39;_&#39;字符会被内核自动替换成&#39;-&#39;字符</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo journalctl --since <span style="color:#e6db74">&#34;1 hour ago&#34;</span> | grep kernel <span style="color:#75715e"># 查看过去一小时内的内核日志</span>
+</span></span></code></pre></div><h3 id="编码前须知">编码前须知</h3>
+<ol>
+<li>版本.
+如果编译模块A时include的内核头文件版本与加载模块A的内核版本不一致, 会导致加载失败.
+如果必须要这样做, 例如模块A兼容多个内核版本, 需要启用CONFIG_MODVERSIONS编译制导.</li>
+<li>命令行.
+内核模块无法打印输出到屏幕,但可以记录日志信息然后读取日志信息到屏幕.</li>
+<li>SecureBoot.
+SecureBoot是UEFI的一个设置, 要求只会引导安全密钥签名过的模块.
+<code>[Shell]ERROR: could not insert module</code>.
+<code>[dmesg]Lockdown: insmod: unsigned module loading is restricted; see man kernel lockdown.7</code>.
+<a href="https://wiki.debian.org/SecureBoot">SecureBoot - Debian Wiki</a></li>
+</ol>
+<h3 id="内核头文件">内核头文件</h3>
+<p>编译模块必需内核头文件, 编译时Makefile也需要include内核头文件所在文件夹.</p>
+    </div>
+    <a href="/posts/linux-kernel-module-programming-guide/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
+  </div>
+</div>
+
+        </div>
+      
+        <div class="w-100 w-30-l mb4 relative bg-white">
+          <div class="w-100 mb4 nested-copy-line-height relative bg-white">
+  <div class="mb3 pa4 gray overflow-hidden bg-white">
+    <span class="f6 db">Posts</span>
+    <h1 class="f3 near-black">
+      <a href="/posts/armv-m-exception/" class="link black dim">
+        A Practical guide to ARM Cortex-M Exception Handling
+      </a>
+    </h1>
+    <div class="nested-links f5 lh-copy nested-copy-line-height">
+      <p>几乎所有嵌入式系统都在某种程度上依赖于处理异步事件的能力。
+例如，它从加速度计读取外部传感器数据，以便计算步数
+或处理周期性计时器事件以触发RTOS的上下文切换。</p>
+<p>在本文中，我们将深入研究ARM Cortex-M 的Exception Model如何支持异步事件的处理。
+本文将介绍支持的不同异常类型、术语(NVIC、ISR、Priority)、configuration registers及其常用设置、与Exception有关的Advanced Topic以及一些用C编写的examples。</p>
+<blockquote>
+<p>注意:在大多数情况下，所有Cortex-M处理器(ARMv6-M、ARMv7-M和ARMv8-M体系结构)的异常处理机制是相同的。本文将在下面的相关章节中指出它们的差异。</p>
+</blockquote>
+<h2 id="arm-exception-model-overview">ARM Exception Model Overview<a href="#arm-exception-model-overview"></a></h2>
+<p>ARM specification将Exception定义为“a condition that changes the normal flow of control in a program” <a href="#fn:4">1</a>.</p>
+<p>你会经常看到&quot;Exception&quot;和&quot;Interrupt&quot;交替出现. 在ARM文档中, &ldquo;Interrupt&quot;用来描述&quot;Exception&quot;的一种.
+Exception包含以下3部分标识信息:</p>
+<ul>
+<li><strong>Exception Number</strong> - 表示特定类型Exception的唯一编号(从1开始).
+这个编号也用作<strong>Vector Table</strong>的offset, 这种类型的Exception对应routine的address可以在这里找到.
+这样的routine通常被称为<strong>Exception Handler</strong>或者<strong>Interrupt Service Routine</strong> (<strong>ISR</strong>),它是在Exception触发时会被执行的函数.
+当Exception被触发时,ARM硬件会自动的从<strong>Vector Table</strong>中寻找对应的函数指针并执行.</li>
+<li><strong>Priority Level</strong> / <strong>Priority Number</strong> - 每种Exception都有一个优先级.
+大部分exception的Priority Number是可配置的. 反直觉的地方是, 更小的priority number意味着更高的优先级.
+所以如果priority level 1的exception和priority level 2的exception同时发生, priority level 1的exception会先被处理.
+当本文说一个exception有最高优先级时, 意味着这个exception有最小的<strong>Priority Number</strong>.
+如果两个exception有相同的<strong>Priority Number</strong>, <strong>Exception Number</strong>更小的那个会先被处理.</li>
+<li><strong>Synchronous</strong> 或 <strong>Asynchronous</strong> - 有一些exception触发时被立即被处理(例如 <code>SVCall</code>), 称为 <em>synchronous</em>.
+另一些exception触发时不会被立刻处理, 称为 <em>asynchronous</em>.</li>
+</ul>
+<p>一个exception可以处于以下4种状态中的一种:</p>
+    </div>
+    <a href="/posts/armv-m-exception/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
+  </div>
+</div>
+
+        </div>
+      
+        <div class="w-100 w-30-l mb4 relative bg-white">
+          <div class="w-100 mb4 nested-copy-line-height relative bg-white">
+  <div class="mb3 pa4 gray overflow-hidden bg-white">
+    <span class="f6 db">Posts</span>
+    <h1 class="f3 near-black">
+      <a href="/posts/armv-m-context-switch/" class="link black dim">
+        ARM Cortex-M RTOS Context Switching
+      </a>
+    </h1>
+    <div class="nested-links f5 lh-copy nested-copy-line-height">
+      <p>Many embedded systems reach a level of complexity where having a basic set of scheduling primitives and ability to run different tasks can be helpful. The operation of switching from one task to another is known as a <strong>context switch</strong>. A <em>Real Time Operating System</em> (<strong>RTOS</strong>) will typically provide this functionality. Having a foundational knowledge of how the core of an <strong>RTOS</strong> works can be a valuable skill set for an embedded engineer to have.</p>
+    </div>
+    <a href="/posts/armv-m-context-switch/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
+  </div>
+</div>
+
+        </div>
+      
+        <div class="w-100 w-30-l mb4 relative bg-white">
+          <div class="w-100 mb4 nested-copy-line-height relative bg-white">
+  <div class="mb3 pa4 gray overflow-hidden bg-white">
+    <span class="f6 db">Posts</span>
+    <h1 class="f3 near-black">
+      <a href="/posts/control-bluetooth-device-via-bluetoothctl/" class="link black dim">
+        Control Bluetooth Device via Bluetoothctl
+      </a>
+    </h1>
+    <div class="nested-links f5 lh-copy nested-copy-line-height">
+      <h1 id="control-a-bluetooth-device-via-bluetoothctl">Control a Bluetooth Device via Bluetoothctl</h1>
+<hr>
+<h2 id="1-overview">1. Overview<a href="#overview"></a></h2>
+<p>In this tutorial, we’ll learn how to connect to a Bluetooth device via the terminal. This process involves configuring our Bluetooth controller, pairing it to our target device, and then finally connecting.</p>
+<h2 id="2-using-the-bluetoothctlcommand">2. Using the <em>bluetoothctl</em> Command<a href="#using-the-bluetoothctlcommand"></a></h2>
+<p><a href="https://git.kernel.org/pub/scm/bluetooth/bluez.git/about/">BlueZ</a> provides support for Bluetooth functionality and protocols through the <a href="https://www.mankier.com/8/bluetoothd"><em>bluetoothd</em></a> daemon. To interact with <em>bluetoothd</em> from the terminal, we use the <a href="https://manpages.debian.org/stretch/bluez/bluetoothctl.1.en.html"><em>bluetoothctl</em></a> command.</p>
+<p>Let’s begin by running <em>bluetoothctl</em> without any arguments:</p>
+    </div>
+    <a href="/posts/control-bluetooth-device-via-bluetoothctl/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
+  </div>
+</div>
+
+        </div>
+      
+    </section>
+    
+    <ul class="pagination pagination-default">
+      <li class="page-item">
+        <a href="/posts/" aria-label="First" class="page-link" role="button"><span aria-hidden="true">&laquo;&laquo;</span></a>
+      </li>
+      <li class="page-item">
+        <a href="/posts/" aria-label="Previous" class="page-link" role="button"><span aria-hidden="true">&laquo;</span></a>
+      </li>
+      <li class="page-item">
+        <a href="/posts/" aria-label="Page 1" class="page-link" role="button">1</a>
+      </li>
+      <li class="page-item active">
+        <a aria-current="page" aria-label="Page 2" class="page-link" role="button">2</a>
+      </li>
+      <li class="page-item disabled">
+        <a aria-disabled="true" aria-label="Next" class="page-link" role="button" tabindex="-1"><span aria-hidden="true">&raquo;</span></a>
+      </li>
+      <li class="page-item disabled">
+        <a aria-disabled="true" aria-label="Last" class="page-link" role="button" tabindex="-1"><span aria-hidden="true">&raquo;&raquo;</span></a>
+      </li>
+    </ul></article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white white-70 dn dib-ns pv2 ph3 no-underline" href="https://fulanxisen.github.io/" >
+    &copy;  FulanXisen's blog 2026 
+  </a>
+    <div><div class="ananke-socials"></div>
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>

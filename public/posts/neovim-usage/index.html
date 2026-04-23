@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>我的Neovim心得 | FulanXisen&#39;s blog</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="Desc Text.">
+    <meta name="generator" content="Hugo 0.160.1">
+    
+    
+    
+      <meta name="robots" content="index, follow">
+    
+    <meta name="author" content="Me">
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.efe4d852f731d5d1fbb87718387202a97aafd768cdcdaed0662bbe6982e91824.css" >
+
+
+
+
+    
+
+
+    
+      
+
+    
+
+    
+
+    
+      <link rel="canonical" href="https://canonical.url/to/page">
+    
+
+    
+    
+    <meta property="og:url" content="https://fulanxisen.github.io/posts/neovim-usage/">
+  <meta property="og:site_name" content="FulanXisen&#39;s blog">
+  <meta property="og:title" content="我的Neovim心得">
+  <meta property="og:description" content="Desc Text.">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2023-09-10T23:18:43+08:00">
+    <meta property="article:modified_time" content="2023-09-10T23:18:43+08:00">
+    <meta property="article:tag" content="Vim">
+
+  <meta itemprop="name" content="我的Neovim心得">
+  <meta itemprop="description" content="Desc Text.">
+  <meta itemprop="datePublished" content="2023-09-10T23:18:43+08:00">
+  <meta itemprop="dateModified" content="2023-09-10T23:18:43+08:00">
+  <meta itemprop="wordCount" content="77">
+  <meta itemprop="keywords" content="Vim">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="我的Neovim心得">
+  <meta name="twitter:description" content="Desc Text.">
+
+      
+      
+    
+	
+  </head><body class="ma0 avenir bg-near-white production is-page is-page page-neovim-usage">
+    
+   
+  
+
+  <header>
+    <div class="bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l center items-center justify-between">
+    <a href="/" class="f3 fw2 hover-white white-90 dib no-underline">
+      
+        FulanXisen&#39;s blog
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      <div class="ananke-socials"></div>
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+
+  <article class="page-neovim-usage flex-l mw7 center ph3 flex-wrap justify-between">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked ttu">
+          
+        Posts
+      </aside><div id="sharing" class="mt3 ananke-socials"></div>
+<h1 class="f1 athelas mt3 mb1">我的Neovim心得</h1>
+      
+      <p class="tracked"><strong>Me</strong>
+      </p>
+      
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2023-09-10T23:18:43+08:00">September 10, 2023</time>
+      
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-100-l"><h2 id="neovim的基本用法及我的配置教程">NeoVim的基本用法及我的配置教程</h2>
+<p>Neovim是Vim的现代版本, 早于Vim提供异步任务特性, 更新激进, 社区活跃.</p>
+<h2 id="toc">[toc]</h2>
+<p>VIM的作者去世了,我刚接触编程的时候使用的第一个编辑器就是VIM,但是还不知道VIM插件的存在,在没有任何提示辅助的条件下编写完成了很多个Python程序.
+后来知道了VIM插件, 在一通极其复杂的copy-paste配置之后运行ctags检索符号.
+vscode很快发布了, 我也因为vscode大而全又方便使用了很多年的vscode.
+再后来我感到编写程序的过程在完成构思之后,最大的限制就是编辑效率, 经常觉得编辑效率跟不上我预期的开发速度.
+在vscode上又启用了VIM键位, 但是VIM插件终究是一个模拟器, 模拟了VIM的键位但是缺少VIM的更多指令.
+另一个感受是vscode上插件的日新月异, 与我一次学习终身受用的出发点背道而驰.
+我决定重新回归VIM的怀抱.
+NeoVim是Vim的现代版本, 社区远比Vim更活跃, 并且可以看到持续的活跃. 以NeoVim作为回归Vim的终点, 应该是最好的选择.</p>
+<h2 id="安装引导">安装引导</h2>
+<p>Nvim的配置文件默认位于<code>~/.config/nvim/</code>目录, 默认配置文件<code>init.lua</code>.
+插件管理器选择<code>LazyNvim</code>, 这个插件管理器界面和配置现代一些, 配置文件里面不需要很多分隔符, 用起来还可以.</p>
+<h2 id="配置ccpp开发环境">配置C/CPP开发环境</h2>
+<p>任何编程语言的开发环境, 在能力上应包含三个功能:</p>
+<ol>
+<li>符号查找: 查找变量和函数的声明、定义和引用</li>
+<li>重构: 变量和函数的重命名</li>
+<li>代码补全</li>
+</ol>
+<p>在显示上应提供的功能:</p>
+<ol>
+<li>(侧边)(常驻)文件浏览器</li>
+<li>(侧边)(常驻)code layout/outline</li>
+<li>git 集成: make diff、checkout operations fast</li>
+</ol>
+<p>搜索功能:</p>
+<ol>
+<li>按文件名搜索文件</li>
+<li>按字符搜索出现位置</li>
+<li>按正则规则进行以上搜索</li>
+</ol>
+<h3 id="插件的选择">插件的选择</h3>
+<h1 id="ide三大件">IDE三大件</h1>
+<h2 id="符号查找">符号查找</h2>
+<p>符号查找有两种方案, 第一代的语法树方案, 第二代LSP方案</p>
+<h3 id="查找声明">查找声明</h3>
+<p>局部变量或者全局变量的声明由于局限于一定的作用域, 并不难找.</p>
+<h3 id="查找定义">查找定义</h3>
+<p>函数的定义可能会出现在不同的位置, 由编译宏开关控制真实采用的定义.
+所以查找符号要有确定当前环境宏定义的能力, 才能找到正确的定义.</p>
+<h3 id="查找引用">查找引用</h3>
+<p>与函数有多个定义类似, 相同签名的不同函数定义也分别有其应用. 它们不一定是互斥的, 也可能是相交或者包含等等关系.
+准确的查找引用和查找定义, 背后需要的原理是一样的.</p>
+<h2 id="重构-重命名">重构: 重命名</h2>
+<h2 id="代码补全">代码补全</h2>
+<ul class="pa0">
+  
+   <li class="list di">
+     <a href="/tags/vim/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">Vim</a>
+   </li>
+  
+</ul>
+
+      
+    </div></article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white white-70 dn dib-ns pv2 ph3 no-underline" href="https://fulanxisen.github.io/" >
+    &copy;  FulanXisen's blog 2026 
+  </a>
+    <div><div class="ananke-socials"></div>
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>

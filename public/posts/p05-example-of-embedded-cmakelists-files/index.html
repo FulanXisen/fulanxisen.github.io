@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>Example of Embedded CMakeLists Files | FulanXisen&#39;s blog</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="Desc Text.">
+    <meta name="generator" content="Hugo 0.160.1">
+    
+    
+    
+      <meta name="robots" content="index, follow">
+    
+    <meta name="author" content="Me">
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.efe4d852f731d5d1fbb87718387202a97aafd768cdcdaed0662bbe6982e91824.css" >
+
+
+
+
+    
+
+
+    
+      
+
+    
+
+    
+
+    
+      <link rel="canonical" href="https://canonical.url/to/page">
+    
+
+    
+    
+    <meta property="og:url" content="https://fulanxisen.github.io/posts/p05-example-of-embedded-cmakelists-files/">
+  <meta property="og:site_name" content="FulanXisen&#39;s blog">
+  <meta property="og:title" content="Example of Embedded CMakeLists Files">
+  <meta property="og:description" content="Desc Text.">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2023-05-03T23:38:47+08:00">
+    <meta property="article:modified_time" content="2023-05-03T23:38:47+08:00">
+    <meta property="article:tag" content="CMake">
+
+  <meta itemprop="name" content="Example of Embedded CMakeLists Files">
+  <meta itemprop="description" content="Desc Text.">
+  <meta itemprop="datePublished" content="2023-05-03T23:38:47+08:00">
+  <meta itemprop="dateModified" content="2023-05-03T23:38:47+08:00">
+  <meta itemprop="wordCount" content="1127">
+  <meta itemprop="keywords" content="CMake">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Example of Embedded CMakeLists Files">
+  <meta name="twitter:description" content="Desc Text.">
+
+      
+      
+    
+	
+  </head><body class="ma0 avenir bg-near-white production is-page is-page page-p05-example-of-embedded-cmakelists-files">
+    
+   
+  
+
+  <header>
+    <div class="bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l center items-center justify-between">
+    <a href="/" class="f3 fw2 hover-white white-90 dib no-underline">
+      
+        FulanXisen&#39;s blog
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      <div class="ananke-socials"></div>
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+
+  <article class="page-p05-example-of-embedded-cmakelists-files flex-l mw7 center ph3 flex-wrap justify-between">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked ttu">
+          
+        Posts
+      </aside><div id="sharing" class="mt3 ananke-socials"></div>
+<h1 class="f1 athelas mt3 mb1">Example of Embedded CMakeLists Files</h1>
+      
+      <p class="tracked"><strong>Me</strong>
+      </p>
+      
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2023-05-03T23:38:47+08:00">May 3, 2023</time>
+      
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-100-l"><h1 id="the-most-thoroughly-commented-embedded-cmakelists-file">The most thoroughly commented embedded CMakeLists file</h1>
+<p>January 05, 2023 - <a href="https://dnedic.github.io/tags/cmake/">CMake</a> <a href="https://dnedic.github.io/tags/build-system/">Build System</a> <a href="https://dnedic.github.io/tags/embedded/">Embedded</a> <a href="https://dnedic.github.io/tags/stm32/">STM32</a></p>
+<p>Many embedded software engineers have had to deal with build systems that are either non cross-platform or a part of the IDE they are using, don&rsquo;t offer easy composability or per-library configuration, provide no testing support or ways to generate or package files without using a third party scripting language.</p>
+<p><a href="https://cmake.org/">CMake</a> is a build system that offers solutions to many of those problems and is already well adopted in the world of traditional software development. Inspired by <a href="https://blog.thea.codes/the-most-thoroughly-commented-linker-script/">The most thoroughly commented linker script</a> blogpost and having used CMake in two different professional environments, I have decided to write an overview of a minimal CMakeLists file for an embedded project.</p>
+<p><a href="https://github.com/DNedic/most_commented_embedded_cmakelists/blob/main/CMakeLists.txt">Here</a> is the CMakeLists file we are going to be taking a look at. It is a part of a <a href="https://github.com/DNedic/most_commented_embedded_cmakelists">CMake STM32 project</a> i created as a demonstration and uses an STM32F103 MCU.</p>
+<h2 id="the-minimum-version">The minimum version</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>    cmake_minimum_required(<span style="color:#e6db74">VERSION</span> <span style="color:#e6db74">3.21</span>)<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>这个调用语句必须位于每个CMakeLists文件的顶部，它设置了我们的项目构建所需要的最低CMake版本，并决定了可以使用的CMake功能。
+通常建议将其设置的尽可能低，除非需要新版本CMake的功能。
+另一个好的方法是检查<a href="https://repology.org/project/cmake/versions">repology</a>获取大多数Linux发行版中所使用的CMake版本。</p>
+<h2 id="project-declaration">Project declaration</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>    project(<span style="color:#e6db74">most_commented_embedded_cmakelists</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">VERSION</span> <span style="color:#e6db74">1.0.0</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">DESCRIPTION</span> <span style="color:#e6db74">&#34;This is a demo project&#34;</span>
+</span></span><span style="display:flex;"><span>    )<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>The <a href="https://cmake.org/cmake/help/latest/command/project.html">project()</a> call sets up the project name and optionally version, description, homepage and more and stores them in variables that can be used later. For instance, the project name is stored in <code>PROJECT_NAME</code>, description in <code>PROJECT_DESCRIPTION</code> and so on.</p>
+<h2 id="language-settings">Language settings</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>    enable_language(<span style="color:#e6db74">C</span> <span style="color:#e6db74">ASM</span>)<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>This sets the languages the project is going to be using, if C++ support is desired add <code>CXX</code> to the list.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>    set(<span style="color:#e6db74">CMAKE_C_STANDARD</span> <span style="color:#e6db74">11</span>)<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span>    set(<span style="color:#e6db74">CMAKE_C_STANDARD_REQUIRED</span> <span style="color:#e6db74">ON</span>)<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>这个设置会在全局范围内指定使用的语言标准和是否将其作为必须条件。尽管这不是必须的，但由于 C 和 C++ 不向后兼容的特性，推荐使用。</p>
+<p>C11通常是项目的首选，因为它提供了有用的附加功能，如原子操作(<a href="https://en.cppreference.com/w/c/atomic">atomics</a>)，但它取消了可选功能，如可变长度数组(<a href="https://en.wikipedia.org/wiki/Variable-length_array">VLAs</a>)，因此在处理旧项目时，C99或更低版本可能更适合。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>    set(<span style="color:#e6db74">CMAKE_C_EXTENSIONS</span> <span style="color:#e6db74">OFF</span>)<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>这个命令用于全局控制是否包含C语言的<a href="https://gcc.gnu.org/onlinedocs/gcc/C-Extensions.html">GNU Extensions</a>，
+设置为OFF时更倾向于使用更标准和可移植的C，然而GNU Extensions提供的功能在基本标准之上提供了有用的东西。</p>
+<h2 id="compiler-options">Compiler options</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>    set(<span style="color:#e6db74">MCU_OPTIONS</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">-mcpu=cortex-m3</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">-mthumb</span>
+</span></span><span style="display:flex;"><span>    )<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>这里设置了一个自定义的<a href="https://gcc.gnu.org/onlinedocs/gcc/ARM-Options.html">microcontroller specific compiler flags</a>变量。
+首先，设置了CPU变体，然后告诉编译器发出thumb指令(<a href="https://developer.arm.com/documentation/ddi0337/e/Programmer-s-Model/Instruction-set">thumb instructions</a>)。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>    set(<span style="color:#e6db74">EXTRA_OPTIONS</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">-fdata-sections</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">-ffunction-sections</span>
+</span></span><span style="display:flex;"><span>    )<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>这里设置了一个包含额外功能编译器标志的变量。此处添加的标志确保所有对象都放在单独的linker section中。稍后我们将看到这为什么很重要。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>    set(<span style="color:#e6db74">OPTIMIZATION_OPTIONS</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">$&lt;</span>$&lt;CONFIG:Debug<span style="color:#f92672">&gt;</span><span style="color:#e6db74">:-Og&gt;</span>
+</span></span><span style="display:flex;"><span>    )<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>这里创建了编译器优化标志的自定义变量。当使用Debug(<a href="https://cmake.org/cmake/help/latest/manual/cmake-buildsystem.7.html#build-configurations">configuration</a>)配置进行构建时, 这个奇怪的表达式有条件地将编译器优化级别设置为<code>-Og</code>。</p>
+<p>由于大多数微控制器在闪存大小和CPU速度方面都相当有限，因此默认优化级别<code>-O0</code>不适合。<code>-Og</code>是一种最佳折衷方案，在大小、速度和调试可行性之间有最佳的优化。</p>
+<p>其他配置使用它们的默认编译器优化级别，<code>Release</code>配置为<code>-O2</code>，<code>MinSizeRel</code>配置为<code>-Os</code>，因此不需要添加其他内容。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>    set(<span style="color:#e6db74">DEPENDENCY_INFO_OPTIONS</span>
+</span></span></code></pre></div><p>这里创建了一个包含Dependency Info Options的预处理器标志的自定义变量。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>        <span style="color:#960050;background-color:#1e0010">-MMD
+</span></span></span></code></pre></div><p>这一行告诉预处理器为兼容Make的构建系统生成依赖文件，而不是完整的预处理器输出，同时删除系统头文件的提及。</p>
+<blockquote>
+<p><strong>Note:</strong> 如果我们自己需要预处理器的输出，可以向编译器传递<code>-E</code>参数.</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>        <span style="color:#960050;background-color:#1e0010">-MP
+</span></span></span></code></pre></div><p>此选项指示预处理器为除主文件以外的每个依赖项添加虚拟目标，以解决删除头文件而没有更新时构建系统出现的错误。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>        <span style="color:#960050;background-color:#1e0010">-MF</span> <span style="color:#960050;background-color:#1e0010">&#34;$(@:%.o=%.d)&#34;
+</span></span></span><span style="display:flex;"><span>    <span style="color:#960050;background-color:#1e0010">)
+</span></span></span></code></pre></div><p>The last line specifies that we want the dependency files to be generated with the same name as the corresponding object file.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>    set(<span style="color:#e6db74">DEBUG_INFO_OPTIONS</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">-g3</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">-gdwarf-2</span>
+</span></span><span style="display:flex;"><span>    )<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>This creates a custom variable containing <a href="https://gcc.gnu.org/onlinedocs/gcc/Debugging-Options.html">compiler flags for generating debug information</a>. The first line tells the compiler to produce the debugging output and the level of detail while the second line configures the debug output format and version. We are using dwarf version 2 for best debugger compatibility.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>    add_compile_options(
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">${</span>MCU_OPTIONS<span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">${</span>EXTRA_OPTIONS<span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">${</span>DEBUG_INFO_OPTIONS<span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">${</span>DEPENDENCY_INFO_OPTIONS<span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">${</span>OPTIMIZATION_OPTIONS<span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>    )<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>Finally, all the created variables are used to set the global compiler options.</p>
+<blockquote>
+<p><strong>Note:</strong> It is possible to override these per-target by using <code>target_compile_options()</code>, for instance to apply a higher optimization level to third party libraries we are not going to be debugging.</p>
+</blockquote>
+<h2 id="linker-options">Linker options</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>    add_link_options(
+</span></span></code></pre></div><p>Here we are adding global linker options.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>        <span style="color:#960050;background-color:#1e0010">${MCU_OPTIONS}
+</span></span></span></code></pre></div><p>First, it is required to pass the previously created microcontroller specific flags variable created earlier.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>        <span style="color:#960050;background-color:#1e0010">-specs=nano.specs
+</span></span></span></code></pre></div><p>This tells the linker to include the nano variant of the <a href="https://sourceware.org/newlib/">newlib</a> standard library which is optimized for minimal binary size and RAM use. The regular newlib variant is used simply by not passing this.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>        <span style="color:#960050;background-color:#1e0010">-T${CMAKE_SOURCE_DIR}/STM32F103C8Tx_FLASH.ld
+</span></span></span></code></pre></div><p>Here the linkerscript of the chip is passed. The linkerscript tells the linker where to store the objects in memory. I recommend reading the already mentioned <a href="https://blog.thea.codes/the-most-thoroughly-commented-linker-script/">most thoroughly commented linker script</a> blogpost.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>        <span style="color:#960050;background-color:#1e0010">-Wl,-Map=${PROJECT_NAME}.map,--cref
+</span></span></span></code></pre></div><p>This directive instructs the linker to generate a mapfile. Mapfiles contain information about the final layout of the firmware binary and are an invaluable resource for development. I recommend reading <a href="https://interrupt.memfault.com/blog/get-the-most-out-of-the-linker-map-file">this excellent Interrupt blogpost</a> for a quick introduction.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>        <span style="color:#960050;background-color:#1e0010">-Wl,--gc-sections
+</span></span></span><span style="display:flex;"><span>    <span style="color:#960050;background-color:#1e0010">)
+</span></span></span></code></pre></div><p>This is the linker flag for removing the unused sections from the final binary, it works in conjunction with the previously mentioned <code>-fdata-sections</code> and <code>-ffunction-sections</code> compiler flags to remove all unused objects from the final binary.</p>
+<h2 id="linking-the-standard-library">Linking the standard library</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>    link_libraries(<span style="color:#e6db74">&#34;-lc -lm -lnosys&#34;</span>)<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>This call tells the linker to link the standard library components to all the libraries and executables added after the call.</p>
+<p>The order of the standard library calls is important as the linker evaluates arguments one by one:</p>
+<ul>
+<li>-lc is the libc containing most standard library features</li>
+<li>-lm is the libm containing math functionality</li>
+<li>-lnosys provides stubs for the syscalls, essentially placeholders for what would be operating system calls</li>
+</ul>
+<h2 id="adding-library-subprojects">Adding library subprojects</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>    add_subdirectory(<span style="color:#e6db74">Drivers</span>)<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>When a subdirectory is added, the CMakeLists file contained in that subdirectory is evaluated, this is usually chained for composability. In this case the <code>Drivers</code> CMakeLists file creates a static library called <code>Drivers</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>    target_include_directories(<span style="color:#e6db74">Drivers</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">PRIVATE</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">Core/Inc</span>
+</span></span><span style="display:flex;"><span>    )<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>We need to include the <code>Core/Inc</code> for the <code>Drivers</code> library, as it depends on the definitions inside the <code>Core</code> headers.</p>
+<h2 id="the-executable">The executable</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>    set(<span style="color:#e6db74">EXECUTABLE</span> <span style="color:#f92672">${</span>PROJECT_NAME<span style="color:#f92672">}</span><span style="color:#e6db74">.elf</span>)<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>This creates a variable containing the executable name by appending the <a href="https://en.wikipedia.org/wiki/Executable_and_Linkable_Format">ELF</a> extension to the project name.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>    add_executable(<span style="color:#f92672">${</span>EXECUTABLE<span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">Core/Src/main.c</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">Core/Src/stm32f1xx_hal_msp.c</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">Core/Src/stm32f1xx_it.c</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">Core/Src/system_stm32f1xx.c</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">startup_stm32f103xb.s</span>
+</span></span><span style="display:flex;"><span>    )<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>Here we are creating the executable target and adding top-level sources to it. An executable is the final product of the build process, in this case our firmware. Note the startup file gets added along with the C sources.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>    target_include_directories(<span style="color:#f92672">${</span>EXECUTABLE<span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">PRIVATE</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">Core/Inc</span>
+</span></span><span style="display:flex;"><span>    )<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>Add the include directories for the executable. Since we don&rsquo;t need the includes to propagate up as our executable is the final product of the build process, we are including as <code>PRIVATE</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>    target_compile_options(<span style="color:#f92672">${</span>EXECUTABLE<span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">PRIVATE</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">-Wall</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">-Wextra</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">-Wshadow</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">-Wconversion</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">-Wdouble-promotion</span>
+</span></span><span style="display:flex;"><span>    )<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>This adds <a href="https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html">additional warning compiler flags</a> to our executable target, enabling them for our sources, but not third party libraries. All of these provide much more safety if not ignored.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>    target_link_libraries(<span style="color:#f92672">${</span>EXECUTABLE<span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">PRIVATE</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">Drivers</span>
+</span></span><span style="display:flex;"><span>    )<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>Here we link the libraries to the executable. Same principle applies to the reasoning behind <code>PRIVATE</code>.</p>
+<h2 id="post-build-commands">Post-build commands</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>    add_custom_command(<span style="color:#e6db74">TARGET</span> <span style="color:#f92672">${</span>EXECUTABLE<span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">POST_BUILD</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">COMMAND</span> <span style="color:#f92672">${</span>CMAKE_SIZE_UTIL<span style="color:#f92672">}</span> <span style="color:#f92672">${</span>EXECUTABLE<span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>    )<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>This creates a custom command that prints out the firmware binary size information. Example:</p>
+<pre tabindex="0"><code>    text   data    bss    dec    hex filename
+    3432     20   1572   5024   13a0 most_commented_embedded_cmakelists.elf
+</code></pre><p><code>text</code> is the code, <code>data</code> stores variables that have a non-zero initial value and have to be stored in flash, <code>bss</code> stores zero initial values that only take up ram. <code>dec</code> and <code>hex</code> are just the cumulative size in decimal and hexadecimal notation respectively.</p>
+<p><a href="https://mcuoneclipse.com/2013/04/14/text-data-and-bss-code-and-data-size-explained/">Here</a> is a good resource for understanding these sections and to learn more about output options.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>    add_custom_command(<span style="color:#e6db74">TARGET</span> <span style="color:#f92672">${</span>EXECUTABLE<span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">POST_BUILD</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">COMMAND</span> <span style="color:#f92672">${</span>CMAKE_OBJCOPY<span style="color:#f92672">}</span> <span style="color:#e6db74">-O</span> <span style="color:#e6db74">ihex</span> <span style="color:#f92672">${</span>EXECUTABLE<span style="color:#f92672">}</span> <span style="color:#f92672">${</span>PROJECT_NAME<span style="color:#f92672">}</span><span style="color:#e6db74">.hex</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">COMMAND</span> <span style="color:#f92672">${</span>CMAKE_OBJCOPY<span style="color:#f92672">}</span> <span style="color:#e6db74">-O</span> <span style="color:#e6db74">binary</span> <span style="color:#f92672">${</span>EXECUTABLE<span style="color:#f92672">}</span> <span style="color:#f92672">${</span>PROJECT_NAME<span style="color:#f92672">}</span><span style="color:#e6db74">.bin</span>
+</span></span><span style="display:flex;"><span>    )<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>This creates a custom command to generate binary and hex files. These can be used depending on which method of loading the firmware to the MCU is used.</p>
+<h2 id="closing">Closing</h2>
+<p>Hopefully this gives you an overview of how a minimal CMakeLists file for an embedded project looks like and peaked your curiosity if you&rsquo;ve never used CMake for embedded projects.</p>
+<p>It is worth keeping in mind that this article is not a complete guide to CMake and doesn&rsquo;t go into toolchain files, library CMakeLists and other things required for a complete CMake-based embedded project, however the <a href="https://github.com/DNedic/most_commented_embedded_cmakelists">project on GitHub</a> used for demonstration contains all of those and can be used as a template.</p>
+<hr>
+<p>© 2023 - Djordje Nedic | Find me on <a href="https://www.linkedin.com/in/djordje-nedic/">LinkedIn</a> or <a href="https://github.com/DNedic">GitHub</a></p>
+<ul class="pa0">
+  
+   <li class="list di">
+     <a href="/tags/cmake/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">CMake</a>
+   </li>
+  
+</ul>
+
+      
+    </div></article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white white-70 dn dib-ns pv2 ph3 no-underline" href="https://fulanxisen.github.io/" >
+    &copy;  FulanXisen's blog 2026 
+  </a>
+    <div><div class="ananke-socials"></div>
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>

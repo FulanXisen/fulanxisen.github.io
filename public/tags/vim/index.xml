@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Vim on FulanXisen&#39;s blog</title>
+    <link>https://fulanxisen.github.io/tags/vim/</link>
+    <description>Recent content in Vim on FulanXisen&#39;s blog</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 10 Sep 2023 23:18:43 +0800</lastBuildDate>
+    <atom:link href="https://fulanxisen.github.io/tags/vim/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>我的Neovim心得</title>
+      <link>https://fulanxisen.github.io/posts/neovim-usage/</link>
+      <pubDate>Sun, 10 Sep 2023 23:18:43 +0800</pubDate>
+      <guid>https://fulanxisen.github.io/posts/neovim-usage/</guid>
+      <description>&lt;h2 id=&#34;neovim的基本用法及我的配置教程&#34;&gt;NeoVim的基本用法及我的配置教程&lt;/h2&gt;&#xA;&lt;p&gt;Neovim是Vim的现代版本, 早于Vim提供异步任务特性, 更新激进, 社区活跃.&lt;/p&gt;&#xA;&lt;h2 id=&#34;toc&#34;&gt;[toc]&lt;/h2&gt;&#xA;&lt;p&gt;VIM的作者去世了,我刚接触编程的时候使用的第一个编辑器就是VIM,但是还不知道VIM插件的存在,在没有任何提示辅助的条件下编写完成了很多个Python程序.&#xA;后来知道了VIM插件, 在一通极其复杂的copy-paste配置之后运行ctags检索符号.&#xA;vscode很快发布了, 我也因为vscode大而全又方便使用了很多年的vscode.&#xA;再后来我感到编写程序的过程在完成构思之后,最大的限制就是编辑效率, 经常觉得编辑效率跟不上我预期的开发速度.&#xA;在vscode上又启用了VIM键位, 但是VIM插件终究是一个模拟器, 模拟了VIM的键位但是缺少VIM的更多指令.&#xA;另一个感受是vscode上插件的日新月异, 与我一次学习终身受用的出发点背道而驰.&#xA;我决定重新回归VIM的怀抱.&#xA;NeoVim是Vim的现代版本, 社区远比Vim更活跃, 并且可以看到持续的活跃. 以NeoVim作为回归Vim的终点, 应该是最好的选择.&lt;/p&gt;&#xA;&lt;h2 id=&#34;安装引导&#34;&gt;安装引导&lt;/h2&gt;&#xA;&lt;p&gt;Nvim的配置文件默认位于&lt;code&gt;~/.config/nvim/&lt;/code&gt;目录, 默认配置文件&lt;code&gt;init.lua&lt;/code&gt;.&#xA;插件管理器选择&lt;code&gt;LazyNvim&lt;/code&gt;, 这个插件管理器界面和配置现代一些, 配置文件里面不需要很多分隔符, 用起来还可以.&lt;/p&gt;&#xA;&lt;h2 id=&#34;配置ccpp开发环境&#34;&gt;配置C/CPP开发环境&lt;/h2&gt;&#xA;&lt;p&gt;任何编程语言的开发环境, 在能力上应包含三个功能:&lt;/p&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;符号查找: 查找变量和函数的声明、定义和引用&lt;/li&gt;&#xA;&lt;li&gt;重构: 变量和函数的重命名&lt;/li&gt;&#xA;&lt;li&gt;代码补全&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;p&gt;在显示上应提供的功能:&lt;/p&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;(侧边)(常驻)文件浏览器&lt;/li&gt;&#xA;&lt;li&gt;(侧边)(常驻)code layout/outline&lt;/li&gt;&#xA;&lt;li&gt;git 集成: make diff、checkout operations fast&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;p&gt;搜索功能:&lt;/p&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;按文件名搜索文件&lt;/li&gt;&#xA;&lt;li&gt;按字符搜索出现位置&lt;/li&gt;&#xA;&lt;li&gt;按正则规则进行以上搜索&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h3 id=&#34;插件的选择&#34;&gt;插件的选择&lt;/h3&gt;&#xA;&lt;h1 id=&#34;ide三大件&#34;&gt;IDE三大件&lt;/h1&gt;&#xA;&lt;h2 id=&#34;符号查找&#34;&gt;符号查找&lt;/h2&gt;&#xA;&lt;p&gt;符号查找有两种方案, 第一代的语法树方案, 第二代LSP方案&lt;/p&gt;&#xA;&lt;h3 id=&#34;查找声明&#34;&gt;查找声明&lt;/h3&gt;&#xA;&lt;p&gt;局部变量或者全局变量的声明由于局限于一定的作用域, 并不难找.&lt;/p&gt;&#xA;&lt;h3 id=&#34;查找定义&#34;&gt;查找定义&lt;/h3&gt;&#xA;&lt;p&gt;函数的定义可能会出现在不同的位置, 由编译宏开关控制真实采用的定义.&#xA;所以查找符号要有确定当前环境宏定义的能力, 才能找到正确的定义.&lt;/p&gt;&#xA;&lt;h3 id=&#34;查找引用&#34;&gt;查找引用&lt;/h3&gt;&#xA;&lt;p&gt;与函数有多个定义类似, 相同签名的不同函数定义也分别有其应用. 它们不一定是互斥的, 也可能是相交或者包含等等关系.&#xA;准确的查找引用和查找定义, 背后需要的原理是一样的.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

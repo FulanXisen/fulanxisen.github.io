@@ -15,7 +15,6 @@ description: "一份嵌入式固件链接器脚本`.ld`的讲解"
 canonicalURL: "https://canonical.url/to/page"
 disableHLJS: true # to disable highlightjs
 disableShare: false
-disableHLJS: false
 hideSummary: false
 searchHidden: true
 ShowReadingTime: true

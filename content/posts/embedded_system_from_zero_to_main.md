@@ -15,7 +15,6 @@ description: "Setup a bare matel C environment, linker scripts, bootloader, libc
 canonicalURL: "https://canonical.url/to/page"
 disableHLJS: true # to disable highlightjs
 disableShare: false
-disableHLJS: false
 hideSummary: false
 searchHidden: true
 ShowReadingTime: true

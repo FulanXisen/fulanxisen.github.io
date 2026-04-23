@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>A Guide to Using ARM Stack Limit Registers | FulanXisen&#39;s blog</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="Desc Text.">
+    <meta name="generator" content="Hugo 0.160.1">
+    
+    
+    
+      <meta name="robots" content="index, follow">
+    
+    <meta name="author" content="Me">
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.efe4d852f731d5d1fbb87718387202a97aafd768cdcdaed0662bbe6982e91824.css" >
+
+
+
+
+    
+
+
+    
+      
+
+    
+
+    
+
+    
+      <link rel="canonical" href="https://canonical.url/to/page">
+    
+
+    
+    
+    <meta property="og:url" content="https://fulanxisen.github.io/posts/p04-using-psp-msp-limit-registers-for-stack-overflow/">
+  <meta property="og:site_name" content="FulanXisen&#39;s blog">
+  <meta property="og:title" content="A Guide to Using ARM Stack Limit Registers">
+  <meta property="og:description" content="Desc Text.">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2023-05-03T14:28:46+08:00">
+    <meta property="article:modified_time" content="2023-05-03T14:28:46+08:00">
+    <meta property="article:tag" content="ARM">
+    <meta property="article:tag" content="Stack Over Flow">
+
+  <meta itemprop="name" content="A Guide to Using ARM Stack Limit Registers">
+  <meta itemprop="description" content="Desc Text.">
+  <meta itemprop="datePublished" content="2023-05-03T14:28:46+08:00">
+  <meta itemprop="dateModified" content="2023-05-03T14:28:46+08:00">
+  <meta itemprop="wordCount" content="2308">
+  <meta itemprop="keywords" content="ARM,Stack Over Flow">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="A Guide to Using ARM Stack Limit Registers">
+  <meta name="twitter:description" content="Desc Text.">
+
+      
+      
+    
+	
+  </head><body class="ma0 avenir bg-near-white production is-page is-page page-p04-using-psp-msp-limit-registers-for-stack-overflow">
+    
+   
+  
+
+  <header>
+    <div class="bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l center items-center justify-between">
+    <a href="/" class="f3 fw2 hover-white white-90 dib no-underline">
+      
+        FulanXisen&#39;s blog
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      <div class="ananke-socials"></div>
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+
+  <article class="page-p04-using-psp-msp-limit-registers-for-stack-overflow flex-l mw7 center ph3 flex-wrap justify-between">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked ttu">
+          
+        Posts
+      </aside><div id="sharing" class="mt3 ananke-socials"></div>
+<h1 class="f1 athelas mt3 mb1">A Guide to Using ARM Stack Limit Registers</h1>
+      
+      <p class="tracked"><strong>Me</strong>
+      </p>
+      
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2023-05-03T14:28:46+08:00">May 3, 2023</time>
+      
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-100-l"><h2 id="a-guide-to-using-arm-stack-limit-registers">A Guide to Using ARM Stack Limit Registers<a href="#a-guide-to-using-arm-stack-limit-registers"></a></h2>
+<p>14 Feb 2023 by <a href="/authors/jonkurtz">Jon Kurtz</a></p>
+<p>堆栈溢出一直是开发过程中的一个严重问题。它们经常没有被检测到，并以难以理解的方式出现。我们已经实施了软件机制来保护它们，但这些机制有限，并且仍不能保护所有条件。</p>
+<p>随着ARM架构的成熟，使用一个百分百可靠的机制来检测溢出难道不是更好吗？</p>
+<p>我们将探索在ARM Cortex-M33架构上使用MSP Limit和PSP Limit寄存器来检测堆栈溢出。我们将在Renesas DA1469x上进行实现，并查看检测堆栈溢出的实际示例。此外，我们还将查看MSPLIM和PSPLIM功能不足的情况下的补充选项。</p>
+<h2 id="table-of-contents">Table of Contents<a href="#table-of-contents"></a></h2>
+<ul>
+<li><a href="#basic-terminology">Basic Terminology</a></li>
+<li><a href="#how-does-it-work">How does it work?</a></li>
+<li><a href="#implementing-the-limit-registers">Implementing the Limit Registers</a>
+<ul>
+<li><a href="#initializing-the-msplim-register">Initializing the MSPLIM Register</a></li>
+<li><a href="#initializing-the-psplim-register">Initializing the PSPLIM Register</a></li>
+<li><a href="#setting-up-the-usagefault_handler">Setting up the UsageFault_Handler</a></li>
+<li><a href="#testing-our-implementation">Testing our Implementation</a></li>
+</ul>
+</li>
+<li><a href="#limitations-and-further-improvements">Limitations and Further Improvements</a>
+<ul>
+<li><a href="#stack-canary">Stack Canary</a></li>
+<li><a href="#freertos-buffer-overflow-protection">FreeRTOS Buffer Overflow protection</a></li>
+<li><a href="#compiler-enabled-overflow-detection">Compiler Enabled Overflow Detection</a></li>
+<li><a href="#gcc-ssp-example">GCC SSP Example</a></li>
+</ul>
+</li>
+<li><a href="#practical-implementations-for-gcc-stack-canaries">Practical implementations for GCC stack Canaries</a></li>
+<li><a href="#closing">Closing</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+<h2 id="basic-terminology">Basic Terminology<a href="#basic-terminology"></a></h2>
+<p>The ARM Cortex-M33 introduced two new stack limit registers, PSPLIM and MSPLIM <a href="#fn:m33-psplim_msplim">1</a>. ARM has included this in its ARMv8 specification, so any processors before this will not have support.</p>
+<h2 id="how-does-it-work">How does it work?<a href="#how-does-it-work"></a></h2>
+<p>这个新特性最妙的地方是它使用起来非常简单，而且可以避免在调试堆栈溢出时进行猜测。</p>
+<p>We need to set the PSPLIM, and the MSPLIM registers to the boundary of the stack.
+If the MSP == MSPLIM register or the PSP == PSPLIM register, a UsageFault is generated. The UsageFault Status Register <a href="#fn:m33-usfr">2</a> contains a sticky bit in position four to indicate that a stack overflow occurred.</p>
+<p>为PSP和MSP提供硬件保护允许操作系统内的灵活性。例如，我们可以在异常和中断期间保护MSP。我们还可以在上下文切换时切换PSPLIM值，以保护每个Task的堆栈。如果你需要关于上下文切换的复习，可以在<a href="2019-10-30-cortex-m-rtos-context-switching.md">这里</a>查看之前的文章。</p>
+<p>If no RTOS is present, we can still monitor the MSP, as this will protect your whole application.</p>
+<h2 id="implementing-the-limit-registers">Implementing the Limit Registers<a href="#implementing-the-limit-registers"></a></h2>
+<p>For an implementation example on the DA1469x, you can access this at Renesas’s Github <a href="#fn:ARMV8_Guards">3</a>.</p>
+<h3 id="initializing-the-msplim-register">Initializing the MSPLIM Register<a href="#initializing-the-msplim-register"></a></h3>
+<p>We use the MSR instruction to write to these registers, which requires us to be in privileged mode. In this case, we will set the MSP Limit in the Reset_Handler:</p>
+<pre><code>Reset_Handler:
+
+        ldr     r0, =__StackLimit
+        add     r0, r0, #dg_configMSP_PADDING
+        msr     MSPLIM, r0
+</code></pre>
+<p>Specifically to the DA1469x, we also need to place the same initialization in the Wakeup_Reset_Handler:</p>
+<pre><code>Wakeup_Reset_Handler:
+
+    ldr     r0, =__StackLimit
+    add     r0, r0, #dg_configMSP_PADDING
+    msr     MSPLIM, r0
+</code></pre>
+<p>DA1469x休眠架构并不适用于所有Cortex-M33架构。初始化后，DA1469x用Wakeup_Reset_Handler替换Reset_Handler来处理Cortex-M33寄存器的恢复。</p>
+<p>There are two definitions provided elsewhere in the project. __StackLimit is defined in vector_table_da1469x.S:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-s" data-lang="s"><span style="display:flex;"><span>    .section .stack
+</span></span><span style="display:flex;"><span>                    .align  <span style="color:#ae81ff">3</span>
+</span></span><span style="display:flex;"><span>                    .globl  __StackTop
+</span></span><span style="display:flex;"><span>                    .globl  __StackLimit
+</span></span><span style="display:flex;"><span>    __StackLimit<span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>                    .space  Stack_Size
+</span></span><span style="display:flex;"><span>                    .size   __StackLimit, . <span style="color:#f92672">-</span> __StackLimit
+</span></span><span style="display:flex;"><span>    __StackTop<span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>                    .size   __StackTop, . <span style="color:#f92672">-</span> __StackTop
+</span></span></code></pre></div><p>This definition helps us find the stack limit for setting the MSP.</p>
+<p>We also added padding to this value. You will find this value in a configuration file:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>    <span style="color:#75715e">#define dg_configMSP_PADDING                    (16)
+</span></span></span></code></pre></div><p>When the MSPLIM is equal to the MSP, the UsageFault exception is triggered. The padding is required to enable pushing items to the stack on Exception entry. If we don’t make space for the fault handler, nested exceptions can occur as the MSPLIM register would be continuously exceeded, usually resulting in a LOCKUP.</p>
+<p>The alternative would be to use a naked function<a href="#fn:gcc_attributes">4</a>. However, I prefer to add padding as it provides more flexibility in the fault handler and allows for Memfault hooks!</p>
+<h3 id="initializing-the-psplim-register">Initializing the PSPLIM Register<a href="#initializing-the-psplim-register"></a></h3>
+<p>On the DA1469x SDK, it makes use of FreeRTOS. The psp is used for each task’s stack so we can set up the PSPLIM register to protect against a task overflow. This implementation is superior to FreeRTOS’s stack overflow check<a href="#fn:1">5</a> for the following reasons:</p>
+<ol>
+<li>
+<p>FreeRTOS only checks the watermark on a context switch. Therefore, if a thread overflows the stack and isn’t yielding, it can corrupt memory, access null pointers, etc.</p>
+</li>
+<li>
+<p>FreeRTOS does not recommend using this feature in production environments because of the context switch overhead<a href="#fn:2">6</a>.</p>
+</li>
+</ol>
+<p>Implementing this is more straightforward. First, we must adjust the PSPLIM during a context switch in FreeRTOS.</p>
+<p>In tasks.c we create the following above vTaskSwitchContext:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>    <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">vTaskSwitchStackGuard</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">volatile</span> <span style="color:#66d9ef">uint32_t</span> end_of_stack_val <span style="color:#f92672">=</span> (<span style="color:#66d9ef">uint32_t</span>)pxCurrentTCB<span style="color:#f92672">-&gt;</span>pxStack;
+</span></span><span style="display:flex;"><span>         <span style="color:#a6e22e">__set_PSPLIM</span>( end_of_stack_val);
+</span></span><span style="display:flex;"><span>    }
+</span></span></code></pre></div><p>Next, we add the call immediately after the context switch:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>    <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">xPortPendSVHandler</span>( <span style="color:#66d9ef">void</span> ){
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;   bl vTaskSwitchContext               </span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;   bl vTaskSwitchStackGuard                        </span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>    }
+</span></span></code></pre></div><p>That’s all we need to do for the PSP.</p>
+<h3 id="setting-up-the-usagefault_handler">Setting up the UsageFault_Handler<a href="#setting-up-the-usagefault_handler"></a></h3>
+<p>All that’s left is doing some work in the UsageFault_Handler. We will declare the UsageFault_Handler in exceptions_handler.s and call a separate handler afterward.</p>
+<p>First, we declare an application handler:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>    __RETAINED_CODE <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">UsageFault_HandlerC</span>(<span style="color:#66d9ef">uint8_t</span> stack_pointer_mask)
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">volatile</span> <span style="color:#66d9ef">uint16_t</span> usage_fault_status_reg __UNUSED;
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>        usage_fault_status_reg <span style="color:#f92672">=</span> (SCB<span style="color:#f92672">-&gt;</span>CFSR <span style="color:#f92672">&amp;</span>         SCB_CFSR_USGFAULTSR_Msk) <span style="color:#f92672">&gt;&gt;</span> SCB_CFSR_USGFAULTSR_Pos;
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">hw_watchdog_freeze</span>();
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span>(usage_fault_status_reg <span style="color:#f92672">&amp;</span> (SCB_CFSR_STKOF_Msk <span style="color:#f92672">&gt;&gt;</span> SCB_CFSR_USGFAULTSR_Pos))
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">while</span>(<span style="color:#ae81ff">1</span>){}
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">while</span> (<span style="color:#ae81ff">1</span>) {}
+</span></span><span style="display:flex;"><span>    }
+</span></span></code></pre></div><p>Next, let’s add our UsageFault_Handler into the exceptions_handler.S:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-s" data-lang="s"><span style="display:flex;"><span>    <span style="color:#75715e">#if (dg_configCODE_LOCATION == NON_VOLATILE_IS_FLASH)</span>
+</span></span><span style="display:flex;"><span>                .section text_retained
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#endif</span>
+</span></span><span style="display:flex;"><span>        .align  <span style="color:#ae81ff">2</span>
+</span></span><span style="display:flex;"><span>        .thumb
+</span></span><span style="display:flex;"><span>        .thumb_func
+</span></span><span style="display:flex;"><span>        .globl  UsageFault_Handler
+</span></span><span style="display:flex;"><span>        .type   UsageFault_Handler, %<span style="color:#66d9ef">function</span>
+</span></span><span style="display:flex;"><span>    UsageFault_Handler<span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>        ldr     r2,<span style="color:#f92672">=</span>UsageFault_HandlerC
+</span></span><span style="display:flex;"><span>        mrs     r1, msp
+</span></span><span style="display:flex;"><span>        mrs     r0, MSPLIM
+</span></span><span style="display:flex;"><span>        cmp     r0, r1
+</span></span><span style="display:flex;"><span>        beq     UsageFault_with_MSP_Overflow
+</span></span><span style="display:flex;"><span>        mrs     r1, psp
+</span></span><span style="display:flex;"><span>        mrs     r0, PSPLIM
+</span></span><span style="display:flex;"><span>        cmp     r0, r1
+</span></span><span style="display:flex;"><span>        beq     UsageFault_with_PSP_Overflow
+</span></span><span style="display:flex;"><span>        mov     r0, <span style="color:#75715e">#0</span>
+</span></span><span style="display:flex;"><span>        bx      r2
+</span></span><span style="display:flex;"><span>    UsageFault_with_PSP_Overflow<span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>        mov     r0, <span style="color:#75715e">#2</span>
+</span></span><span style="display:flex;"><span>        bx      r2
+</span></span><span style="display:flex;"><span>    UsageFault_with_MSP_Overflow<span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>        ldr     r1, <span style="color:#f92672">=</span>__StackLimit
+</span></span><span style="display:flex;"><span>        msr     MSPLIM, r1
+</span></span><span style="display:flex;"><span>        mov     r0, <span style="color:#75715e">#1</span>
+</span></span><span style="display:flex;"><span>        bx      r2
+</span></span></code></pre></div><p>Since the USFR does not indicate if the psp or the msp caused the fault, I decided to add some detection in assembly. I prefer doing this in assembly to ensure no stack pushes before the application handler call.</p>
+<ul>
+<li>0 - General UsageFault</li>
+<li>1 - MSP Overflow</li>
+<li>2 - PSP Overflow (Task Overflow)</li>
+</ul>
+<p>In this function, we are checking the MSP and the PSP registers against the limit registers. If the MSP matches the MSPLIM register, we restore the MSPLIM to <code>__StackLimit</code> (Removing the padding we placed initially) and then call our application fault handler.</p>
+<h3 id="testing-our-implementation">Testing our Implementation<a href="#testing-our-implementation"></a></h3>
+<p>We need a small piece of code to test the implementation. In our example, there is a macro provided for causing an overflow for the MSP or the PSP:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>    <span style="color:#75715e">#define TOGGLE_MSP_OVERFLOW (0)     </span><span style="color:#75715e">//0 Creates an application overflow in FreeRTOS task, 1 creates it on the MSP
+</span></span></span></code></pre></div><p>When the button is pressed, depending on this macro setting, it calls a recursive function either in interrupt context or in our main task.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>    <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">test_overflow_func</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">test_overflow_func</span>();
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">_wkup_key_cb</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        BaseType_t need_switch;
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">/* Clear the WKUP interrupt flag!!! */</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">hw_wkup_reset_interrupt</span>();
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#if TOGGLE_MSP_OVERFLOW &gt; 0
+</span></span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">test_overflow_func</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#endif
+</span></span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">xTaskNotifyFromISR</span>(overFlow_handle, BUTTON_PRESS_NOTIF, eSetBits, <span style="color:#f92672">&amp;</span>need_switch);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">portEND_SWITCHING_ISR</span>(need_switch);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">prvTestOverFlowTask</span>( <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>pvParameters )
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">_wkup_init</span>();
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>        overFlow_handle <span style="color:#f92672">=</span> <span style="color:#a6e22e">xTaskGetCurrentTaskHandle</span>();
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> ( ;; ) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">uint32_t</span> notif;
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">            * Wait on any of the notification bits, then clear them all
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">            */</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">xTaskNotifyWait</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0xFFFFFFFF</span>, <span style="color:#f92672">&amp;</span>notif, portMAX_DELAY);
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">/* Notified from BLE manager? */</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> (notif <span style="color:#f92672">&amp;</span> BUTTON_PRESS_NOTIF) {
+</span></span><span style="display:flex;"><span>                    <span style="color:#a6e22e">test_overflow_func</span>();
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span></code></pre></div><p>After pressing the button, we should see the UsageFault_HandlerC get called in our application code.</p>
+<h2 id="limitations-and-further-improvements">Limitations and Further Improvements<a href="#limitations-and-further-improvements"></a></h2>
+<p>The MSPLIM and PSPLIM registers will help against most stack overflows. Unfortunately, they do not protect us from local buffers corrupting the stack. We will look at the most common; buffer overflow. A buffer overflow occurs when a fixed buffer is allocated on the stack, and the program starts writing to memory addresses outside this boundary. This results in corrupted data and can even change the return address of a function, causing undesired execution of application code.</p>
+<p>There are different ways to handle this condition on other architectures. For example, Zephyr uses the MPU to guard the PSP on each thread. Here, we will discuss stack canaries.</p>
+<h3 id="stack-canary">Stack Canary<a href="#stack-canary"></a></h3>
+<p>Stack Canaries are widely implemented as a means of code hardening. A function will place a value (canary) on the end of a stack frame and will check the value is intact before it returns. This mechanism protects against buffer overflow attacks, where malicious source code could overflow the buffer to redirect the return address to its function.</p>
+<p>This same idea can also be used to guard against buffer overflows in our application.</p>
+<h3 id="freertos-buffer-overflow-protection">FreeRTOS Buffer Overflow protection<a href="#freertos-buffer-overflow-protection"></a></h3>
+<p>FreeRTOS implements a means for overflow detection, as discussed in <a href="#initializing-the-psplim-register">Initializing the PSPLIM Register</a>. This uses the concept of a canary, which will periodically check the value during a context switch.</p>
+<p>FreeRTOS has two different configurations that follow this concept:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>    <span style="color:#75715e">#if( ( configCHECK_FOR_STACK_OVERFLOW &gt; 1 ) &amp;&amp; ( portSTACK_GROWTH &lt; 0 ) )
+</span></span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">#define taskCHECK_FOR_STACK_OVERFLOW()                                                              \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">        {                                                                                                   \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">            const uint32_t * const pulStack = ( uint32_t * ) pxCurrentTCB-&gt;pxStack;                         \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">            const uint32_t ulCheckValue = ( uint32_t ) 0xa5a5a5a5;                                          \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">                                                                                                            \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">            if( ( pulStack[ 0 ] != ulCheckValue ) ||                                                \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">                ( pulStack[ 1 ] != ulCheckValue ) ||                                                \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">                ( pulStack[ 2 ] != ulCheckValue ) ||                                                \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">                ( pulStack[ 3 ] != ulCheckValue ) )                                             \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">            {                                                                                               \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">                vApplicationStackOverflowHook( ( TaskHandle_t ) pxCurrentTCB, pxCurrentTCB-&gt;pcTaskName );   \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">            }                                                                                               \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">        }
+</span></span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#endif </span><span style="color:#75715e">/* #if( configCHECK_FOR_STACK_OVERFLOW &gt; 1 ) */</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span>    <span style="color:#75715e">/*-----------------------------------------------------------*/</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#if( ( configCHECK_FOR_STACK_OVERFLOW &gt; 1 ) &amp;&amp; ( portSTACK_GROWTH &gt; 0 ) )
+</span></span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">#define taskCHECK_FOR_STACK_OVERFLOW()                                                                                              \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">        {                                                                                                                                   \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">        int8_t *pcEndOfStack = ( int8_t * ) pxCurrentTCB-&gt;pxEndOfStack;                                                                     \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">        static const uint8_t ucExpectedStackBytes[] = { tskSTACK_FILL_BYTE, tskSTACK_FILL_BYTE, tskSTACK_FILL_BYTE, tskSTACK_FILL_BYTE,     \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">                                                        tskSTACK_FILL_BYTE, tskSTACK_FILL_BYTE, tskSTACK_FILL_BYTE, tskSTACK_FILL_BYTE,     \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">                                                        tskSTACK_FILL_BYTE, tskSTACK_FILL_BYTE, tskSTACK_FILL_BYTE, tskSTACK_FILL_BYTE,     \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">                                                        tskSTACK_FILL_BYTE, tskSTACK_FILL_BYTE, tskSTACK_FILL_BYTE, tskSTACK_FILL_BYTE,     \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">                                                        tskSTACK_FILL_BYTE, tskSTACK_FILL_BYTE, tskSTACK_FILL_BYTE, tskSTACK_FILL_BYTE };   \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">                                                                                                                                            \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">                                                                                                                                            \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">            pcEndOfStack -= sizeof( ucExpectedStackBytes );                                                                                 \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">                                                                                                                                            \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">            </span><span style="color:#75715e">/* Has the extremity of the task stack ever been written over? */</span><span style="color:#75715e">                                                               \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">            if( memcmp( ( void * ) pcEndOfStack, ( void * ) ucExpectedStackBytes, sizeof( ucExpectedStackBytes ) ) != 0 )                   \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">            {                                                                                                                               \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">                vApplicationStackOverflowHook( ( TaskHandle_t ) pxCurrentTCB, pxCurrentTCB-&gt;pcTaskName );                                   \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">            }                                                                                                                               \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">        }
+</span></span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">#endif </span><span style="color:#75715e">/* #if( configCHECK_FOR_STACK_OVERFLOW &gt; 1 ) */</span><span style="color:#75715e">
+</span></span></span></code></pre></div><p>Both methods check for an expected value at the end of the stack. If this value is overwritten, then vApplicationStackOverflowHook is called, and the application should record and reset. Unfortunately, the periodicity is non-deterministic, as it relies on a context switch. Periodic checks lead to a race condition when a task doesn’t yield in time. You can test this from the previous example by setting the following:</p>
+<pre><code>#define dg_configARMV8_USE_STACK_GUARDS         (0)
+#define #define TOGGLE_MSP_OVERFLOW             (0)
+</code></pre>
+<p>In this example, prvTestOverFlowTask will not yield, so FreeRTOS does not catch this condition.</p>
+<h3 id="compiler-enabled-overflow-detection">Compiler Enabled Overflow Detection<a href="#compiler-enabled-overflow-detection"></a></h3>
+<p>Compilers have started enabling SSP (Stack Smashing Protection) libraries. The library options will allow the compiler to use canaries within function calls. We’re going to look at GCC’s implementation<a href="#fn:5">7</a> specifically. GCC provides the following compiler flags:</p>
+<ul>
+<li>
+<p><strong>-fstack-protector</strong>: This includes functions that call <strong>alloca</strong> and functions with buffers larger than or equal to 8 bytes. The guards are initialized when a function is entered and then checked when the function exits.</p>
+</li>
+<li>
+<p><strong>-fstack-protector-strong</strong> - Like -fstack-protector but includes additional functions to be protected — those that have local array definitions, or have references to local frame addresses.</p>
+</li>
+<li>
+<p><strong>-fstack-protector-all</strong>: all functions are protected.</p>
+</li>
+<li>
+<p><strong>-fstack-protector-explicit</strong>: protects those functions which have the stack_protect attribute</p>
+</li>
+</ul>
+<h3 id="gcc-ssp-example">GCC SSP Example<a href="#gcc-ssp-example"></a></h3>
+<p>Let’s take a look at using the ssp library in GCC. First, let’s add the compiler flag from the previous example: -fstack-protector. The ssp library has two externs that we define as follows.</p>
+<pre><code>uint32_t__stack_chk_guard = 0xDEADBEEF;
+
+void __stack_chk_fail(void) { /* will be called if guard/canary gets corrupted */
+
+    __ASM volatile (&quot;cpsid i&quot; : : : &quot;memory&quot;);
+
+    hw_watchdog_freeze();                           // Stop WDOG
+    while(1){}
+}
+</code></pre>
+<p>Let’s also add the vulnerability in our application and add it to the prvTestOverFlowTask:</p>
+<pre><code>__attribute__((optimize(&quot;O0&quot;))) static uint8_t stack_buffer_test(uint16_t iters)
+{
+    uint8_t buffer[16];
+    uint16_t i;
+
+    for(i = 0; i &lt; iters; i++)
+    {
+            buffer[i] = 0xaa;
+    }
+
+    return buffer[8];
+}
+</code></pre>
+<blockquote>
+<p><strong>NOTE:</strong> __stack_chk_guard should be randomized on startup if using ssp for security reasons.</p>
+</blockquote>
+<p>This function has a fixed buffer to pass a value larger than the local buffer. Let’s add a stack_buffer_test(17) to our task and look at the assembly.</p>
+<pre><code>(gdb) disassemble stack_buffer_test
+Dump of assembler code for function stack_buffer_test:
+   0x0000ccc8 &lt;+0&gt;: push    {r7, lr}
+   0x0000ccca &lt;+2&gt;: sub sp, #32
+   0x0000cccc &lt;+4&gt;: add r7, sp, #0
+   0x0000ccce &lt;+6&gt;: mov r3, r0
+   0x0000ccd0 &lt;+8&gt;: strh    r3, [r7, #6]
+   0x0000ccd2 &lt;+10&gt;:    ldr r3, [pc, #68]   ; (0xcd18 &lt;stack_buffer_test+80&gt;)
+   0x0000ccd4 &lt;+12&gt;:    ldr r3, [r3, #0]
+   0x0000ccd6 &lt;+14&gt;:    str r3, [r7, #28]
+   0x0000ccd8 &lt;+16&gt;:    mov.w   r3, #0
+   0x0000ccdc &lt;+20&gt;:    movs    r3, #0
+   0x0000ccde &lt;+22&gt;:    strh    r3, [r7, #10]
+   0x0000cce0 &lt;+24&gt;:    b.n 0xccf4 &lt;stack_buffer_test+44&gt;
+   0x0000cce2 &lt;+26&gt;:    ldrh    r3, [r7, #10]
+   0x0000cce4 &lt;+28&gt;:    adds    r3, #32
+   0x0000cce6 &lt;+30&gt;:    add r3, r7
+   0x0000cce8 &lt;+32&gt;:    movs    r2, #170    ; 0xaa
+   0x0000ccea &lt;+34&gt;:    strb.w  r2, [r3, #-20]
+   0x0000ccee &lt;+38&gt;:    ldrh    r3, [r7, #10]
+   0x0000ccf0 &lt;+40&gt;:    adds    r3, #1
+   0x0000ccf2 &lt;+42&gt;:    strh    r3, [r7, #10]
+   0x0000ccf4 &lt;+44&gt;:    ldrh    r2, [r7, #10]
+   0x0000ccf6 &lt;+46&gt;:    ldrh    r3, [r7, #6]
+   0x0000ccf8 &lt;+48&gt;:    cmp r2, r3
+   0x0000ccfa &lt;+50&gt;:    bcc.n   0xcce2 &lt;stack_buffer_test+26&gt;
+   0x0000ccfc &lt;+52&gt;:    ldrb    r3, [r7, #20]
+   0x0000ccfe &lt;+54&gt;:    ldr r2, [pc, #24]   ; (0xcd18 &lt;stack_buffer_test+80&gt;)
+   0x0000cd00 &lt;+56&gt;:    ldr r1, [r2, #0]
+   0x0000cd02 &lt;+58&gt;:    ldr r2, [r7, #28]
+   0x0000cd04 &lt;+60&gt;:    eors    r1, r2
+   0x0000cd06 &lt;+62&gt;:    mov.w   r2, #0
+   0x0000cd0a &lt;+66&gt;:    beq.n   0xcd10 &lt;stack_buffer_test+72&gt;
+   0x0000cd0c &lt;+68&gt;:    bl  0xcdb0 &lt;__stack_chk_fail&gt;
+   0x0000cd10 &lt;+72&gt;:    mov r0, r3
+   0x0000cd12 &lt;+74&gt;:    adds    r7, #32
+   0x0000cd14 &lt;+76&gt;:    mov sp, r7
+   0x0000cd16 &lt;+78&gt;:    pop {r7, pc}
+   0x0000cd18 &lt;+80&gt;:    strh    r4, [r6, #44]   ; 0x2c
+   0x0000cd1a &lt;+82&gt;:    movs    r0, #0
+</code></pre>
+<p>Here we can see the compiler loading the canary at the end of the stack frame:</p>
+<pre><code>   0x0000ccd2 &lt;+10&gt;:    ldr r3, [pc, #68]   ; (0xcd18 &lt;stack_buffer_test+80&gt;)
+   0x0000ccd4 &lt;+12&gt;:    ldr r3, [r3, #0]
+   0x0000ccd6 &lt;+14&gt;:    str r3, [r7, #28]
+
+(gdb) x /1a 0xcd18
+0xcd18 &lt;stack_buffer_test+80&gt;:  0x200085b4 &lt;__stack_chk_guard&gt;
+(gdb) x /1a 0x200085b4
+0x200085b4 &lt;__stack_chk_guard&gt;: 0xdeadbeef
+</code></pre>
+<p>Before return, we can see the function checking the canary at the end of the stack frame and calling __stack_chk_fail if the value is corrupted:</p>
+<pre><code>0x0000cd0a &lt;+66&gt;:   beq.n   0xcd10 &lt;stack_buffer_test+72&gt;
+0x0000cd0c &lt;+68&gt;:   bl  0xcdb0 &lt;__stack_chk_fail&gt;
+</code></pre>
+<p>Running the rest of the example should confirm the call of __stack_chk_fail.</p>
+<h2 id="practical-implementations-for-gcc-stack-canaries">Practical implementations for GCC stack Canaries<a href="#practical-implementations-for-gcc-stack-canaries"></a></h2>
+<p>Implementing the ssp library does provide additional overhead in execution time and code space. A function will add 7 additional instructions to make use of this feature. The developer should weigh these factors when choosing which setting to use in GCC.</p>
+<p>My preference would be to develop and test with a stricter setting and more coverage and move to a more relaxed setting when getting closer to production. For example, you could start your development process with -fstack-protector-all, and later relax this to -fstack-protector-strong or -fstack-protector as the code matures.</p>
+<h2 id="closing">Closing<a href="#closing"></a></h2>
+<p>The PSPLIM and the MSPLIM registers are great new features from ARM and a much-needed addition to the architecture. These can also be supplemented with other techniques to fortify your application. We hope you found this helpful, and will be inspired to make use of it in your application. Implementing these features should prevent many development headaches and safeguard your application in the field!</p>
+<h2 id="references">References<a href="#references"></a></h2>
+<ol>
+<li>
+<p><a href="https://developer.arm.com/documentation/100231/0002/">Cortex M33 MSPLIM PSPLIM TRM</a> <a href="#fnref:m33-psplim_msplim">↩</a></p>
+</li>
+<li>
+<p><a href="https://developer.arm.com/documentation/100235/0004/the-cortex-m33-peripherals/system-control-block/configurable-fault-status-register">Cortex M33 USFR</a> <a href="#fnref:m33-usfr">↩</a></p>
+</li>
+<li>
+<p><a href="https://github.com/dialog-semiconductor/BLE_SDK10_examples/tree/main/features/armv8_stack_overflow_guards">DA1469x Github Example</a> <a href="#fnref:ARMV8_Guards">↩</a></p>
+</li>
+<li>
+<p><a href="https://gcc.gnu.org/onlinedocs/gcc-4.3.0/gcc/Function-Attributes.html#Function-Attributes">GCC Attributes</a> <a href="#fnref:gcc_attributes">↩</a></p>
+</li>
+<li>
+<p><a href="https://github.com/FreeRTOS/FreeRTOS-Kernel/blob/a8a9c3ea3e34c10c6818f654883dac3dbdae12d1/tasks.c#L3052">FreeRTOS Kernel Stack Overflow Check</a> <a href="#fnref:1">↩</a></p>
+</li>
+<li>
+<p><a href="https://www.freertos.org/Stacks-and-stack-overflow-checking.html">FreeRTOS Stack Overflow Check</a> <a href="#fnref:2">↩</a></p>
+</li>
+<li>
+<p><a href="https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html">GCC Instrumentation Options</a> <a href="#fnref:5">↩</a></p>
+</li>
+</ol>
+<p><img src="/img/author/jonkurtz.jpg" alt=""> <a href="/authors/jonkurtz">Jon Kurtz</a> is an FAE Connectivity manager at Renesas.<br>
+<a href="https://www.linkedin.com/in/jonathankurtz1"></a></p>
+<ul class="pa0">
+  
+   <li class="list di">
+     <a href="/tags/arm/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">ARM</a>
+   </li>
+  
+   <li class="list di">
+     <a href="/tags/stack-over-flow/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">Stack Over Flow</a>
+   </li>
+  
+</ul>
+
+      
+    </div></article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white white-70 dn dib-ns pv2 ph3 no-underline" href="https://fulanxisen.github.io/" >
+    &copy;  FulanXisen's blog 2026 
+  </a>
+    <div><div class="ananke-socials"></div>
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>

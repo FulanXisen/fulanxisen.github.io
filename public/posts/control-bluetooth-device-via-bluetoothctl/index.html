@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>Control Bluetooth Device via Bluetoothctl | FulanXisen&#39;s blog</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="Bluez and Bluetoothclt in Linux Bluetooth System">
+    <meta name="generator" content="Hugo 0.160.1">
+    
+    
+    
+      <meta name="robots" content="index, follow">
+    
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.efe4d852f731d5d1fbb87718387202a97aafd768cdcdaed0662bbe6982e91824.css" >
+
+
+
+
+    
+
+
+    
+      
+
+    
+
+    
+
+    
+      <link rel="canonical" href="https://fulanxisen.github.io/posts/control-bluetooth-device-via-bluetoothctl/">
+    
+
+    
+    
+    <meta property="og:url" content="https://fulanxisen.github.io/posts/control-bluetooth-device-via-bluetoothctl/">
+  <meta property="og:site_name" content="FulanXisen&#39;s blog">
+  <meta property="og:title" content="Control Bluetooth Device via Bluetoothctl">
+  <meta property="og:description" content="Bluez and Bluetoothclt in Linux Bluetooth System">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:tag" content="Bluetooth">
+    <meta property="article:tag" content="Linux">
+
+  <meta itemprop="name" content="Control Bluetooth Device via Bluetoothctl">
+  <meta itemprop="description" content="Bluez and Bluetoothclt in Linux Bluetooth System">
+  <meta itemprop="wordCount" content="1141">
+  <meta itemprop="keywords" content="Bluetooth,Linux">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Control Bluetooth Device via Bluetoothctl">
+  <meta name="twitter:description" content="Bluez and Bluetoothclt in Linux Bluetooth System">
+
+      
+      
+    
+	
+  </head><body class="ma0 avenir bg-near-white production is-page is-page page-control-bluetooth-device-via-bluetoothctl">
+    
+   
+  
+
+  <header>
+    <div class="bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l center items-center justify-between">
+    <a href="/" class="f3 fw2 hover-white white-90 dib no-underline">
+      
+        FulanXisen&#39;s blog
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      <div class="ananke-socials"></div>
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+
+  <article class="page-control-bluetooth-device-via-bluetoothctl flex-l mw7 center ph3 flex-wrap justify-between">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked ttu">
+          
+        Posts
+      </aside><div id="sharing" class="mt3 ananke-socials"></div>
+<h1 class="f1 athelas mt3 mb1">Control Bluetooth Device via Bluetoothctl</h1>
+      
+      
+      
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-100-l"><h1 id="control-a-bluetooth-device-via-bluetoothctl">Control a Bluetooth Device via Bluetoothctl</h1>
+<hr>
+<h2 id="1-overview">1. Overview<a href="#overview"></a></h2>
+<p>In this tutorial, we’ll learn how to connect to a Bluetooth device via the terminal. This process involves configuring our Bluetooth controller, pairing it to our target device, and then finally connecting.</p>
+<h2 id="2-using-the-bluetoothctlcommand">2. Using the <em>bluetoothctl</em> Command<a href="#using-the-bluetoothctlcommand"></a></h2>
+<p><a href="https://git.kernel.org/pub/scm/bluetooth/bluez.git/about/">BlueZ</a> provides support for Bluetooth functionality and protocols through the <a href="https://www.mankier.com/8/bluetoothd"><em>bluetoothd</em></a> daemon. To interact with <em>bluetoothd</em> from the terminal, we use the <a href="https://manpages.debian.org/stretch/bluez/bluetoothctl.1.en.html"><em>bluetoothctl</em></a> command.</p>
+<p>Let’s begin by running <em>bluetoothctl</em> without any arguments:</p>
+<pre><code>$ bluetoothctl
+Agent registered
+[bluetooth]#
+</code></pre>
+<p>Using <em>bluetoothctl</em> by itself will open the interactive shell. <strong>This is called interactive mode and is where we can run commands to configure our Bluetooth settings.</strong></p>
+<p>To get more information about using interactive mode, let’s run the <em>help</em> command in the interactive shell:</p>
+<p>freestar.config.enabled_slots.push({ placementName: &ldquo;baeldung_leaderboard_mid_1&rdquo;, slotId: &ldquo;baeldung_leaderboard_mid_1&rdquo; });</p>
+<pre><code>[bluetooth]# help
+Menu main:
+Available commands:
+-------------------
+advertise                                         Advertise Options Submenu
+monitor                                           Advertisement Monitor Options Submenu
+...
+</code></pre>
+<p>Running <em>help</em> in the shell will list all available commands for <em>bluetoothctl</em> interactive mode with a short summary of what they do.</p>
+<p>Sometimes, however, we want to run a command outside of the interactive shell. Luckily, there’s also a non-interactive mode in <em>bluetoothctl</em>, which we can use by running an individual command:</p>
+<pre><code>$ bluetoothctl --help
+bluetoothctl ver 5.64
+Usage:
+        bluetoothctl [--options] [commands]
+Options:
+        --agent         Register agent handler: 
+...
+</code></pre>
+<h2 id="3-preparing-our-bluetooth-controller">3. Preparing Our Bluetooth Controller<a href="#preparing-our-bluetooth-controller"></a></h2>
+<p>Now that we know the basics of using <em>bluetoothctl</em>, let’s begin preparing our Bluetooth controller.</p>
+<h3 id="31-configuring-a-bluetooth-controller">3.1. Configuring a Bluetooth Controller<a href="#1-configuring-a-bluetooth-controller"></a></h3>
+<p>Let’s begin to configure our Bluetooth controller by using the <em>show</em> command:</p>
+<pre><code>$ bluetoothctl show 00:1A:7D:DA:71:15
+Controller 00:1A:7D:DA:71:15 (public)
+        Name: pc-m
+        Alias: pc-m
+        Class: 0x00000000
+        Powered: no
+        Discoverable: no
+        DiscoverableTimeout: 0x00000000
+        Pairable: no
+...
+        Discovering: no
+...
+</code></pre>
+<p>Typically, the <em>bluetoothctl show</em> command will output a large amount of information. However, <strong>we just need to ensure our controller is powered-on, discoverable, and pairable</strong>.</p>
+<p>Let’s start by powering on our controller:</p>
+<pre><code>$ bluetoothctl power on
+[CHG] Controller 00:1A:7D:DA:71:15 Class: 0x006c0104
+Changing power on succeeded
+</code></pre>
+<p>We can use the <em>bluetoothctl</em> <em>power on</em> command to power on our controller. <strong>It’s important to power on our Bluetooth controller before modifying other controller attributes.</strong></p>
+<p>Next, we should set the controller to be discoverable and pairable:</p>
+<pre><code>$ bluetoothctl discoverable on
+Changing discoverable on succeeded
+$ bluetoothctl pairable on
+Changing pairable on succeeded
+</code></pre>
+<p>We set the controller to discoverable using the command <em>bluetoothctl discoverable on</em>, and then we use the <em>bluetoothctl pairable on</em> command to set our controller to pairable. The output of these commands shows that they were successful.</p>
+<h3 id="32-using-multiple-bluetooth-controllers">3.2. Using Multiple Bluetooth Controllers<a href="#2-using-multiple-bluetooth-controllers"></a></h3>
+<p>When using multiple Bluetooth controllers, we must ensure we select the correct one before configuring.</p>
+<p>freestar.config.enabled_slots.push({ placementName: &ldquo;baeldung_leaderboard_mid_3&rdquo;, slotId: &ldquo;baeldung_leaderboard_mid_3&rdquo; });</p>
+<p>Let’s use the <em>bluetoothctl list</em> command to get a list of connected Bluetooth controllers:</p>
+<pre><code>$ bluetoothctl list
+Controller 00:1A:7D:DA:71:15 pc-m [default]
+Controller 34:02:86:03:7C:F2 pc-m #2 
+</code></pre>
+<p>This command outputs information about the connected Bluetooth controllers, including their <a href="http://baeldung.com/linux/get-mac-address#what-is-mac-address">MAC addresses</a> and what the default controller is. <strong>The default controller is the controller that will be operated on when we run a command.</strong></p>
+<p><strong>To change the default controller, we use the <em>bluetoothctl</em> <em>select</em> command</strong>, passing the MAC address of the controller we want to connect to:</p>
+<pre><code>[bluetooth]# select 34:02:86:03:7C:F2
+Controller 34:02:86:03:7C:F2 pc-m [default]
+[bluetooth]# list
+Controller 00:1A:7D:DA:71:15 pc-m 
+Controller 34:02:86:03:7C:F2 pc-m #2 [default]
+</code></pre>
+<p>In this example, we used the <em>select</em> command in interactive mode. Non-interactive mode opens up a new session per command, but the interactive shell maintains the same session until exited. <strong>Since the <em>select</em> command only changes the default controller for the current session, it will only work within interactive mode</strong>.</p>
+<p>However, there is a way we can use <em>select</em> in a similar way to non-interactive mode:</p>
+<pre><code>$ bluetoothctl &lt;&lt;&lt; $'select 34:02:86:03:7C:F2\nlist\n'
+...
+[bluetooth]# select 34:02:86:03:7C:F2
+Controller 34:02:86:03:7C:F2 pc-m [default]
+[bluetooth]# list
+Controller 00:1A:7D:DA:71:15 pc-m 
+Controller 34:02:86:03:7C:F2 pc-m #2 [default]
+</code></pre>
+<p>In this example, we use a <a href="/linux/heredoc-herestring#here-string">here-string</a> to redirect our string to stdin. This causes the <em>bluetoothctl</em> shell to treat the string as user input and allows us to automate the process of using interactive mode. Our string can contain as many commands as want as long as we end each with a newline.</p>
+<h2 id="4-connect-a-bluetooth-device-using-the-terminal">4. Connect a Bluetooth Device Using the Terminal<a href="#connect-a-bluetooth-device-using-the-terminal"></a></h2>
+<p>After configuring our Bluetooth controller, we can begin pairing and connecting our device.</p>
+<h3 id="41-pairing-a-bluetooth-device">4.1. Pairing a Bluetooth Device<a href="#1-pairing-a-bluetooth-device"></a></h3>
+<p>Now, we can begin to pair our Bluetooth device to our controller. To start, we should turn our controller to discovery mode:</p>
+<pre><code>$ bluetoothctl scan on
+Discovery started
+[CHG] Controller 00:1A:7D:DA:71:15 Discovering: yes
+^Z
+[1]+  Stopped                 bluetoothctl scan on
+</code></pre>
+<p>To set the controller to discovery mode, we use the <em>bluetoothctl scan on</em> command. However, this command is a <a href="/linux/foreground-background-process#background-and-foreground-jobs">foreground job</a>, which means that we won’t be able to use the terminal until it is finished. So, we put it in the background using Ctrl-Z.</p>
+<p>Now, let’s output the discovered devices using <em>bluetoothctl devices</em>:</p>
+<pre><code>$ bluetoothctl devices
+Device 3C:4D:BE:84:1F:BC MyEarbuds
+Device 60:B7:6E:35:39:0D MyPhone
+</code></pre>
+<p>The output shows us any discovered devices with their names and MAC addresses. <strong>The important part is the MAC address, which we use to pair devices.</strong></p>
+<p>Once we know the MAC address of our device, we can begin pairing. Let’s use the <em>bluetoothctl pair</em> command to pair to our device with the name “MyEarbuds”:</p>
+<pre><code>$ bluetoothctl pair 3C:4D:BE:84:1F:BC
+Attempting to pair with 3C:4D:BE:84:1F:BC
+[CHG] Device 3C:4D:BE:84:1F:BC Connected: yes
+...
+[CHG] Device 3C:4D:BE:84:1F:BC Paired: yes
+Pairing successful
+</code></pre>
+<p>We can pair a device by using the device’s MAC address as an argument to the <em>bluetoothctl pair</em> command. The output will tell us if our device paired successfully or not.</p>
+<p>Now that our device is paired, we don’t need to be in discovery mode anymore. To exit discovery mode, we must end the <em>bluetoothctl scan</em> command that we put into the background:</p>
+<pre><code>$ fg
+bluetoothctl scan on
+^C
+</code></pre>
+<p>To stop a background job, we use the <a href="/linux/kill-background-process#1-fg"><em>fg</em></a> command to bring the <em>bluetoothctl scan</em> into the foreground. Then we press Ctrl-C to stop the program.</p>
+<h3 id="42-connecting-a-bluetooth-device">4.2. Connecting a Bluetooth Device<a href="#2-connecting-a-bluetooth-device"></a></h3>
+<p>Let’s start connecting to our Bluetooth device using <em>bluetoothctl connect</em>:</p>
+<p>freestar.config.enabled_slots.push({ placementName: &ldquo;baeldung_incontent_2&rdquo;, slotId: &ldquo;baeldung_incontent_2&rdquo; });</p>
+<pre><code>$ bluetoothctl connect 3C:4D:BE:84:1F:BC
+Attempting to connect to 3C:4D:BE:84:1F:BC
+...
+Connection successful
+</code></pre>
+<p>We can connect a paired Bluetooth device by using its MAC address with the <em>bluetoothctl</em> <em>connect</em> command. The output will show whether we successfully connected to our device or not.</p>
+<h3 id="43-disconnecting-a-bluetooth-device">4.3. Disconnecting a Bluetooth Device<a href="#3-disconnecting-a-bluetooth-device"></a></h3>
+<p>Likewise, we can disconnect our device using the <em>bluetoothctl disconnect</em> command, again passing the MAC address of the device we want to disconnect:</p>
+<pre><code>$ bluetoothctl disconnect 3C:4D:BE:84:1F:BC
+Attempting to disconnect from 3C:4D:BE:84:1F:BC
+...
+Successful disconnected
+</code></pre>
+<p>The output shows us that our device was successfully disconnected.</p>
+<h2 id="5-overview">5. Overview<a href="#overview-1"></a></h2>
+<p>In this article, we learned how to connect a Bluetooth device via the Linux terminal. We began by learning the basics of the <em>bluetoothctl</em> command. Then, we learned about configuring a Bluetooth controller. Finally, we learned how to pair and then connect a Bluetooth device.</p>
+<ul class="pa0">
+  
+   <li class="list di">
+     <a href="/tags/bluetooth/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">Bluetooth</a>
+   </li>
+  
+   <li class="list di">
+     <a href="/tags/linux/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">Linux</a>
+   </li>
+  
+</ul>
+
+      
+    </div></article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white white-70 dn dib-ns pv2 ph3 no-underline" href="https://fulanxisen.github.io/" >
+    &copy;  FulanXisen's blog 2026 
+  </a>
+    <div><div class="ananke-socials"></div>
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>

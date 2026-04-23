@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>How to debug a HardFault on an ARM Cortex-M MCU | FulanXisen&#39;s blog</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="How to debug a HardFault on an ARM Cortex-M MCU
+20 Nov 2019 by Chris Coleman
+Faults happen on embedded devices all the time for a variety of reasons – ranging from something as simple as a NULL pointer dereference to something more unexpected like running a faulty code path only when in a zero-g environment on the Tower of Terror in Disneyland1. It’s important for any embedded engineer to understand how to debug and resolve this class of issue quickly.">
+    <meta name="generator" content="Hugo 0.160.1">
+    
+    
+    
+      <meta name="robots" content="index, follow">
+    
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.efe4d852f731d5d1fbb87718387202a97aafd768cdcdaed0662bbe6982e91824.css" >
+
+
+
+
+    
+
+
+    
+      
+
+    
+
+    
+
+    
+      <link rel="canonical" href="https://fulanxisen.github.io/posts/p01-cortex-m-fault/">
+    
+
+    
+    
+    <meta property="og:url" content="https://fulanxisen.github.io/posts/p01-cortex-m-fault/">
+  <meta property="og:site_name" content="FulanXisen&#39;s blog">
+  <meta property="og:title" content="How to debug a HardFault on an ARM Cortex-M MCU">
+  <meta property="og:description" content="How to debug a HardFault on an ARM Cortex-M MCU 20 Nov 2019 by Chris Coleman
+Faults happen on embedded devices all the time for a variety of reasons – ranging from something as simple as a NULL pointer dereference to something more unexpected like running a faulty code path only when in a zero-g environment on the Tower of Terror in Disneyland1. It’s important for any embedded engineer to understand how to debug and resolve this class of issue quickly.">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2023-04-27T21:21:59+08:00">
+    <meta property="article:modified_time" content="2023-04-27T21:21:59+08:00">
+
+  <meta itemprop="name" content="How to debug a HardFault on an ARM Cortex-M MCU">
+  <meta itemprop="description" content="How to debug a HardFault on an ARM Cortex-M MCU 20 Nov 2019 by Chris Coleman
+Faults happen on embedded devices all the time for a variety of reasons – ranging from something as simple as a NULL pointer dereference to something more unexpected like running a faulty code path only when in a zero-g environment on the Tower of Terror in Disneyland1. It’s important for any embedded engineer to understand how to debug and resolve this class of issue quickly.">
+  <meta itemprop="datePublished" content="2023-04-27T21:21:59+08:00">
+  <meta itemprop="dateModified" content="2023-04-27T21:21:59+08:00">
+  <meta itemprop="wordCount" content="6527">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="How to debug a HardFault on an ARM Cortex-M MCU">
+  <meta name="twitter:description" content="How to debug a HardFault on an ARM Cortex-M MCU 20 Nov 2019 by Chris Coleman
+Faults happen on embedded devices all the time for a variety of reasons – ranging from something as simple as a NULL pointer dereference to something more unexpected like running a faulty code path only when in a zero-g environment on the Tower of Terror in Disneyland1. It’s important for any embedded engineer to understand how to debug and resolve this class of issue quickly.">
+
+      
+      
+    
+	
+  </head><body class="ma0 avenir bg-near-white production is-page is-page page-p01-cortex-m-fault">
+    
+   
+  
+
+  <header>
+    <div class="bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l center items-center justify-between">
+    <a href="/" class="f3 fw2 hover-white white-90 dib no-underline">
+      
+        FulanXisen&#39;s blog
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      <div class="ananke-socials"></div>
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+
+  <article class="page-p01-cortex-m-fault flex-l mw7 center ph3 flex-wrap justify-between">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked ttu">
+          
+        Posts
+      </aside><div id="sharing" class="mt3 ananke-socials"></div>
+<h1 class="f1 athelas mt3 mb1">How to debug a HardFault on an ARM Cortex-M MCU</h1>
+      
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2023-04-27T21:21:59+08:00">April 27, 2023</time>
+      
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-100-l"><h2 id="how-to-debug-a-hardfault-on-an-arm-cortex-m-mcu">How to debug a HardFault on an ARM Cortex-M MCU<a href="#how-to-debug-a-hardfault-on-an-arm-cortex-m-mcu"></a></h2>
+<p>20 Nov 2019 by <a href="/authors/chris">Chris Coleman</a></p>
+<p>Faults happen on embedded devices all the time for a variety of reasons – ranging from something as simple as a NULL pointer dereference to something more unexpected like running a faulty code path only when in a zero-g environment on the Tower of Terror in Disneyland<a href="#fn:14">1</a>. It’s important for any embedded engineer to understand how to debug and resolve this class of issue quickly.</p>
+<p>In this article, we explain how to debug faults on ARM Cortex-M based devices. In the process, we learn about fault registers, how to automate fault analysis, and figure out ways to recover from some faults without rebooting the MCU. We include practical examples, with a step by step walk-through on how to investigate them.</p>
+<blockquote>
+<p>If you’d rather listen to me present this information and see some demos in action, <a href="https://go.memfault.com/debugging-arm-cortex-m-mcu-webinar?utm_campaign=Debugging%20Cortex%20M%20Webinar&amp;utm_source=blog&amp;utm_medium=Interrupt&amp;utm_term=Debug">watch this webinar recording.</a></p>
+</blockquote>
+<p>Like Interrupt? <a href="https://go.memfault.com/interrupt-subscribe">Subscribe</a> to get our latest posts straight to your mailbox.</p>
+<h2 id="table-of-contents">Table of Contents<a href="#table-of-contents"></a></h2>
+<ul>
+<li><a href="#determining-what-caused-the-fault">Determining What Caused The Fault</a></li>
+<li><a href="#relevant-status-registers">Relevant Status Registers</a>
+<ul>
+<li><a href="#cfsr">Configurable Fault Status Registers (CFSR) - 0xE000ED28</a></li>
+<li><a href="#hardfault-status-register-hfsr---0xe000ed2c">HardFault Status Register (HFSR) - 0xE000ED2C</a></li>
+</ul>
+</li>
+<li><a href="#registers-prior-to-exception">Recovering the Call Stack</a></li>
+<li><a href="#automating-the-analysis">Automating the Analysis</a>
+<ul>
+<li><a href="#halting--determining-core-register-state">Halting &amp; Determining Core Register State</a></li>
+<li><a href="#fault-register-analyzers">Fault Register Analyzers</a></li>
+<li><a href="#postmortem-analysis">Postmortem Analysis</a></li>
+</ul>
+</li>
+<li><a href="#recovering-from-a-fault">Recovering From A Fault</a></li>
+<li><a href="#examples">Examples</a>
+<ul>
+<li><a href="#bad-pc-mpu-fault">eXecute Never Fault</a></li>
+<li><a href="#bad-address-read-example">Bad Address Read</a></li>
+<li><a href="#coprocessor-fault-example">Coprocessor Fault</a></li>
+<li><a href="#imprecise-error-code-example">Imprecise Fault</a></li>
+<li><a href="#stkerr-example">Fault Entry Exception</a></li>
+<li><a href="#usage-fault-recovery-example">Recovering from a UsageFault <strong>without</strong> a SYSRESET</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="determining-what-caused-the-fault">Determining What Caused The Fault<a href="#determining-what-caused-the-fault"></a></h2>
+<p>All MCUs in the Cortex-M series have several different pieces of state which can be analyzed when a fault takes place to trace down what went wrong.</p>
+<p>First we will explore the dedicated fault status registers that are present on all Cortex-M MCUs except the Cortex-M0.</p>
+<p>If you are trying to debug a Cortex-M0, you can skip ahead to the <a href="#registers-prior-to-exception">next section</a> where we discuss how to recover the core register state and instruction being executed at the time of the exception.</p>
+<blockquote>
+<p>NOTE: If you already know the state to inspect when a fault occurs, you may want to skip ahead to the section about how to <a href="#automating-the-analysis">automate the analysis</a>.</p>
+</blockquote>
+<h2 id="relevant-status-registers">Relevant Status Registers<a href="#relevant-status-registers"></a></h2>
+<h3 id="configurable-fault-status-registers-cfsr---0xe000ed28">Configurable Fault Status Registers (CFSR) - 0xE000ED28<a href="#cfsr"></a></h3>
+<p>This 32 bit register contains a summary of the fault(s) which took place and resulted in the exception. The register is comprised of three different status registers – UsageFault, BusFault &amp; MemManage Fault Status Registers:</p>
+<p><img src="/posts/p01/cfsr.png" alt=""></p>
+<p>The register can be accessed via a 32 bit read at <code>0xE000ED28</code> or each register can be read individually. For example, in GDB it would look something like this:</p>
+<ul>
+<li>Entire CFSR - <code>print/x *(uint32_t *) 0xE000ED28</code></li>
+<li><a href="#ufsr">UsageFault Status Register (UFSR)</a> - <code>print/x *(uint16_t *)0xE000ED2A</code></li>
+<li><a href="#bfsr">BusFault Status Register (BFSR)</a> - <code>print/x *(uint8_t *)0xE000ED29</code></li>
+<li><a href="#mmfsr">MemManage Status Register (MMFSR)</a> - <code>print/x *(uint8_t *)0xE000ED28</code></li>
+</ul>
+<blockquote>
+<p>NOTE: If multiple faults have occurred, bits related to several faults may be set. Fields are only cleared by a system reset or by writing a 1 to them.</p>
+</blockquote>
+<h4 id="usagefault-status-register-ufsr---0xe000ed2a">UsageFault Status Register (UFSR) - 0xE000ED2A<a href="#ufsr"></a></h4>
+<p>This register is a 2 byte register which summarizes any faults that are not related to memory access failures, such as executing invalid instructions or trying to enter invalid states.</p>
+<p><img src="/posts/p01/ufsr.png" alt=""></p>
+<p>where,</p>
+<ul>
+<li><code>DIVBYZERO</code> - Indicates a divide instruction was executed where the denominator was zero. This fault is <a href="#configurable-usage-faults">configurable</a>.</li>
+<li><code>UNALIGNED</code> - Indicates an unaligned access operation occurred. Unaligned multiple word accesses, such as accessing a <code>uint64_t</code> that is not <code>8-byte</code> aligned, will <em>always</em> generate this fault. With the exception of Cortex-M0 MCUs, whether or not unaligned accesses below 4 bytes generate a fault is also <a href="#configurable-usage-faults">configurable</a>.</li>
+<li><code>NOCP</code> - Indicates that a Cortex-M coprocessor instruction was issued but the coprocessor was disabled or not present. One common case where this fault happens is when code is compiled to use the Floating Point extension (<code>-mfloat-abi=hard</code> <code>-mfpu=fpv4-sp-d16</code>) but the coprocessor was not <a href="/blog/cortex-m-rtos-context-switching#fpu-config-options">enabled</a> on boot.</li>
+<li><code>INVPC</code> - Indicates an integrity check failure on <code>EXC_RETURN</code>. We’ll explore an example <a href="#coprocessor-fault-example">below</a>. <a href="/blog/cortex-m-rtos-context-switching#exc-return-info"><code>EXC_RETURN</code></a> is the value branched to upon return from an exception. If this fault flag is set, it means a reserved <code>EXC_RETURN</code> value was used on exception exit.</li>
+<li><code>INVSTATE</code> - Indicates the processor has tried to execute an instruction with an invalid <em>Execution Program Status Register</em> (<strong>EPSR</strong>) value. Among other things the ESPR tracks whether or not the processor is in thumb mode state. Instructions which use “interworking addresses”<a href="#fn:1">2</a> (<code>bx</code> &amp; <code>blx</code> or <code>ldr</code> &amp; <code>ldm</code> when loading a <code>pc</code>-relative value) must set <code>bit[0]</code> of the instruction to 1 as this is used to update <code>ESPR.T</code>. If this rule is violated, a <code>INVSTATE</code> exception will be generated. When writing C code, the compiler will take care of this automatically, but this is a common bug which can arise when hand-writing assembly.</li>
+<li><code>UNDEFINSTR</code> - Indicates an undefined instruction was executed. This can happen on exception exit if the stack got corrupted. A compiler may emit undefined instructions as well for code paths that <em>should</em> be unreachable.</li>
+</ul>
+<h5 id="configurable-usagefault">Configurable UsageFault<a href="#configurable-usage-faults"></a></h5>
+<p>It is worth noting that some classes of UsageFaults are configurable via the <em>Configuration and Control Register</em> (<strong>CCR</strong>) located at address <code>0xE000ED14</code>.</p>
+<ul>
+<li>Bit 4 (<code>DIV_0_TRP</code>) - Controls whether or not divide by zeros will trigger a fault.</li>
+<li>Bit 3 (<code>UNALIGN_TRP</code>) - Controls whether or not unaligned accesses will always generate a fault.</li>
+</ul>
+<blockquote>
+<p>NOTE: On reset both of these optional faults are disabled. It is generally a good idea to enable <code>DIV_0_TRP</code> to catch mathematical errors in your code.</p>
+</blockquote>
+<h4 id="busfault-status-register-bfsr---0xe000ed29">BusFault Status Register (BFSR) - 0xE000ED29<a href="#bfsr"></a></h4>
+<p>This register is a 1 byte register which summarizes faults related to instruction prefetch or memory access failures.</p>
+<p><img src="/posts/p01/bfsr.png" alt=""></p>
+<ul>
+<li><code>BFARVALID</code> - Indicates that the <em>Bus Fault Address Register</em> (<strong>BFAR</strong>), a 32 bit register located at <code>0xE000ED38</code>, holds the address which triggered the fault. We’ll walk through an example using this info <a href="#bad-address-read-example">below</a>.</li>
+<li><code>LSPERR</code> &amp; <code>STKERR</code> - Indicates that a fault occurred during lazy state preservation or during exception entry, respectively. Both are situations where the hardware is <a href="/blog/cortex-m-rtos-context-switching#context-state-stacking">automatically saving state on the stack</a>. One way this error may occur is if the stack in use overflows off the valid RAM address range while trying to service an exception. We’ll go over an example <a href="#stkerr-example">below</a>.</li>
+<li><code>UNSTKERR</code> - Indicates that a fault occurred trying to return from an exception. This typically arises if the stack was corrupted while the exception was running or the stack pointer was changed and its contents were not initialized correctly.</li>
+<li><code>IMPRECISERR</code> - This flag is <em>very</em> important. It tells us whether or not the hardware was able to determine the exact location of the fault. We will explore some debug strategies when this flag is set in the <a href="#imprecise-error-debug">next section</a> and walk through a code exampe <a href="#imprecise-error-code-example">below</a>.</li>
+<li><code>PRECISERR</code> - Indicates that the instruction which was executing prior to exception entry triggered the fault.</li>
+</ul>
+<h5 id="imprecise-bus-error-debug-tips">Imprecise Bus Error Debug Tips<a href="#imprecise-error-debug"></a></h5>
+<p>Imprecise errors are one of the hardest classes of faults to debug. They result asynchronously to instruction execution flow. This means the registers stacked on exception entry will <strong>not</strong> point to the code that caused the exception.</p>
+<p>Instruction fetches and data loads should always generate <em>synchronous</em> faults for Cortex-M devices and be precise. Conversely, store operations can generate <em>asynchronous</em> faults. This is because writes will sometimes be buffered prior to being flushed to prevent pipeline stalls so the program counter will advance before the actual data store completes.</p>
+<p>When debugging an imprecise error, you will want to inspect the code around the area reported by the exception for a store that looks suspicious. If the MCU has support for the ARM <em>Embedded Trace Macrocell</em> (<strong>ETM</strong>), the history of recently executed instructions can be viewed by some debuggers<a href="#fn:8">3</a>.</p>
+<h5 id="auxiliary-control-register-actlr---0xe000e008">Auxiliary Control Register (ACTLR) - 0xE000E008<a href="#auxiliary-control-register-actlr---0xe000e008"></a></h5>
+<p>This register allows for some hardware optimizations or features to be disabled typically at the cost of overall performance or interrupt latency. The exact configuration options available are specific to the Cortex-M implementation being used.</p>
+<p>For the Cortex M3 &amp; Cortex M4 <strong>only</strong>, there is a trick to make all <code>IMPRECISE</code> accesses <code>PRECISE</code> by disabling any write buffering. This can be done by setting bit 1 (<code>DISDEFWBUF</code>) of the register to 1.</p>
+<p>For the Cortex M7, there is <strong>no</strong> way to force all stores to be synchronous / precise.</p>
+<h5 id="auxiliary-bus-fault-status-register-abfsr---0xe000efa8">Auxiliary Bus Fault Status Register (ABFSR) - 0xE000EFA8<a href="#auxiliary-bus-fault-status-register-abfsr---0xe000efa8"></a></h5>
+<p>This register <strong>only</strong> exists for Cortex-M7 devices. When an <code>IMPRECISE</code> error occurs it will at least give us an indication of what memory bus the fault occurred on<a href="#fn:7">4</a>:</p>
+<p><img src="/posts/p01/abfsr.png" alt=""></p>
+<p>A full discussion of memory interfaces is outside the scope of this article but more details can be found in the reference manual <a href="#fn:7">4</a>.</p>
+<h4 id="memmanage-status-register-mmfsr---0xe000ed28">MemManage Status Register (MMFSR) - 0xE000ED28<a href="#mmfsr"></a></h4>
+<p>This register reports Memory Protection Unit faults.</p>
+<p>Typically MPU faults will only trigger if the MPU has been <a href="/blog/fix-bugs-and-secure-firmware-with-the-mpu">configured and enabled</a> by the firmware. However, there are a few memory access errors that will always result in a MemManage fault – such as trying to execute code from the system address range (<code>0xExxx.xxxx</code>).</p>
+<p>The layout of the register looks like this:</p>
+<p><img src="/posts/p01/mmfsr.png" alt=""></p>
+<p>where,</p>
+<ul>
+<li><code>MMARVALID</code> - Indicates that the <em>MemManage Fault Address Register</em> (<strong>MMFAR</strong>), a 32 bit register located at <code>0xE000ED34</code>, holds the address which triggered the MemManage fault.</li>
+<li><code>MLSPERR</code> &amp; <code>MSTKERR</code> - Indicates that a MemManage fault occurred during lazy state preservation or exception entry, respectively. For example, this could happen if an MPU region is being used to detect <a href="/blog/fix-bugs-and-secure-firmware-with-the-mpu">stack overflows</a>.</li>
+<li><code>MUNSTKERR</code> - Indicates that a fault occurred while returning from an exception</li>
+<li><code>DACCVIOL</code> - Indicates that a data access triggered the MemManage fault.</li>
+<li><code>IACCVIOL</code> - Indicates that an attempt to execute an instruction triggered an MPU or Execute Never (XN) fault. We’ll explore an example <a href="#bad-pc-mpu-fault">below</a>.</li>
+</ul>
+<h3 id="hardfault-status-register-hfsr---0xe000ed2c">HardFault Status Register (HFSR) - 0xE000ED2C<a href="#hardfault-status-register-hfsr---0xe000ed2c"></a></h3>
+<p>This registers explains the reason a HardFault exception was triggered.</p>
+<p><img src="/posts/p01/hfsr.png" alt=""></p>
+<p>There’s not too much information in this register but we will go over the fields real quickly</p>
+<ul>
+<li><code>DEBUGEVT</code> - Indicates that a debug event (i.e executing a breakpoint instruction) occurred while the debug subsystem was not enabled</li>
+<li><code>FORCED</code> - This means a configurable fault (i.e. the fault types we discussed in previous sections) was escalated to a HardFault, either because the configurable fault handler was not enabled or a fault occurred within the handler.</li>
+<li><code>VECTTBL</code> - Indicates a fault occurred because of an issue reading from an address in the vector table. This is pretty atypical but could happen if there is a bad address in the vector table and an unexpected interrupt fires.</li>
+</ul>
+<h2 id="recovering-the-call-stack">Recovering the Call Stack<a href="#registers-prior-to-exception"></a></h2>
+<p>To fix a fault, we will want to determine what code was running when the fault occurred. To accomplish this, we need to recover the register state at the time of exception entry.</p>
+<p>If the fault is readily reproducible and we have a debugger attached to the board, we can manually add a breakpoint for the function which handles the exception. In GDB this will look something like</p>
+<pre><code>(gdb) break HardFault_Handler
+</code></pre>
+<p>Upon exception entry some registers will always be automatically saved on the stack. Depending on whether or not an FPU is in use, either a <a href="/blog/cortex-m-rtos-context-switching#basic-context-state-frame">basic</a> or <a href="/blog/cortex-m-rtos-context-switching#extended-context-state-frame">extended</a> stack frame will be pushed by hardware.</p>
+<p>Regardless, the hardware will <em>always</em> push the same core set of registers to the very top of the stack which was active prior to entering the exception. ARM Cortex-M devices have <a href="/blog/cortex-m-rtos-context-switching#stack-pointers-and-usage">two stack pointers</a>, <code>msp</code> &amp; <code>psp</code>. Upon exception entry, the active stack pointer is encoded in bit 2 of the <code>EXC_RETURN</code> value pushed to the link register. If the bit is set, the <code>psp</code> was active prior to exception entry, else the <code>msp</code> was active.</p>
+<p>Let’s look at the state when we break in <code>HardFault_Handler</code> for a pathological example:</p>
+<pre><code>int illegal_instruction_execution(void) {
+  int (*bad_instruction)(void) = (void *)0xE0000000;
+  return bad_instruction();
+}
+
+
+(gdb) p/x $lr
+$4 = 0xfffffffd
+
+# psp was active prior to exception if bit 2 is set
+# otherwise, the msp was active
+(gdb) p/x $lr&amp;(1&lt;&lt;2)
+$5 = 0x4
+
+# First eight values on stack will always be:
+# r0, r1, r2, r3, r12, LR, pc, xPSR
+(gdb) p/a *(uint32_t[8] *)$psp
+$16 = {
+  0x0 &lt;g_pfnVectors&gt;,
+  0x200003c4 &lt;ucHeap+604&gt;,
+  0x10000000,
+  0xe0000000,
+  0x200001b8 &lt;ucHeap+80&gt;,
+  0x61 &lt;illegal_instruction_execution+16&gt;,
+  0xe0000000,
+  0x80000000
+}
+</code></pre>
+<p>Offset 6 and 7 in the array dumped hold the LR (<code>illegal_instruction_execution</code>) &amp; PC (<code>0xe0000000</code>) so we now can see exactly where the fault originated!</p>
+<h2 id="faults-from-faults">Faults from Faults<img src="#faults-from-faults" alt=""></h2>
+<p>The astute observer might wonder what happens when a new fault occurs in the code dealing with a fault. If you have enabled configurable fault handlers (i.e MemManage, BusFault, or UsageFault), a fault generated in these handlers will trigger a HardFault.</p>
+<p>Once in the HardFault Handler, the ARM Core is operating at a non-configurable priority level, -1. At this level or above, a fault will put the processor in an unrecoverable state where a reset is expected. This state is known as <strong>Lockup</strong>.</p>
+<p>Typically, the processor will automatically reset upon entering lockup but this is not a requirement per the specification. For example, you may have to enable a hardware watchdog for a reset to take place. It’s worth double checking the reference manual for the MCU being used for clarification.</p>
+<p>When a debugger is attached, lockup often has a different behavior. For example, on the NRF52840, “Reset from CPU lockup is disabled if the device is in debug interface mode”<a href="#fn:11">5</a>.</p>
+<p>When a lockup happens, the processor will repeatedly fetch the same fixed instruction, <code>0xFFFFFFFE</code> or the instruction which triggered the lockup, in a loop until a reset occurs.</p>
+<blockquote>
+<p>Fun Fact: Whether or not some classes of MemManage or BusFaults trigger a fault from an exception is actually configurable via the MPU_CTRL.HFNMIENA &amp; CCR.BFHFNMIGN register fields, respectively.</p>
+</blockquote>
+<h2 id="automating-the-analysis">Automating the Analysis<a href="#automating-the-analysis"></a></h2>
+<p>At this point we have gone over all the pieces of information which can be manually examined to determine what caused a fault. While this might be fun the first couple times, it can become a tiresome and error prone process if you wind up doing it often. In the following sections we’ll explore how we can automate this analysis!</p>
+<h3 id="halting--determining-core-register-state">Halting &amp; Determining Core Register State<a href="#halting--determining-core-register-state"></a></h3>
+<p>What if we are trying to debug an issue that is <strong>not</strong> easy to reproduce? Even if we have a debugger attached, useful state may be overwritten before we have a chance to halt the debugger and take a look.</p>
+<p>The first thing we can do is to programmatically trigger a breakpoint when the system faults:</p>
+<pre><code>// NOTE: If you are using CMSIS, the registers can also be
+// accessed through CoreDebug-&gt;DHCSR &amp; CoreDebug_DHCSR_C_DEBUGEN_Msk
+#define HALT_IF_DEBUGGING()                              \
+  do {                                                   \
+    if ((*(volatile uint32_t *)0xE000EDF0) &amp; (1 &lt;&lt; 0)) { \
+      __asm(&quot;bkpt 1&quot;);                                   \
+    }                                                    \
+} while (0)
+</code></pre>
+<p><a href="#registers-prior-to-exception">Above</a>, we discussed how to hand unroll the register state prior to the exception taking place. Let’s explore how we can instrument the code to make this a less painful process.</p>
+<p>First, we can easily define a C struct to represent the register stacking:</p>
+<pre><code>typedef struct __attribute__((packed)) ContextStateFrame {
+  uint32_t r0;
+  uint32_t r1;
+  uint32_t r2;
+  uint32_t r3;
+  uint32_t r12;
+  uint32_t lr;
+  uint32_t return_address;
+  uint32_t xpsr;
+} sContextStateFrame;
+</code></pre>
+<p>We can determine the stack pointer that was active prior to the exception using a small assembly shim that applies the logic discussed <a href="#determine-pre-exception-sp">above</a> and passes the active stack pointer as an argument into <code>my_fault_handler_c</code>:</p>
+<pre><code>#define HARDFAULT_HANDLING_ASM(_x)               \
+  __asm volatile(                                \
+      &quot;tst lr, #4 \n&quot;                            \
+      &quot;ite eq \n&quot;                                \
+      &quot;mrseq r0, msp \n&quot;                         \
+      &quot;mrsne r0, psp \n&quot;                         \
+      &quot;b my_fault_handler_c \n&quot;                  \
+                                                 )
+</code></pre>
+<p>Finally, we can put together <code>my_fault_handler_c</code> that looks something like:</p>
+<pre><code>// Disable optimizations for this function so &quot;frame&quot; argument
+// does not get optimized away
+__attribute__((optimize(&quot;O0&quot;)))
+void my_fault_handler_c(sContextStateFrame *frame) {
+  // If and only if a debugger is attached, execute a breakpoint
+  // instruction so we can take a look at what triggered the fault
+  HALT_IF_DEBUGGING();
+
+  // Logic for dealing with the exception. Typically:
+  //  - log the fault which occurred for postmortem analysis
+  //  - If the fault is recoverable,
+  //    - clear errors and return back to Thread Mode
+  //  - else
+  //    - reboot system
+}
+</code></pre>
+<p>Now when a fault occurs and a debugger is attached, we will automatically hit a breakpoint and be able to look at the register state! Re-examining our <code>illegal_instruction_execution</code> example we have:</p>
+<pre><code>0x00000244 in my_fault_handler_c (frame=0x200005d8 &lt;ucHeap+1136&gt;) at ./cortex-m-fault-debug/startup.c:94
+94	  HALT_IF_DEBUGGING();
+(gdb) p/a *frame
+$18 = {
+  r0 = 0x0 &lt;g_pfnVectors&gt;,
+  r1 = 0x200003c4 &lt;ucHeap+604&gt;,
+  r2 = 0x10000000,
+  r3 = 0xe0000000,
+  r12 = 0x200001b8 &lt;ucHeap+80&gt;,
+  lr = 0x61 &lt;illegal_instruction_execution+16&gt;,
+  return_address = 0xe0000000,
+  xpsr = 0x80000000
+}
+</code></pre>
+<p>Furthermore, we now have a variable we can read stack info from and a C function we can easily extend for postportem analysis!</p>
+<h3 id="fault-register-analyzers">Fault Register Analyzers<a href="#fault-register-analyzers"></a></h3>
+<h4 id="instrumenting-the-code">Instrumenting the code<a href="#instrumenting-the-code"></a></h4>
+<p>Many Real Time Operating Systems (<strong>RTOS</strong>) targetting Cortex-M devices will add options to dump verbose fault register information to the console upon crash. Some examples include Arm Mbed OS<a href="#fn:2">6</a> and Zephyr<a href="#fn:3">7</a>. For example, with Zephyr, the <code>illegal_instruction_execution()</code> crash looks like:</p>
+<pre><code>***** MPU FAULT *****
+  Instruction Access Violation
+***** Hardware exception *****
+Current thread ID = 0x20000074
+Faulting instruction address = 0xe0000000
+Fatal fault in thread 0x20000074! Aborting.
+</code></pre>
+<p>This approach has a couple notable limitations:</p>
+<ul>
+<li>It bloats the code &amp; data size of the binary image and consequently often gets turned off.</li>
+<li>It can increase the stack size requirements for the fault handler (due to printf calls)</li>
+<li>It requires a firmware update to improve or fix issues with the analyzers</li>
+<li>It requires a console session be active to see what fault occurred. Furthermore, this can be flaky if the system is in a crashed state.</li>
+</ul>
+<h4 id="debugger-plugins">Debugger Plugins<a href="#debugger-plugins"></a></h4>
+<p>Many embedded IDEs expose a system view that can be used to look at registers. The registers will often be decoded into human readable descriptions. These implementations typically leverage the CMSIS <em>System View Description</em> (<strong>SVD</strong>) format<a href="#fn:4">8</a>, a standardized XML file format for describing the memory mapped registers in an ARM MCU. Most silicon vendors expose this information on their own website, ARM’s website<a href="#fn:5">9</a>, or provide the files upon request.</p>
+<p>You can even load these files in GDB using PyCortexMDebug<a href="#fn:6">10</a>, a <a href="/blog/automate-debugging-with-gdb-python-api#getting-started-with-gdb-python">GDB python</a> script .</p>
+<p>To use the utility, all you need to do is update your <code>.gdbinit</code> to use PyPi packages from your environment (instructions <a href="/blog/using-pypi-packages-with-GDB#3-append-syspath-to-gdbs-python">here</a>) and then run:</p>
+<pre><code>$ git clone git@github.com:bnahill/PyCortexMDebug.git
+# Check out Python 2 compatible code
+$ git checkout 77af54e
+$ cd PyCortexMDebug
+$ python setup.py install
+</code></pre>
+<p>When you next start gdb, you can source the <code>svd_gdb.py</code> script and use it to start inspecting registers. Here’s some output for the svd plugin we will use in the examples <a href="#svd-usage-example">below</a>:</p>
+<pre><code>(gdb) source cmdebug/svd_gdb.py
+(gdb) svd_load cortex-m4-scb.svd
+(gdb) svd
+Available Peripherals:
+    ...
+	SCB:        System control block
+    ...
+(gdb) svd SCB
+Registers in SCB:
+    ...
+	CFSR_UFSR_BFSR_MMFSR:      524288  Configurable fault status register
+    ...
+(gdb) svd SCB CFSR_UFSR_BFSR_MMFSR
+Fields in SCB CFSR_UFSR_BFSR_MMFSR:
+	IACCVIOL:     0  Instruction access violation flag
+	DACCVIOL:     0  Data access violation flag
+	MUNSTKERR:    0  Memory manager fault on unstacking for a return from exception
+	MSTKERR:      0  Memory manager fault on stacking for exception entry.
+	MLSPERR:      0
+	MMARVALID:    0  Memory Management Fault Address Register (MMAR) valid flag
+	IBUSERR:      1  Instruction bus error
+	PRECISERR:    0  Precise data bus error
+	IMPRECISERR:  0  Imprecise data bus error
+	UNSTKERR:     0  Bus fault on unstacking for a return from exception
+	STKERR:       0  Bus fault on stacking for exception entry
+	LSPERR:       0  Bus fault on floating-point lazy state preservation
+	BFARVALID:    0  Bus Fault Address Register (BFAR) valid flag
+	UNDEFINSTR:   0  Undefined instruction usage fault
+	INVSTATE:     1  Invalid state usage fault
+	INVPC:        0  Invalid PC load usage fault
+	NOCP:         0  No coprocessor usage fault.
+	UNALIGNED:    0  Unaligned access usage fault
+	DIVBYZERO:    0  Divide by zero usage fault
+</code></pre>
+<h3 id="postmortem-analysis">Postmortem Analysis<a href="#postmortem-analysis"></a></h3>
+<p>The previous two approaches are only helpful if we have a debug or physical connection to the device. Once the product has shipped and is out in the field these strategies will not help to triage what went wrong on devices.</p>
+<p>One approach is to simply try and reproduce the issue on site. This is a guessing game (are you actually reproducing the same issue the customer hit?), can be a huge time sink and in some cases is not even particularly feasible<a href="#fn:14">1</a>.</p>
+<p>Another strategy is to log the fault register and stack values to persistent storage and periocially collect or push the error logs. On the server side, the register values can be decoded and addresses can be symbolicated to try to root cause the crash.</p>
+<p>Alternatively, an end-to-end firmware error analysis system, such as <a href="https://memfault.com/features/error-analysis.html?utm_source=interrupt&amp;utm_medium=link&amp;utm_campaign=cortex-m-faults">Memfault</a>, can be used to automatically collect, transport, deduplicate and surface the faults and crashes happening in the field. Here is some example output from Memfault for the bad memory read example we will walk through <a href="#bad-address-read-example">below</a>:</p>
+<p><img src="/posts/p01/memfault-fault-analyzer.png" alt=""></p>
+<h2 id="recovering-from-a-fault">Recovering From A Fault<a href="#recovering-from-a-fault"></a></h2>
+<blockquote>
+<p>DISCLAIMER: Typically when a fault occurs, the best thing to do is reset the MCU since it’s hard to be certain what parts of the MCU were corrupted as part of the fault (embedded MCUs don’t offer a MMU like you would find on a bigger processors).</p>
+</blockquote>
+<p>Occasionally, you may want to recover the system from a fault without rebooting it. For example, maybe you have one RTOS task isolated by the MPU that just needs to be restarted.</p>
+<p>Let’s quickly explore how we could implement a recovery mechanism that puts a RTOS task which experience a UsageFault into an idle loop and reboots the system otherwise.</p>
+<p>We will use the <a href="/blog/arm-cortex-m-exceptions-and-nvic#application-interrupt-and-reset-control-register-aircr---0xe000ed0c">Application Interrupt and Reset Control Register</a> to reset the device if the fault is unrecoverable. We can easily extend <code>my_fault_handler_c</code> from <a href="#my-fault-handler-c">above</a>:</p>
+<pre><code>void my_fault_handler_c(sContextStateFrame *frame) {
+[...]
+  volatile uint32_t *cfsr = (volatile uint32_t *)0xE000ED28;
+  const uint32_t usage_fault_mask = 0xffff0000;
+  const bool non_usage_fault_occurred =
+      (*cfsr &amp; ~usage_fault_mask) != 0;
+  // the bottom 8 bits of the xpsr hold the exception number of the
+  // executing exception or 0 if the processor is in Thread mode
+  const bool faulted_from_exception = ((frame-&gt;xpsr &amp; 0xFF) != 0);
+
+  if (faulted_from_exception || non_usage_fault_occurred) {
+    // For any fault within an ISR or non-usage faults
+    // let's reboot the system
+    volatile uint32_t *aircr = (volatile uint32_t *)0xE000ED0C;
+    *aircr = (0x05FA &lt;&lt; 16) | 0x1 &lt;&lt; 2;
+    while (1) { } // should be unreachable
+  }
+[...]
+}
+</code></pre>
+<p>Now, the interesting part, how do we clean up our state and return to normal code from the HardFault handler?!</p>
+<p>There’s a few things we will need to do:</p>
+<ul>
+<li>Clear any logged faults from the <code>CFSR</code> by writing 1 to each bit which is set.</li>
+<li>Change the function we return to so we idle the task. In the example case it’s <code>recover_from_task_fault</code>.</li>
+<li>Scribble a known pattern over the <code>lr</code>. The function we are returning to will need to take special action (i.e like deleting the task or entering a <code>while(1)</code> loop). It can’t just exit and branch to where we were before so we <em>want</em> to fault if this is attempted.</li>
+<li>Reset the <code>xpsr</code>. Among other things the xpsr tracks the state of previous comparison instructions which were run and whether or not we are in the middle of a “If-Then” instruction block. The only bit that needs to remain set is the “T” field (bit 24) indicating the processor is in thumb mode<a href="#fn:15">11</a>.</li>
+</ul>
+<p>This winds up looking like:</p>
+<pre><code>  // Clear any logged faults from the CFSR
+  *cfsr |= *cfsr;
+  // the instruction we will return to when we exit from the exception
+  frame-&gt;return_address = (uint32_t)recover_from_task_fault;
+  // the function we are returning to should never branch
+  // so set lr to a pattern that would fault if it did
+  frame-&gt;lr = 0xdeadbeef;
+  // reset the psr state and only leave the
+  // &quot;thumb instruction interworking&quot; bit set
+  frame-&gt;xpsr = (1 &lt;&lt; 24);
+</code></pre>
+<p>You may recall from the <a href="/blog/cortex-m-rtos-context-switching#context-state-stacking">RTOS Context Switching post</a> that fault handlers can work just like regular C functions so after these changes we will exit from <code>my_fault_handler_c</code> and start executing whatever is in <code>recover_from_task_fault</code> function. We will walk through an example of this <a href="#usage-fault-recovery-example">below</a>.</p>
+<h2 id="examples">Examples<a href="#examples"></a></h2>
+<p>In the sections below we will walk through the analysis of a couple faults.</p>
+<p>For this setup we will use:</p>
+<ul>
+<li>a nRF52840-DK<a href="#fn:13">12</a> (ARM Cortex-M4F) as our development board</li>
+<li>SEGGER JLinkGDBServer<a href="#fn:12">13</a> as our GDB Server.</li>
+<li>GCC 8.3.1 / GNU Arm Embedded Toolchain as our compiler<a href="#fn:16">14</a></li>
+<li>GNU make as our build system</li>
+</ul>
+<p>All the code can be found on the <a href="https://github.com/memfault/interrupt/tree/master/example/cortex-m-fault-debug">Interrupt Github page</a> with more details in the <code>README</code> in the directory linked.</p>
+<h4 id="setup">Setup<a href="#setup"></a></h4>
+<p>Start a GDB Server:</p>
+<pre><code>JLinkGDBServer -if swd -device nRF52840_xxAA
+</code></pre>
+<p>Follow the instructions <a href="#pycortex-svd-gdb-setup">above</a> to setup support for reading SVD files from GDB, build, and flash the example app:</p>
+<pre><code>$ make
+[...]
+Linking library
+Generated build/nrf52.elf
+$ arm-none-eabi-gdb-py --eval-command=&quot;target remote localhost:2331&quot; --ex=&quot;mon reset&quot; --ex=&quot;load&quot; --ex=&quot;mon reset&quot; --se=build/nrf52.elf
+$ source PyCortexMDebug/cmdebug/svd_gdb.py
+$ (gdb) svd_load cortex-m4-scb.svd
+Loading SVD file cortex-m4-scb.svd...
+(gdb)
+</code></pre>
+<p>The app has eight different crashes you can configure by changing <code>FAULT_EXAMPLE_CONFIG</code> at compile time or by editing the value at runtime:</p>
+<pre><code>(gdb) break main
+(gdb) continue
+(gdb) set g_crash_config=1
+(gdb) continue
+</code></pre>
+<h3 id="execute-never-fault">eXecute Never Fault<a href="#bad-pc-mpu-fault"></a></h3>
+<h4 id="code">Code<a href="#code"></a></h4>
+<pre><code>int illegal_instruction_execution(void) {
+  int (*bad_instruction)(void) = (void *)0xE0000000;
+  return bad_instruction();
+}
+</code></pre>
+<h4 id="analysis">Analysis<a href="#analysis"></a></h4>
+<pre><code>(gdb) break main
+(gdb) continue
+Breakpoint 1, main () at ./cortex-m-fault-debug/main.c:180
+180	  xQueue = xQueueCreate(mainQUEUE_LENGTH, sizeof(unsigned long));
+(gdb) set g_crash_config=0
+(gdb) c
+Continuing.
+
+Program received signal SIGTRAP, Trace/breakpoint trap.
+0x00000218 in my_fault_handler_c (frame=0x200005e8 &lt;ucHeap+1152&gt;) at ./cortex-m-fault-debug/startup.c:91
+91	  HALT_IF_DEBUGGING();
+(gdb) bt
+#0  0x00000218 in my_fault_handler_c (frame=0x200005e8 &lt;ucHeap+1152&gt;) at ./cortex-m-fault-debug/startup.c:91
+#1  &lt;signal handler called&gt;
+#2  0x00001468 in prvPortStartFirstTask () at ./cortex-m-fault-debug/freertos_kernel/portable/GCC/ARM_CM4F/port.c:267
+#3  0x000016e6 in xPortStartScheduler () at ./cortex-m-fault-debug/freertos_kernel/portable/GCC/ARM_CM4F/port.c:379
+#4  0x1058e476 in ?? ()
+</code></pre>
+<p>We can check the <code>CFSR</code> to see if there is any information about the fault which occurred.</p>
+<pre><code>(gdb) p/x *(uint32_t*)0xE000ED28
+$3 = 0x1
+(gdb) svd SCB CFSR_UFSR_BFSR_MMFSR
+Fields in SCB CFSR_UFSR_BFSR_MMFSR:
+	IACCVIOL:     1  Instruction access violation flag
+[...]
+</code></pre>
+<p>That’s interesting! We hit a Memory Management instruction access violation fault even though we haven’t enabled any MPU regions. From the CFSR, we know that the stacked frame is valid so we can take a look at that to see what it reveals:</p>
+<pre><code>(gdb) p/a *frame
+$1 = {
+  r0 = 0x0 &lt;g_pfnVectors&gt;,
+  r1 = 0x200003c4 &lt;ucHeap+604&gt;,
+  r2 = 0x10000000,
+  r3 = 0xe0000000,
+  r12 = 0x200001b8 &lt;ucHeap+80&gt;,
+  lr = 0x195 &lt;prvQueuePingTask+52&gt;,
+  return_address = 0xe0000000,
+  xpsr = 0x80000000
+}
+</code></pre>
+<p>We can clearly see that the executing instruction was <code>0xe0000000</code> and that the calling function was <code>prvQueuePingTask</code>.</p>
+<p>From the ARMv7-M reference manual<a href="#fn:9">15</a> we find:</p>
+<blockquote>
+<p>The MPU is restricted in how it can change the default memory map attributes associated with System space, that is, for addresses 0xE0000000 and higher. System space is always marked as XN, Execute Never.</p>
+</blockquote>
+<p>So the fault registers didn’t lie to us, and it does make sense that we hit a memory management fault!</p>
+<h3 id="bad-address-read">Bad Address Read<a href="#bad-address-read-example"></a></h3>
+<h4 id="code-1">Code<a href="#code-1"></a></h4>
+<pre><code>uint32_t read_from_bad_address(void) {
+  return *(volatile uint32_t *)0xbadcafe;
+}
+</code></pre>
+<h4 id="analysis-1">Analysis<a href="#analysis-1"></a></h4>
+<pre><code>(gdb) break main
+(gdb) continue
+Breakpoint 1, main () at ./cortex-m-fault-debug/main.c:189
+189	  xQueue = xQueueCreate(mainQUEUE_LENGTH, sizeof(unsigned long));
+(gdb) set g_crash_config=1
+(gdb) c
+Continuing.
+
+Program received signal SIGTRAP, Trace/breakpoint trap.
+0x00000218 in my_fault_handler_c (frame=0x200005e8 &lt;ucHeap+1152&gt;) at ./cortex-m-fault-debug/startup.c:91
+91	  HALT_IF_DEBUGGING();
+</code></pre>
+<p>Again, let’s take a look at the <code>CFSR</code> and see if it tells us anything useful.</p>
+<pre><code>(gdb) p/x *(uint32_t*)0xE000ED28
+$13 = 0x8200
+(gdb) svd SCB CFSR_UFSR_BFSR_MMFSR
+Fields in SCB CFSR_UFSR_BFSR_MMFSR:
+[...]
+    PRECISERR:    1  Precise data bus error
+[...]
+    BFARVALID:    1  Bus Fault Address Register (BFAR) valid flag
+</code></pre>
+<p>Great, we have a precise bus fault which means the return address in the stack frame holds the instruction which triggered the fault and that we can read BFAR to determine what memory access triggered the fault!</p>
+<pre><code>(gdb) svd/x SCB BFAR
+Fields in SCB BFAR:
+	BFAR:  0x0BADCAFE  Bus fault address
+
+(gdb) p/a *frame
+$16 = {
+  r0 = 0x1 &lt;g_pfnVectors+1&gt;,
+  r1 = 0x200003c4 &lt;ucHeap+604&gt;,
+  r2 = 0x10000000,
+  r3 = 0xbadcafe,
+  r12 = 0x200001b8 &lt;ucHeap+80&gt;,
+  lr = 0x195 &lt;prvQueuePingTask+52&gt;,
+  return_address = 0x13a &lt;trigger_crash+22&gt;,
+  xpsr = 0x81000000
+}
+
+(gdb) info line *0x13a
+Line 123 of &quot;./cortex-m-fault-debug/main.c&quot; starts at address 0x138 &lt;trigger_crash+20&gt; and ends at 0x13e &lt;trigger_crash+26&gt;.
+
+(gdb) list *0x13a
+0x13a is in trigger_crash (./cortex-m-fault-debug/main.c:123).
+118	  switch (crash_id) {
+119	    case 0:
+120	      illegal_instruction_execution();
+121	      break;
+122	    case 1:
+===&gt; FAULT HERE
+123	      read_from_bad_address();
+124	      break;
+125	    case 2:
+126	      access_disabled_coprocessor();
+127	      break;
+</code></pre>
+<p>Great, so we have pinpointed the exact code which triggered the issue and can now fix it!</p>
+<h3 id="coprocessor-fault">Coprocessor Fault<a href="#coprocessor-fault-example"></a></h3>
+<h4 id="code-2">Code<a href="#code-2"></a></h4>
+<pre><code>void access_disabled_coprocessor(void) {
+  // FreeRTOS will automatically enable the FPU co-processor.
+  // Let's disable it for the purposes of this example
+  __asm volatile(
+      &quot;ldr r0, =0xE000ED88 \n&quot;
+      &quot;mov r1, #0 \n&quot;
+      &quot;str r1, [r0]	\n&quot;
+      &quot;dsb \n&quot;
+      &quot;vmov r0, s0 \n&quot;
+      );
+}
+</code></pre>
+<h4 id="analysis-2">Analysis<a href="#analysis-2"></a></h4>
+<pre><code>(gdb) break main
+(gdb) continue
+Breakpoint 4, main () at ./cortex-m-fault-debug/main.c:180
+180	  xQueue = xQueueCreate(mainQUEUE_LENGTH, sizeof(unsigned long));
+(gdb) set g_crash_config=2
+(gdb) c
+Continuing.
+
+Program received signal SIGTRAP, Trace/breakpoint trap.
+0x00000218 in my_fault_handler_c (frame=0x20002d80) at ./cortex-m-fault-debug/startup.c:91
+91	  HALT_IF_DEBUGGING();
+</code></pre>
+<p>We can inspect <code>CFSR</code> to get a clue about the crash which took place</p>
+<pre><code>(gdb) p/x *(uint32_t*)0xE000ED28
+$13 = 0x8200
+(gdb) svd SCB CFSR_UFSR_BFSR_MMFSR
+Fields in SCB CFSR_UFSR_BFSR_MMFSR:
+[...]
+	NOCP:         1  No coprocessor usage fault.
+[...]
+</code></pre>
+<p>We see it was a coprocessor UsageFault which tells us we either issued an instruction to a non-existent or disabled Cortex-M coprocessor. We know the frame contents are valid so we can inspect that to figure out where the fault originated:</p>
+<pre><code>(gdb) p/a *frame
+$27 = {
+  r0 = 0xe000ed88,
+  r1 = 0x0 &lt;g_pfnVectors&gt;,
+  r2 = 0x10000000,
+  r3 = 0x0 &lt;g_pfnVectors&gt;,
+  r12 = 0x200001b8 &lt;ucHeap+80&gt;,
+  lr = 0x199 &lt;prvQueuePingTask+52&gt;,
+  return_address = 0x114 &lt;access_disabled_coprocessor+12&gt;,
+  xpsr = 0x81000000
+}
+
+(gdb) disassemble 0x114
+Dump of assembler code for function access_disabled_coprocessor:
+   0x00000108 &lt;+0&gt;:	ldr	r0, [pc, #16]	; (0x11c)
+   0x0000010a &lt;+2&gt;:	mov.w	r1, #0
+   0x0000010e &lt;+6&gt;:	str	r1, [r0, #0]
+   0x00000110 &lt;+8&gt;:	dsb	sy
+===&gt; FAULT HERE on a Floating Point instruction
+   0x00000114 &lt;+12&gt;:	vmov	r0, s0
+   0x00000118 &lt;+16&gt;:	bx	lr
+</code></pre>
+<p><code>vmov</code> is a floating point instruction so we now know what coprocessor the NOCP was caused by. The FPU is enabled using bits 20-23 of the <a href="/blog/cortex-m-rtos-context-switching#fpu-config-options">CPACR</a> register located at <code>0xE000ED88</code>. A value of 0 indicates the extension is disabled. Let’s check it:</p>
+<pre><code>(gdb) p/x (*(uint32_t*)0xE000ED88 &gt;&gt; 20) &amp; 0xf
+$29 = 0x0
+</code></pre>
+<p>We can clearly see the FP Extension is disabled. We will have to enable the FPU to fix our bug.</p>
+<h3 id="imprecise-fault">Imprecise Fault<a href="#imprecise-error-code-example"></a></h3>
+<h4 id="code-3">Code<a href="#code-3"></a></h4>
+<pre><code>void bad_addr_double_word_write(void) {
+  volatile uint64_t *buf = (volatile uint64_t *)0x30000000;
+  *buf = 0x1122334455667788;
+}
+</code></pre>
+<h4 id="analysis-3">Analysis<a href="#analysis-3"></a></h4>
+<pre><code>(gdb) break main
+(gdb) continue
+Breakpoint 4, main () at ./cortex-m-fault-debug/main.c:182
+182	  xQueue = xQueueCreate(mainQUEUE_LENGTH, sizeof(unsigned long));
+(gdb) set g_crash_config=3
+(gdb) c
+Continuing.
+
+Program received signal SIGTRAP, Trace/breakpoint trap.
+0x0000021c in my_fault_handler_c (frame=0x200005e8 &lt;ucHeap+1152&gt;) at ./cortex-m-fault-debug/startup.c:91
+91	  HALT_IF_DEBUGGING();
+</code></pre>
+<p>Let’s inspect <code>CFSR</code>:</p>
+<pre><code>(gdb) p/x *(uint32_t*)0xE000ED28
+$31 = 0x400
+(gdb) svd SCB CFSR_UFSR_BFSR_MMFSR
+Fields in SCB CFSR_UFSR_BFSR_MMFSR:
+[...]
+	IMPRECISERR:  1  Imprecise data bus error
+[...]
+</code></pre>
+<p>Yikes, the error is imprecise. This means the stack frame will point to the general area where the fault occurred but <strong>not</strong> the exact instruction!</p>
+<pre><code>(gdb) p/a *frame
+$32 = {
+  r0 = 0x55667788,
+  r1 = 0x11223344,
+  r2 = 0x10000000,
+  r3 = 0x30000000,
+  r12 = 0x200001b8 &lt;ucHeap+80&gt;,
+  lr = 0x199 &lt;prvQueuePingTask+52&gt;,
+  return_address = 0x198 &lt;prvQueuePingTask+52&gt;,
+  xpsr = 0x81000000
+}
+(gdb) list *0x198
+0x198 is in prvQueuePingTask (./cortex-m-fault-debug/main.c:162).
+157
+158	  while (1) {
+159	    vTaskDelayUntil(&amp;xNextWakeTime, mainQUEUE_SEND_FREQUENCY_MS);
+160	    xQueueSend(xQueue, &amp;ulValueToSend, 0U);
+161
+==&gt; Crash somewhere around here
+162	    trigger_crash(g_crash_config);
+163	  }
+164	}
+165
+166	static void prvQueuePongTask(void *pvParameters) {
+</code></pre>
+<h4 id="analysis-after-making-the-imprecise-error-precise">Analysis after making the Imprecise Error Precise<a href="#analysis-after-making-the-imprecise-error-precise"></a></h4>
+<p>If the crash was not readily reproducible we would have to inspect the code around this region and hypothesize what looks suspicious. However, <a href="#cortex-m3-m4-debug-trick">recall</a> that there is a trick we can use for the Cortex-M4 to make all memory stores precise. Let’s enable that and re-examine:</p>
+<pre><code>(gdb) mon reset
+Resetting target
+(gdb) c
+Continuing.
+
+Breakpoint 4, main () at ./cortex-m-fault-debug/main.c:182
+182	  xQueue = xQueueCreate(mainQUEUE_LENGTH, sizeof(unsigned long));
+(gdb) set g_crash_config=3
+
+==&gt; Make all memory stores precise at the cost of performance
+==&gt; by setting DISDEFWBUF in the Cortex M3/M4 ACTLR reg
+(gdb) set *(uint32_t*)0xE000E008=(*(uint32_t*)0xE000E008 | 1&lt;&lt;1)
+
+(gdb) c
+Continuing.
+
+Program received signal SIGTRAP, Trace/breakpoint trap.
+0x0000021c in my_fault_handler_c (frame=0x200005e8 &lt;ucHeap+1152&gt;) at ./cortex-m-fault-debug/startup.c:91
+91	  HALT_IF_DEBUGGING();
+(gdb) p/a *frame
+$33 = {
+  r0 = 0x55667788,
+  r1 = 0x11223344,
+  r2 = 0x10000000,
+  r3 = 0x30000000,
+  r12 = 0x200001b8 &lt;ucHeap+80&gt;,
+  lr = 0x199 &lt;prvQueuePingTask+52&gt;,
+  return_address = 0xfa &lt;bad_addr_double_word_write+10&gt;,
+  xpsr = 0x81000000
+}
+(gdb) list *0xfa
+0xfa is in bad_addr_double_word_write (./cortex-m-fault-debug/main.c:92).
+90	void bad_addr_double_word_write(void) {
+91	  volatile uint64_t *buf = (volatile uint64_t *)0x30000000;
+==&gt; FAULT HERE
+92	  *buf = 0x1122334455667788;
+93	}
+(gdb)
+</code></pre>
+<p>Awesome, that saved us some time … we were able to determine the exact line that caused the crash!</p>
+<h3 id="fault-entry-exception">Fault Entry Exception<a href="#stkerr-example"></a></h3>
+<h4 id="code-4">Code<a href="#code-4"></a></h4>
+<pre><code>void stkerr_from_psp(void) {
+  extern uint32_t _start_of_ram[];
+  uint8_t dummy_variable;
+  const size_t distance_to_ram_bottom =
+      (uint32_t)&amp;dummy_variable - (uint32_t)_start_of_ram;
+  volatile uint8_t big_buf[distance_to_ram_bottom - 8];
+  for (size_t i = 0; i &lt; sizeof(big_buf); i++) {
+    big_buf[i] = i;
+  }
+
+  trigger_irq();
+}
+</code></pre>
+<h4 id="analysis-4">Analysis<a href="#analysis-4"></a></h4>
+<pre><code>(gdb) break main
+(gdb) continue
+Breakpoint 4, main () at ./cortex-m-fault-debug/main.c:182
+182	  xQueue = xQueueCreate(mainQUEUE_LENGTH, sizeof(unsigned long));
+(gdb) set g_crash_config=4
+(gdb) c
+Continuing.
+
+Program received signal SIGTRAP, Trace/breakpoint trap.
+0x0000021c in my_fault_handler_c (frame=0x1fffffe0) at ./cortex-m-fault-debug/startup.c:91
+91	  HALT_IF_DEBUGGING();
+</code></pre>
+<p>Let’s take a look at <code>CFSR</code> again to get a clue about what happened:</p>
+<pre><code>(gdb) p/x *(uint32_t*)0xE000ED28
+$39 = 0x1000
+(gdb) svd SCB CFSR_UFSR_BFSR_MMFSR
+Fields in SCB CFSR_UFSR_BFSR_MMFSR:
+[...]
+	STKERR:       1  Bus fault on stacking for exception entry
+</code></pre>
+<h4 id="debug-tips-when-dealing-with-a-stkerr">Debug Tips when dealing with a STKERR<a href="#debug-tips-when-dealing-with-a-stkerr"></a></h4>
+<p>There are two really important things to note when a stacking exception occurs:</p>
+<ol>
+<li>The stack pointer will always reflect the correct adjusted position as if the hardware successfully stacked the registers. This means you can find the stack pointer prior to exception entry by adding the adjustment value.</li>
+<li>Depending on what access triggers the exception, the stacked frame may be partially valid. For example, the very last store of the hardware stacking could trigger the fault and all the other stores could be valid. However, the <strong>order</strong> the hardware pushes register state on the stack is <strong>implementation specific</strong>. So when inspecting the frame assume the values being looked at may be invalid!</li>
+</ol>
+<p>Taking this knowledge into account, let’s examine the stack frame:</p>
+<pre><code>(gdb) p frame
+$40 = (sContextStateFrame *) 0x1fffffe0
+</code></pre>
+<p>Interestingly, if we look up the memory map of the NRF52<a href="#fn:10">16</a>, we will find that RAM starts at <code>0x20000000</code>. Our stack pointer location, <code>0x1fffffe0</code> is right below that in an undefined memory region. This must be why we faulted! We see that the stack pointer is 32 bytes below RAM, which matches the size of <code>sContextStateFrame</code>. This unfortunately means none of the values stacked will be valid since all stores were issued to a non-existent address space!</p>
+<p>We can manually walk up the stack to get some clues:</p>
+<pre><code>(gdb) x/a 0x20000000
+0x20000000 &lt;uxCriticalNesting&gt;:	0x3020100
+(gdb)
+0x20000004 &lt;g_crash_config&gt;:	0x7060504
+(gdb)
+0x20000008 &lt;xQueue&gt;:	0xb0a0908
+(gdb)
+0x2000000c &lt;s_buffer&gt;:	0xf0e0d0c
+(gdb)
+0x20000010 &lt;s_buffer+4&gt;:	0x13121110
+(gdb)
+0x20000014 &lt;s_buffer+8&gt;:	0x17161514
+(gdb)
+0x20000018 &lt;pxCurrentTCB&gt;:	0x1b1a1918
+(gdb)
+0x2000001c &lt;pxDelayedTaskList&gt;:	0x1f1e1d1c
+(gdb)
+0x20000020 &lt;pxOverflowDelayedTaskList&gt;:	0x23222120
+</code></pre>
+<p>It looks like the RAM has a pattern of sequentially increasing values <em>and</em> that the RAM addresses map to different variables in our code (i.e <code>pxCurrentTCB</code>). This suggests we overflowed the stack we were using and started to clobber RAM in the system until we ran off the end of RAM!</p>
+<blockquote>
+<p>TIP: To catch this type of failure sooner consider using an <a href="/blog/fix-bugs-and-secure-firmware-with-the-mpu#catch-stack-overflows-with-the-mpu">MPU Region</a></p>
+</blockquote>
+<p>Since the crash is reproducible, let’s leverage a watchpoint and see if we can capture the stack corruption in action! Let’s add a watchpoint for any access near the bottom of RAM, <code>0x2000000c</code>:</p>
+<pre><code>(gdb) mon reset
+(gdb) continue
+Breakpoint 4, main () at ./cortex-m-fault-debug/main.c:182
+182	  xQueue = xQueueCreate(mainQUEUE_LENGTH, sizeof(unsigned long));
+(gdb) set g_crash_config=4
+(gdb) watch *(uint32_t*)0x2000000c
+Hardware watchpoint 9: *(uint32_t*)0x2000000c
+</code></pre>
+<blockquote>
+<p>TIP: Sometimes it will take a couple tries to choose the right RAM range to watch. It’s possible an area of the stack never gets written to and the watchpoint never fires or that the memory address being watched gets updated many many times before the actual failure. In this example, I intentionally opted not to watch 0x20000000 because that is the address of a FreeRTOS variable, <code>uxCriticalNesting</code> which is updated a lot.</p>
+</blockquote>
+<p>Let’s continue and see what happens:</p>
+<pre><code>(gdb) continue
+Hardware watchpoint 9: *(uint32_t*)0x2000000c
+
+Old value = 0
+New value = 12
+0x000000c0 in stkerr_from_psp () at ./cortex-m-fault-debug/main.c:68
+68	    big_buf[i] = i;
+(gdb) bt
+#0  0x000000c0 in stkerr_from_psp () at ./cortex-m-fault-debug/main.c:68
+#1  0x00000198 in prvQueuePingTask (pvParameters=&lt;optimized out&gt;) at ./cortex-m-fault-debug/main.c:162
+#2  0x00001488 in ?? () at ./cortex-m-fault-debug/freertos_kernel/portable/GCC/ARM_CM4F/port.c:703
+Backtrace stopped: previous frame identical to this frame (corrupt stack?)
+(gdb) list *0xc0
+0xc0 is in stkerr_from_psp (./cortex-m-fault-debug/main.c:68).
+63	  extern uint32_t _start_of_ram[];
+64	  uint8_t dummy_variable;
+65	  const size_t distance_to_ram_bottom = (uint32_t)&amp;dummy_variable - (uint32_t)_start_of_ram;
+66	  volatile uint8_t big_buf[distance_to_ram_bottom - 8];
+67	  for (size_t i = 0; i &lt; sizeof(big_buf); i++) {
+68	    big_buf[i] = i;
+69	  }
+70
+71	  trigger_irq();
+72	}
+</code></pre>
+<p>Great, we’ve found a variable located on the stack <code>big_buf</code> being updated. It must be this function call path which is leading to a stack overflow. We can now inspect the call chain and remove big stack allocations!</p>
+<h3 id="recovering-from-a-usagefault-without-a-sysreset">Recovering from a UsageFault <strong>without</strong> a SYSRESET<a href="#usage-fault-recovery-example"></a></h3>
+<p>In this example we’ll just step through the code we developed <a href="#recovering-from-a-fault">above</a> and confirm we don’t reset when a UsageFault occurs.</p>
+<h4 id="code-5">Code<a href="#code-5"></a></h4>
+<pre><code>void unaligned_double_word_read(void) {
+  extern void *g_unaligned_buffer;
+  uint64_t *buf = g_unaligned_buffer;
+  *buf = 0x1122334455667788;
+}
+</code></pre>
+<h4 id="analysis-5">Analysis<a href="#analysis-5"></a></h4>
+<pre><code>(gdb) break main
+(gdb) continue
+Breakpoint 4, main () at ./cortex-m-fault-debug/main.c:188
+188	  xQueue = xQueueCreate(mainQUEUE_LENGTH, sizeof(unsigned long));
+(gdb) set g_crash_config=5
+(gdb) c
+Continuing.
+
+Program received signal SIGTRAP, Trace/breakpoint trap.
+0x00000228 in my_fault_handler_c (frame=0x200005e8 &lt;ucHeap+1152&gt;) at ./cortex-m-fault-debug/startup.c:94
+94	  HALT_IF_DEBUGGING();
+</code></pre>
+<p>We have entered the breakpoint in the fault handler. We can step over it and confirm we fall through to the <code>recover_from_task_fault</code> function.</p>
+<pre><code>(gdb) break recover_from_task_fault
+Breakpoint 12 at 0x1a8: file ./cortex-m-fault-debug/main.c, line 181.
+(gdb) n
+108	  volatile uint32_t *cfsr = (volatile uint32_t *)0xE000ED28;
+(gdb) c
+Continuing.
+
+Breakpoint 12, recover_from_task_fault () at ./cortex-m-fault-debug/main.c:181
+181	void recover_from_task_fault(void) {
+
+(gdb) list *recover_from_task_fault
+0x1a8 is in recover_from_task_fault (./cortex-m-fault-debug/main.c:181).
+181	void recover_from_task_fault(void) {
+182	  while (1) {
+183	    vTaskDelay(1);
+184	  }
+185	}
+</code></pre>
+<p>If we continue from here we will see the system happily keeps running because the thread which was calling the problematic <code>trigger_crash</code> function is now parked in a while loop. The the while loop could be extended in the future to delete and/or restart the FreeRTOS task if we wanted as well.</p>
+<h2 id="closing">Closing<a href="#closing"></a></h2>
+<p>I hope this post gave you a useful overview of how to debug a HardFault on a Cortex-M MCU and that maybe you even learned something new!</p>
+<p>Are there tricks you like to use that I didn’t mention or other topics about faults you’d like to learn more about? Let us know in the discussion area below!</p>
+<blockquote>
+<p>Interested in learning more about debugging HardFaults? <a href="https://go.memfault.com/debugging-arm-cortex-m-mcu-webinar?utm_campaign=Debugging%20Cortex%20M%20Webinar&amp;utm_source=blog&amp;utm_medium=Interrupt&amp;utm_term=Debug">Watch this webinar recording.</a>.</p>
+</blockquote>
+<p>See anything you&rsquo;d like to change? Submit a pull request or open an issue at <a href="https://github.com/memfault/interrupt">GitHub</a></p>
+<h2 id="references">References<a href="#references"></a></h2>
+<ol>
+<li>
+<p><a href="https://eng.fitbit.com/the-tower-of-terror-a-bug-mystery/">The Tower of Terror: A Bug Mystery</a> <a href="#fnref:14">↩</a> <a href="#fnref:14:1">↩2</a></p>
+</li>
+<li>
+<p><a href="https://static.docs.arm.com/ddi0403/eb/DDI0403E_B_armv7m_arm.pdf">See “A4.1.1 ARMv7-M and interworking support”</a> <a href="#fnref:1">↩</a></p>
+</li>
+<li>
+<p><a href="https://www.segger.com/products/debug-probes/j-trace/">Segger JTrace</a> &amp; <a href="https://www.lauterbach.com/frames.html?home.htmlLink%20lauterbach">Lauterbach Trace32</a> are both capable of analyzing the ETM <a href="#fnref:8">↩</a></p>
+</li>
+<li>
+<p><a href="http://infocenter.arm.com/help/topic/com.arm.doc.ddi0489b/DDI0489B_cortex_m7_trm.pdf">See “3.3.9 Auxiliary Bus Fault Status Register”</a> <a href="#fnref:7">↩</a> <a href="#fnref:7:1">↩2</a></p>
+</li>
+<li>
+<p><a href="https://infocenter.nordicsemi.com/pdf/nRF52840_PS_v1.0.pdf">See “5.3.6.8 Reset behavior”</a> <a href="#fnref:11">↩</a></p>
+</li>
+<li>
+<p><a href="https://github.com/ARMmbed/mbed-os/blob/2e96145b7607de430235dd795ab5350c1d4d64d7/platform/source/TARGET_CORTEX_M/mbed_fault_handler.c#L44-L81">MBed OS fault handler</a> <a href="#fnref:2">↩</a></p>
+</li>
+<li>
+<p><a href="https://github.com/intel/zephyr/blob/e09a04f0689fd29aa909cc49ee94fd129798f986/arch/arm/core/fault.c#L55-L275">Zephyr ARM fault handler</a> <a href="#fnref:3">↩</a></p>
+</li>
+<li>
+<p><a href="https://arm-software.github.io/CMSIS_5/SVD/html/index.html">CMSIS-SVD</a> <a href="#fnref:4">↩</a></p>
+</li>
+<li>
+<p><a href="https://developer.arm.com/tools-and-software/embedded/cmsis">CMSIS Software Packs</a> <a href="#fnref:5">↩</a></p>
+</li>
+<li>
+<p><a href="https://github.com/bnahill/PyCortexMDebug">PyCortexMDebug</a> <a href="#fnref:6">↩</a></p>
+</li>
+<li>
+<p><a href="https://static.docs.arm.com/ddi0403/eb/DDI0403E_B_armv7m_arm.pdf">See “B1.5.5 Reset behavior” &amp; “B1.4.2 The special-purpose program status registers, xPSR”</a> <a href="#fnref:15">↩</a></p>
+</li>
+<li>
+<p><a href="https://www.nordicsemi.com/Software-and-Tools/Development-Kits/nRF52840-DK">nRF52840 Development Kit</a> <a href="#fnref:13">↩</a></p>
+</li>
+<li>
+<p><a href="https://www.segger.com/products/debug-probes/j-link/tools/j-link-gdb-server/about-j-link-gdb-server/">JLinkGDBServer</a> <a href="#fnref:12">↩</a></p>
+</li>
+<li>
+<p><a href="https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads">GNU ARM Embedded toolchain for download</a> <a href="#fnref:16">↩</a></p>
+</li>
+<li>
+<p><a href="https://static.docs.arm.com/ddi0403/eb/DDI0403E_B_armv7m_arm.pdf">See B3.5.1 “Relation of the MPU to the system memory map”</a> <a href="#fnref:9">↩</a></p>
+</li>
+<li>
+<p><a href="https://infocenter.nordicsemi.com/pdf/nRF52840_PS_v1.0.pdf">See “4.2.3 Memory map”</a> <a href="#fnref:10">↩</a></p>
+</li>
+</ol>
+<p><img src="/img/author/chris.jpg" alt=""> <a href="/authors/chris">Chris Coleman</a> is a founder and CTO at Memfault. Prior to founding Memfault, Chris worked on the embedded software teams at Sun, Pebble, and Fitbit.<br>
+<a href="https://www.linkedin.com/in/christopher-coleman-812aa06b/"></a><a href="https://github.com/chrisc11"></a></p>
+<p>DiscourseEmbed = { discourseUrl: &lsquo;<a href="https://community.memfault.com/'">https://community.memfault.com/'</a>, discourseEmbedUrl: &lsquo;<a href="https://interrupt.memfault.com/blog/cortex-m-hardfault-debug'">https://interrupt.memfault.com/blog/cortex-m-hardfault-debug'</a> }; (function() { var d = document.createElement(&lsquo;script&rsquo;); d.type = &rsquo;text/javascript&rsquo;; d.async = true; d.src = DiscourseEmbed.discourseUrl + &lsquo;javascripts/embed.js&rsquo;; (document.getElementsByTagName(&lsquo;head&rsquo;)[0] || document.getElementsByTagName(&lsquo;body&rsquo;)[0]).appendChild(d); })(); anchors.options.visible = &lsquo;hover&rsquo;; anchors.add(&rsquo;.post-content &gt; h1, h2, h3, h4, h5, h6&rsquo;);</p>
+<ul class="pa0">
+  
+</ul>
+
+      
+    </div></article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white white-70 dn dib-ns pv2 ph3 no-underline" href="https://fulanxisen.github.io/" >
+    &copy;  FulanXisen's blog 2026 
+  </a>
+    <div><div class="ananke-socials"></div>
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>

@@ -1,6 +1,6 @@
 baseURL = 'https://fulanxisen.github.io/'
 locale = 'en-us'
-title = 'FulanXisen's blog'
+title = "FulanXisen's blog"
 theme = 'ananke'
 
 [caches]

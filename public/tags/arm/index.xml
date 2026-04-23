@@ -1,24 +1,32 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Arm on My New Hugo Project</title>
-    <link>http://localhost:1313/tags/arm/</link>
-    <description>Recent content in Arm on My New Hugo Project</description>
+    <title>ARM on FulanXisen&#39;s blog</title>
+    <link>https://fulanxisen.github.io/tags/arm/</link>
+    <description>Recent content in ARM on FulanXisen&#39;s blog</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <atom:link href="http://localhost:1313/tags/arm/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 03 May 2023 14:28:46 +0800</lastBuildDate>
+    <atom:link href="https://fulanxisen.github.io/tags/arm/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>A Guide to Using ARM Stack Limit Registers</title>
+      <link>https://fulanxisen.github.io/posts/p04-using-psp-msp-limit-registers-for-stack-overflow/</link>
+      <pubDate>Wed, 03 May 2023 14:28:46 +0800</pubDate>
+      <guid>https://fulanxisen.github.io/posts/p04-using-psp-msp-limit-registers-for-stack-overflow/</guid>
+      <description>&lt;h2 id=&#34;a-guide-to-using-arm-stack-limit-registers&#34;&gt;A Guide to Using ARM Stack Limit Registers&lt;a href=&#34;#a-guide-to-using-arm-stack-limit-registers&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&#xA;&lt;p&gt;14 Feb 2023 by &lt;a href=&#34;https://fulanxisen.github.io/authors/jonkurtz&#34;&gt;Jon Kurtz&lt;/a&gt;&lt;/p&gt;&#xA;&lt;p&gt;堆栈溢出一直是开发过程中的一个严重问题。它们经常没有被检测到，并以难以理解的方式出现。我们已经实施了软件机制来保护它们，但这些机制有限，并且仍不能保护所有条件。&lt;/p&gt;&#xA;&lt;p&gt;随着ARM架构的成熟，使用一个百分百可靠的机制来检测溢出难道不是更好吗？&lt;/p&gt;&#xA;&lt;p&gt;我们将探索在ARM Cortex-M33架构上使用MSP Limit和PSP Limit寄存器来检测堆栈溢出。我们将在Renesas DA1469x上进行实现，并查看检测堆栈溢出的实际示例。此外，我们还将查看MSPLIM和PSPLIM功能不足的情况下的补充选项。&lt;/p&gt;&#xA;&lt;h2 id=&#34;table-of-contents&#34;&gt;Table of Contents&lt;a href=&#34;#table-of-contents&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#basic-terminology&#34;&gt;Basic Terminology&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#how-does-it-work&#34;&gt;How does it work?&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#implementing-the-limit-registers&#34;&gt;Implementing the Limit Registers&lt;/a&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#initializing-the-msplim-register&#34;&gt;Initializing the MSPLIM Register&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#initializing-the-psplim-register&#34;&gt;Initializing the PSPLIM Register&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#setting-up-the-usagefault_handler&#34;&gt;Setting up the UsageFault_Handler&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#testing-our-implementation&#34;&gt;Testing our Implementation&lt;/a&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#limitations-and-further-improvements&#34;&gt;Limitations and Further Improvements&lt;/a&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#stack-canary&#34;&gt;Stack Canary&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#freertos-buffer-overflow-protection&#34;&gt;FreeRTOS Buffer Overflow protection&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#compiler-enabled-overflow-detection&#34;&gt;Compiler Enabled Overflow Detection&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#gcc-ssp-example&#34;&gt;GCC SSP Example&lt;/a&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#practical-implementations-for-gcc-stack-canaries&#34;&gt;Practical implementations for GCC stack Canaries&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#closing&#34;&gt;Closing&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#references&#34;&gt;References&lt;/a&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;basic-terminology&#34;&gt;Basic Terminology&lt;a href=&#34;#basic-terminology&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&#xA;&lt;p&gt;The ARM Cortex-M33 introduced two new stack limit registers, PSPLIM and MSPLIM &lt;a href=&#34;#fn:m33-psplim_msplim&#34;&gt;1&lt;/a&gt;. ARM has included this in its ARMv8 specification, so any processors before this will not have support.&lt;/p&gt;</description>
+    </item>
     <item>
       <title>A Practical guide to ARM Cortex-M Exception Handling</title>
-      <link>http://localhost:1313/posts/armv-m-exception/</link>
+      <link>https://fulanxisen.github.io/posts/armv-m-exception/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/posts/armv-m-exception/</guid>
+      <guid>https://fulanxisen.github.io/posts/armv-m-exception/</guid>
       <description>&lt;p&gt;几乎所有嵌入式系统都在某种程度上依赖于处理异步事件的能力。&#xA;例如，它从加速度计读取外部传感器数据，以便计算步数&#xA;或处理周期性计时器事件以触发RTOS的上下文切换。&lt;/p&gt;&#xA;&lt;p&gt;在本文中，我们将深入研究ARM Cortex-M 的Exception Model如何支持异步事件的处理。&#xA;本文将介绍支持的不同异常类型、术语(NVIC、ISR、Priority)、configuration registers及其常用设置、与Exception有关的Advanced Topic以及一些用C编写的examples。&lt;/p&gt;&#xA;&lt;blockquote&gt;&#xA;&lt;p&gt;注意:在大多数情况下，所有Cortex-M处理器(ARMv6-M、ARMv7-M和ARMv8-M体系结构)的异常处理机制是相同的。本文将在下面的相关章节中指出它们的差异。&lt;/p&gt;&#xA;&lt;/blockquote&gt;&#xA;&lt;h2 id=&#34;arm-exception-model-overview&#34;&gt;ARM Exception Model Overview&lt;a href=&#34;#arm-exception-model-overview&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&#xA;&lt;p&gt;ARM specification将Exception定义为“a condition that changes the normal flow of control in a program” &lt;a href=&#34;#fn:4&#34;&gt;1&lt;/a&gt;.&lt;/p&gt;&#xA;&lt;p&gt;你会经常看到&amp;quot;Exception&amp;quot;和&amp;quot;Interrupt&amp;quot;交替出现. 在ARM文档中, &amp;ldquo;Interrupt&amp;quot;用来描述&amp;quot;Exception&amp;quot;的一种.&#xA;Exception包含以下3部分标识信息:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;strong&gt;Exception Number&lt;/strong&gt; - 表示特定类型Exception的唯一编号(从1开始).&#xA;这个编号也用作&lt;strong&gt;Vector Table&lt;/strong&gt;的offset, 这种类型的Exception对应routine的address可以在这里找到.&#xA;这样的routine通常被称为&lt;strong&gt;Exception Handler&lt;/strong&gt;或者&lt;strong&gt;Interrupt Service Routine&lt;/strong&gt; (&lt;strong&gt;ISR&lt;/strong&gt;),它是在Exception触发时会被执行的函数.&#xA;当Exception被触发时,ARM硬件会自动的从&lt;strong&gt;Vector Table&lt;/strong&gt;中寻找对应的函数指针并执行.&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;Priority Level&lt;/strong&gt; / &lt;strong&gt;Priority Number&lt;/strong&gt; - 每种Exception都有一个优先级.&#xA;大部分exception的Priority Number是可配置的. 反直觉的地方是, 更小的priority number意味着更高的优先级.&#xA;所以如果priority level 1的exception和priority level 2的exception同时发生, priority level 1的exception会先被处理.&#xA;当本文说一个exception有最高优先级时, 意味着这个exception有最小的&lt;strong&gt;Priority Number&lt;/strong&gt;.&#xA;如果两个exception有相同的&lt;strong&gt;Priority Number&lt;/strong&gt;, &lt;strong&gt;Exception Number&lt;/strong&gt;更小的那个会先被处理.&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;Synchronous&lt;/strong&gt; 或 &lt;strong&gt;Asynchronous&lt;/strong&gt; - 有一些exception触发时被立即被处理(例如 &lt;code&gt;SVCall&lt;/code&gt;), 称为 &lt;em&gt;synchronous&lt;/em&gt;.&#xA;另一些exception触发时不会被立刻处理, 称为 &lt;em&gt;asynchronous&lt;/em&gt;.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;一个exception可以处于以下4种状态中的一种:&lt;/p&gt;</description>
     </item>
     <item>
       <title>ARM Cortex-M RTOS Context Switching</title>
-      <link>http://localhost:1313/posts/armv-m-context-switch/</link>
+      <link>https://fulanxisen.github.io/posts/armv-m-context-switch/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/posts/armv-m-context-switch/</guid>
+      <guid>https://fulanxisen.github.io/posts/armv-m-context-switch/</guid>
       <description>&lt;p&gt;Many embedded systems reach a level of complexity where having a basic set of scheduling primitives and ability to run different tasks can be helpful. The operation of switching from one task to another is known as a &lt;strong&gt;context switch&lt;/strong&gt;. A &lt;em&gt;Real Time Operating System&lt;/em&gt; (&lt;strong&gt;RTOS&lt;/strong&gt;) will typically provide this functionality. Having a foundational knowledge of how the core of an &lt;strong&gt;RTOS&lt;/strong&gt; works can be a valuable skill set for an embedded engineer to have.&lt;/p&gt;</description>
     </item>
   </channel>

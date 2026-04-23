@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>FulanXisen&#39;s blog</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="Linux Kernel Module Programming Guide
+[TOC]
+Easy Begin
+内核模块包
+编程内核模块首先要安装内核模块包kmod.
+sudo apt-get install build-essential kmod
+命令行的内核模块相关命令
+sudo lsmod # 查看所有加载进内核的模块
+sudo cat /proc/modules # 和lsmod有什么不同
+sudo modinfo ABC_x.ko # 查看模块ABC的信息
+sudo insmod ABC_x.ko # 向内核中加载模块ABC
+sudo rmmod ABC-x # 从内核中卸载模块ABC, 注意ABC_x.ko名称中的&#39;_&#39;字符会被内核自动替换成&#39;-&#39;字符
+sudo journalctl --since &#34;1 hour ago&#34; | grep kernel # 查看过去一小时内的内核日志
+编码前须知
+
+版本.
+如果编译模块A时include的内核头文件版本与加载模块A的内核版本不一致, 会导致加载失败.
+如果必须要这样做, 例如模块A兼容多个内核版本, 需要启用CONFIG_MODVERSIONS编译制导.
+命令行.
+内核模块无法打印输出到屏幕,但可以记录日志信息然后读取日志信息到屏幕.
+SecureBoot.
+SecureBoot是UEFI的一个设置, 要求只会引导安全密钥签名过的模块.
+[Shell]ERROR: could not insert module.
+[dmesg]Lockdown: insmod: unsigned module loading is restricted; see man kernel lockdown.7.
+SecureBoot - Debian Wiki
+
+内核头文件
+编译模块必需内核头文件, 编译时Makefile也需要include内核头文件所在文件夹.">
+    <meta name="generator" content="Hugo 0.160.1">
+    
+    
+    
+      <meta name="robots" content="index, follow">
+    
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.efe4d852f731d5d1fbb87718387202a97aafd768cdcdaed0662bbe6982e91824.css" >
+
+
+
+
+    
+
+
+    
+      
+
+    
+
+    
+
+    
+      <link rel="canonical" href="https://fulanxisen.github.io/posts/linux-kernel-module-programming-guide/">
+    
+
+    
+    
+    <meta property="og:url" content="https://fulanxisen.github.io/posts/linux-kernel-module-programming-guide/">
+  <meta property="og:site_name" content="FulanXisen&#39;s blog">
+  <meta property="og:title" content="FulanXisen&#39;s blog">
+  <meta property="og:description" content="Linux Kernel Module Programming Guide [TOC]
+Easy Begin 内核模块包 编程内核模块首先要安装内核模块包kmod.
+sudo apt-get install build-essential kmod 命令行的内核模块相关命令 sudo lsmod # 查看所有加载进内核的模块 sudo cat /proc/modules # 和lsmod有什么不同 sudo modinfo ABC_x.ko # 查看模块ABC的信息 sudo insmod ABC_x.ko # 向内核中加载模块ABC sudo rmmod ABC-x # 从内核中卸载模块ABC, 注意ABC_x.ko名称中的&#39;_&#39;字符会被内核自动替换成&#39;-&#39;字符 sudo journalctl --since &#34;1 hour ago&#34; | grep kernel # 查看过去一小时内的内核日志 编码前须知 版本. 如果编译模块A时include的内核头文件版本与加载模块A的内核版本不一致, 会导致加载失败. 如果必须要这样做, 例如模块A兼容多个内核版本, 需要启用CONFIG_MODVERSIONS编译制导. 命令行. 内核模块无法打印输出到屏幕,但可以记录日志信息然后读取日志信息到屏幕. SecureBoot. SecureBoot是UEFI的一个设置, 要求只会引导安全密钥签名过的模块. [Shell]ERROR: could not insert module. [dmesg]Lockdown: insmod: unsigned module loading is restricted; see man kernel lockdown.7. SecureBoot - Debian Wiki 内核头文件 编译模块必需内核头文件, 编译时Makefile也需要include内核头文件所在文件夹.">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+
+  <meta itemprop="name" content="FulanXisen&#39;s blog">
+  <meta itemprop="description" content="Linux Kernel Module Programming Guide [TOC]
+Easy Begin 内核模块包 编程内核模块首先要安装内核模块包kmod.
+sudo apt-get install build-essential kmod 命令行的内核模块相关命令 sudo lsmod # 查看所有加载进内核的模块 sudo cat /proc/modules # 和lsmod有什么不同 sudo modinfo ABC_x.ko # 查看模块ABC的信息 sudo insmod ABC_x.ko # 向内核中加载模块ABC sudo rmmod ABC-x # 从内核中卸载模块ABC, 注意ABC_x.ko名称中的&#39;_&#39;字符会被内核自动替换成&#39;-&#39;字符 sudo journalctl --since &#34;1 hour ago&#34; | grep kernel # 查看过去一小时内的内核日志 编码前须知 版本. 如果编译模块A时include的内核头文件版本与加载模块A的内核版本不一致, 会导致加载失败. 如果必须要这样做, 例如模块A兼容多个内核版本, 需要启用CONFIG_MODVERSIONS编译制导. 命令行. 内核模块无法打印输出到屏幕,但可以记录日志信息然后读取日志信息到屏幕. SecureBoot. SecureBoot是UEFI的一个设置, 要求只会引导安全密钥签名过的模块. [Shell]ERROR: could not insert module. [dmesg]Lockdown: insmod: unsigned module loading is restricted; see man kernel lockdown.7. SecureBoot - Debian Wiki 内核头文件 编译模块必需内核头文件, 编译时Makefile也需要include内核头文件所在文件夹.">
+  <meta itemprop="wordCount" content="1834">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="FulanXisen&#39;s blog">
+  <meta name="twitter:description" content="Linux Kernel Module Programming Guide [TOC]
+Easy Begin 内核模块包 编程内核模块首先要安装内核模块包kmod.
+sudo apt-get install build-essential kmod 命令行的内核模块相关命令 sudo lsmod # 查看所有加载进内核的模块 sudo cat /proc/modules # 和lsmod有什么不同 sudo modinfo ABC_x.ko # 查看模块ABC的信息 sudo insmod ABC_x.ko # 向内核中加载模块ABC sudo rmmod ABC-x # 从内核中卸载模块ABC, 注意ABC_x.ko名称中的&#39;_&#39;字符会被内核自动替换成&#39;-&#39;字符 sudo journalctl --since &#34;1 hour ago&#34; | grep kernel # 查看过去一小时内的内核日志 编码前须知 版本. 如果编译模块A时include的内核头文件版本与加载模块A的内核版本不一致, 会导致加载失败. 如果必须要这样做, 例如模块A兼容多个内核版本, 需要启用CONFIG_MODVERSIONS编译制导. 命令行. 内核模块无法打印输出到屏幕,但可以记录日志信息然后读取日志信息到屏幕. SecureBoot. SecureBoot是UEFI的一个设置, 要求只会引导安全密钥签名过的模块. [Shell]ERROR: could not insert module. [dmesg]Lockdown: insmod: unsigned module loading is restricted; see man kernel lockdown.7. SecureBoot - Debian Wiki 内核头文件 编译模块必需内核头文件, 编译时Makefile也需要include内核头文件所在文件夹.">
+
+      
+      
+    
+	
+  </head><body class="ma0 avenir bg-near-white production is-page is-page page-linux-kernel-module-programming-guide">
+    
+   
+  
+
+  <header>
+    <div class="bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l center items-center justify-between">
+    <a href="/" class="f3 fw2 hover-white white-90 dib no-underline">
+      
+        FulanXisen&#39;s blog
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      <div class="ananke-socials"></div>
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+
+  <article class="page-linux-kernel-module-programming-guide flex-l mw7 center ph3 flex-wrap justify-between">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked ttu">
+          
+        Posts
+      </aside><div id="sharing" class="mt3 ananke-socials"></div>
+<h1 class="f1 athelas mt3 mb1"></h1>
+      
+      
+      
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-100-l"><h1 id="linux-kernel-module-programming-guide">Linux Kernel Module Programming Guide</h1>
+<p>[TOC]</p>
+<h2 id="easy-begin">Easy Begin</h2>
+<h3 id="内核模块包">内核模块包</h3>
+<p>编程内核模块首先要安装内核模块包<code>kmod</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo apt-get install build-essential kmod
+</span></span></code></pre></div><h3 id="命令行的内核模块相关命令">命令行的内核模块相关命令</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo lsmod <span style="color:#75715e"># 查看所有加载进内核的模块</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo cat /proc/modules <span style="color:#75715e"># 和lsmod有什么不同</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo modinfo ABC_x.ko <span style="color:#75715e"># 查看模块ABC的信息</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo insmod ABC_x.ko <span style="color:#75715e"># 向内核中加载模块ABC</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo rmmod ABC-x <span style="color:#75715e"># 从内核中卸载模块ABC, 注意ABC_x.ko名称中的&#39;_&#39;字符会被内核自动替换成&#39;-&#39;字符</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo journalctl --since <span style="color:#e6db74">&#34;1 hour ago&#34;</span> | grep kernel <span style="color:#75715e"># 查看过去一小时内的内核日志</span>
+</span></span></code></pre></div><h3 id="编码前须知">编码前须知</h3>
+<ol>
+<li>版本.
+如果编译模块A时include的内核头文件版本与加载模块A的内核版本不一致, 会导致加载失败.
+如果必须要这样做, 例如模块A兼容多个内核版本, 需要启用CONFIG_MODVERSIONS编译制导.</li>
+<li>命令行.
+内核模块无法打印输出到屏幕,但可以记录日志信息然后读取日志信息到屏幕.</li>
+<li>SecureBoot.
+SecureBoot是UEFI的一个设置, 要求只会引导安全密钥签名过的模块.
+<code>[Shell]ERROR: could not insert module</code>.
+<code>[dmesg]Lockdown: insmod: unsigned module loading is restricted; see man kernel lockdown.7</code>.
+<a href="https://wiki.debian.org/SecureBoot">SecureBoot - Debian Wiki</a></li>
+</ol>
+<h3 id="内核头文件">内核头文件</h3>
+<p>编译模块必需内核头文件, 编译时Makefile也需要include内核头文件所在文件夹.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>// 查看系统内核版本
+</span></span><span style="display:flex;"><span>&gt; uname -r
+</span></span><span style="display:flex;"><span>6.1.21-v8+
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo apt-get update 
+</span></span><span style="display:flex;"><span>// 查看对于内核头文件是否在源仓库中
+</span></span><span style="display:flex;"><span>sudo apt-cache search linux-headers-<span style="color:#e6db74">`</span>uname -r<span style="color:#e6db74">`</span>
+</span></span><span style="display:flex;"><span>// 下载<span style="color:#f92672">(</span>到/usr/src文件夹下<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>sudo apt-get install linux-headers-<span style="color:#e6db74">`</span>uname -r<span style="color:#e6db74">`</span>
+</span></span></code></pre></div><p>rpi的rpi-os中的Debian源里没有对应版本的内核头文件, 但是rpi自己提供了一份.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>// 不需要指定版本
+</span></span><span style="display:flex;"><span>sudo apt-get install raspberrypi-kernel-headers
+</span></span></code></pre></div><h3 id="编码规范">编码规范</h3>
+<ol>
+<li>缩进使用tabs而非spaces. 提交patch到上游时必须遵守.</li>
+<li><code>pr_info</code>和<code>pr_debug</code>in <code>include/linux/printk.h</code></li>
+<li><code>kbuild</code>, <code>Documentation/kbuild/modules.rst</code></li>
+<li><code>Makefile</code>, <code>Documentation/kbuild/makefiles.rst</code></li>
+</ol>
+<h3 id="一个极简内核模块示例">一个极简内核模块示例</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/module.h&gt; /* needed by all modules */</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/init.h&gt; /* needed for macros */</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/printk.h&gt;  /* needed for pr_info */</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">/* __initdata macro修饰下的变量在init完成时会被丢弃并释放内存(适用于built-in driver, 对loadable driver没有影响) */</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> hello_data __initdata <span style="color:#f92672">=</span> <span style="color:#ae81ff">3</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/* 模块接受一个基本类型参数的声明方法 */</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> input_data <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">module_param</span>(input_data, <span style="color:#66d9ef">int</span>, S_IRUSR<span style="color:#f92672">|</span>S_IWUSR<span style="color:#f92672">|</span>S_IRGRP<span style="color:#f92672">|</span>S_IWGRP);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">MODULE_PARM_DESC</span>(input_data, <span style="color:#e6db74">&#34;a int input&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/* 模块接收一个字符串参数的声明方法 */</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> input_string <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;???&#34;</span>; <span style="color:#75715e">// 字符串的最大长度不需要定义
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">module_param</span>(input_string, charp, <span style="color:#ae81ff">0000</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">MODULE_PARM_DESC</span>(input_string, <span style="color:#e6db74">&#34;a string input&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/* 模块接受一个数组类型参数的声明方法 */</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> input_array[<span style="color:#ae81ff">2</span>] <span style="color:#f92672">=</span> {<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>}; <span style="color:#75715e">// 预先定义数组的最大长度, 输入数组不足最大长度的位置依然保持这里静态声明的默认值
+</span></span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> input_array_argc <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; <span style="color:#75715e">// number of array elements
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">module_param_array</span>(input_array, <span style="color:#66d9ef">int</span>, <span style="color:#f92672">&amp;</span>input_array_argc, <span style="color:#ae81ff">0000</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">MODULE_PARM_DESC</span>(input_array, <span style="color:#e6db74">&#34;a int array input&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/* __init macro 修饰下的init函数在完成时会被丢弃并释放内存(适用于built-in driver, 对loadable driver没有影响)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> 因为built-in driver只加载进内核一次 */</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> __init <span style="color:#a6e22e">hello_init</span>(<span style="color:#66d9ef">void</span>) 
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;hello %d %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, hello_data, input_data);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/* __exit macro 修饰下的exit函数会被忽略(适用于built-in driver, 对loadable driver没有影响) 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	因为built-in driver不会被卸载出内核 */</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> __exit <span style="color:#a6e22e">hello_exit</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;bey</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">module_init</span>(hello_init);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">module_exit</span>(hello_exit);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">MODULE_LICENSE</span>(<span style="color:#e6db74">&#34;GPL&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">MODULE_AUTHOR</span>(<span style="color:#e6db74">&#34;fanyx&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">MODULE_DESCRIPTION</span>(<span style="color:#e6db74">&#34;A simple driver&#34;</span>);
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># 加载内核时, 按照名称赋参数值</span>
+</span></span><span style="display:flex;"><span>sudo insmod hello.ko input_int<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span> input_string<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;hehe&#34;</span> input_array<span style="color:#f92672">=</span>-1,-1
+</span></span></code></pre></div><h3 id="编译多个文件组成的模块">编译多个文件组成的模块</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>&gt; ls
+</span></span><span style="display:flex;"><span>start.c
+</span></span><span style="display:flex;"><span>stop.c
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-makefile" data-lang="makefile"><span style="display:flex;"><span>obj-m <span style="color:#f92672">+=</span> hello.o <span style="color:#75715e"># 增加一个object hello</span>
+</span></span><span style="display:flex;"><span>hello-objs <span style="color:#f92672">:=</span> start.o stop.o <span style="color:#75715e"># 声明hello object包含的文件</span>
+</span></span><span style="display:flex;"><span>PWD <span style="color:#f92672">:=</span> %<span style="color:#f92672">(</span>CURDIR<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">all</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>	make -C /lib/modules/<span style="color:#66d9ef">$(</span>shell uname -r<span style="color:#66d9ef">)</span>/build M<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>PWD<span style="color:#66d9ef">)</span> modules
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">clean</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>	make -C /lib/modules/<span style="color:#66d9ef">$(</span>shell uname -r<span style="color:#66d9ef">)</span>/build M<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>PWD<span style="color:#66d9ef">)</span> clean
+</span></span></code></pre></div><h2 id="设备驱动程序视角下的内核模块">设备驱动程序视角下的内核模块</h2>
+<p>Linux Kernel Module的一个重要类型是Device Driver.
+物理设备抽象为文件，存放在/dev目录下面。通过 cat /proc/devices 可以查看所有设备。</p>
+<p>Device分为两种，Char Device和Block Device</p>
+<h2 id="模块如何开始和结束">模块如何开始和结束</h2>
+<h2 id="模块可用的函数">模块可用的函数</h2>
+<h2 id="dmesg读取模块日志"><code>dmesg</code>读取模块日志</h2>
+<p><a href="https://www.kernel.org/doc/html/next/core-api/printk-basics.html">Message logging with printk — The Linux Kernel documentation</a></p>
+<table>
+  <thead>
+      <tr>
+          <th>Name</th>
+          <th>String</th>
+          <th>Alias Function</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>KERN_EMERG</td>
+          <td>&ldquo;0&rdquo;</td>
+          <td><a href="https://www.kernel.org/doc/html/next/core-api/printk-basics.html#c.pr_emerg"><code>pr_emerg()</code></a></td>
+      </tr>
+      <tr>
+          <td>KERN_ALERT</td>
+          <td>&ldquo;1&rdquo;</td>
+          <td><a href="https://www.kernel.org/doc/html/next/core-api/printk-basics.html#c.pr_alert"><code>pr_alert()</code></a></td>
+      </tr>
+      <tr>
+          <td>KERN_CRIT</td>
+          <td>&ldquo;2&rdquo;</td>
+          <td><a href="https://www.kernel.org/doc/html/next/core-api/printk-basics.html#c.pr_crit"><code>pr_crit()</code></a></td>
+      </tr>
+      <tr>
+          <td>KERN_ERR</td>
+          <td>&ldquo;3&rdquo;</td>
+          <td><a href="https://www.kernel.org/doc/html/next/core-api/printk-basics.html#c.pr_err"><code>pr_err()</code></a></td>
+      </tr>
+      <tr>
+          <td>KERN_WARNING</td>
+          <td>&ldquo;4&rdquo;</td>
+          <td><code>pr_warn()</code></td>
+      </tr>
+      <tr>
+          <td>KERN_NOTICE</td>
+          <td>&ldquo;5&rdquo;</td>
+          <td><a href="https://www.kernel.org/doc/html/next/core-api/printk-basics.html#c.pr_notice"><code>pr_notice()</code></a></td>
+      </tr>
+      <tr>
+          <td>KERN_INFO</td>
+          <td>&ldquo;6&rdquo;</td>
+          <td><a href="https://www.kernel.org/doc/html/next/core-api/printk-basics.html#c.pr_info"><code>pr_info()</code></a></td>
+      </tr>
+      <tr>
+          <td>KERN_DEBUG</td>
+          <td>&ldquo;7&rdquo;</td>
+          <td><a href="https://www.kernel.org/doc/html/next/core-api/printk-basics.html#c.pr_debug"><code>pr_debug()</code></a> and <a href="https://www.kernel.org/doc/html/next/core-api/printk-basics.html#c.pr_devel"><code>pr_devel()</code></a> if DEBUG is defined</td>
+      </tr>
+  </tbody>
+</table>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># 查看当前console loglevel</span>
+</span></span><span style="display:flex;"><span>$ cat /proc/sys/kernel/printk
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">4</span>        <span style="color:#ae81ff">4</span>        <span style="color:#ae81ff">1</span>        <span style="color:#ae81ff">7</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#current,default,minimun,boot-time-default</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># 修改当前console loglevel</span>
+</span></span><span style="display:flex;"><span>$ dmesg -n <span style="color:#ae81ff">5</span>
+</span></span></code></pre></div><p>优先级高于(越小越高)当前<code>console_loglevel</code>的日志会立刻出现在console上.</p>
+<h2 id="user-space-vs-kernel-space">User Space vs Kernel Space</h2>
+<h2 id="name-space">Name Space</h2>
+<h2 id="code-space">Code Space</h2>
+<h2 id="device-driver">Device Driver</h2>
+<h2 id="字符设备驱动程序">字符设备驱动程序</h2>
+<blockquote>
+<p>Charactor Device Driver</p>
+</blockquote>
+<ol>
+<li><code>struct file_operation</code></li>
+<li><code>struct file</code></li>
+<li>注册一个设备</li>
+<li>注销一个设备</li>
+<li>示例程序</li>
+<li>兼容多个内核版本</li>
+</ol>
+<h2 id="proc-module向process发送信息"><code>/proc</code>: Module向Process发送信息</h2>
+<ol>
+<li><code>struct proc_ops</code></li>
+<li>读、写<code>/proc</code> 文件</li>
+<li>通过标准文件系统管理<code>/proc</code>文件</li>
+<li>通过<code>seq_file</code>管理<code>/proc</code>文件</li>
+</ol>
+<h2 id="sys读写module内部的变量"><code>/sys</code>：读写Module内部的变量</h2>
+<h2 id="与设备文件对话">与设备文件对话</h2>
+<ul>
+<li>using device file to write things to the physical device
+<ul>
+<li>write device&rsquo;s commands</li>
+<li>write data to be sent through the device</li>
+</ul>
+</li>
+<li>using device file to read things from the physical device
+<ul>
+<li>read responses for device&rsquo;s commands</li>
+<li>read data received through the device</li>
+</ul>
+</li>
+</ul>
+<p>Unix ioctl机制实现以上功能</p>
+<h2 id="system-calls">System Calls</h2>
+<p>System Call是真正的process to kernel communication mechanism
+一般来说，process不能访问kernel(既不能访问kernel memory也不能调用kernel function)，这是CPU从硬件上保证的(称为protected mode 或者 page protection)
+system call是一个例外。process向特定的寄存器中填充参数，然后调用一个特别的指令跳转到kernel中预先定义好的位置。当程序跳转到这个位置的时候，硬件就知道程序不再以受限模式运行，而是处于kernel中。这个可以让process跳转到kernel当中的特别的指令就是<code>system_call</code>. <code>system_call</code>的过程是这样的:</p>
+<ol>
+<li>检查system call number, 从而告诉kernel是哪个服务被请求</li>
+<li>查看sys_call_table获得对应kernel function的地址</li>
+<li>调用查找到的kernel function</li>
+<li>等待调用的kernel function返回</li>
+<li>做一些system check,然后返回到process当中</li>
+<li>如果process时间用完了,会返回到别的process.
+这一部分代码在<code>arch/$(architecture)/kernel/entry.S</code>中<code>ENTRY(system_call)</code>的位置.</li>
+</ol>
+<p>如果我想改变一个system call的行为, 假设这个system call的符号是<code>system_call_1</code>, 对应的kernel function符号是<code>system_call_1_cb</code>. 我需要自己实现一个函数<code>my_system_call_1_cb</code>(通常只用在<code>my_system_call_1_cb</code>里写一点点定制的代码,然后在末尾调用<code>system_call_1_cb</code>), 然后在<code>sys_call_table</code>中存的<code>system_call_1_cb</code>的指针换成<code>my_system_call_1_cb</code>就可以了.
+<strong>注意</strong>:如果我在module里覆盖了一个system call, 当这个module加载进kernel然后再卸载出kernel之后, <code>sys_call_table</code>中被修改的指针没有改回去, 务必记得在<code>cleanup_module</code>中将<code>sys_call_table</code>恢复到原来的状态.</p>
+<p>如何修改<code>sys_call_table</code>的内容?</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e"># 不是su权限查看不到kernel中的symbol和address信息, address会返回全零</span>
+</span></span><span style="display:flex;"><span>$&gt; cat /proc/kallsyms | grep sys_call_table
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">0000000000000000</span> R sys_call_table
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">0000000000000000</span> R compat_sys_call_table
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>$&gt; sudo cat /proc/kallsyms | grep sys_call_table
+</span></span><span style="display:flex;"><span>ffffffebcd190938 R sys_call_table
+</span></span><span style="display:flex;"><span>ffffffebcd196a38 R compat_sys_call_table
+</span></span></code></pre></div><p>注意:不要在生产用途中篡改任何system call. 举一个导致系统崩溃的例子, 假设module A实现了<code>A_openat</code>用于篡改打开文件的system call <code>openat</code>, module B实现了<code>B_openat</code>用于篡改<code>openat</code>. 如果module A先加载进kernel, module B再加载进kernel, 然后module A先从kernel中卸载, module B再从kernel中卸载. 最终这个system call对应的kernel function pointer指向<code>A_openat</code>, 但是module A已经从kernel中卸载, 就变成了一个野指针, 再次调用这个system call就会导致kernel crash.</p>
+<h2 id="阻塞processes和threads">阻塞Processes和Threads</h2>
+<h3 id="sleep">Sleep</h3>
+<p>当module当前无法回应process的请求的时候,可以将这个process sleep, 直到可以回应的时候再唤醒.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#a6e22e">DECLARE_WAIT_QUEUE_HEAD</span>(waitq);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">wait_event_interruptible</span>(waitq,);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">wake_up</span>(<span style="color:#f92672">&amp;</span>waitq);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">module_put</span>(THIS_MODULE);
+</span></span></code></pre></div><h3 id="completions">Completions</h3>
+<p>在一个module内部,有时需要面对多线程执行的先后顺序的问题. Kernel有一种允许timeout和interrupt的实现方式, 就是Completion.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">struct</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">struct</span> completion a_comp;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">struct</span> completion b_comp;
+</span></span><span style="display:flex;"><span>} machine; <span style="color:#75715e">// 声明machine变量(具有匿名类型)
+</span></span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">machine_thread_a</span>(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>arg)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">completion_all</span>(<span style="color:#f92672">&amp;</span>machine.a_comp);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">kthread_complete_and_exit</span>(<span style="color:#f92672">&amp;</span>machine.a_comp, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">machine_thread_b</span>(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>arg)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 等待completion a_comp完成
+</span></span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">wait_for_completion</span>(<span style="color:#f92672">&amp;</span>machine.a_comp);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">completion_all</span>(<span style="color:#f92672">&amp;</span>machine.b_comp);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">kthread_complete_and_exit</span>(<span style="color:#f92672">&amp;</span>machine.b_comp, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">mod_use_completion_init</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 声明两个task
+</span></span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">struct</span> task_struct <span style="color:#f92672">*</span>thread_a;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">struct</span> task_struct <span style="color:#f92672">*</span>thread_b;
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;example of completion</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 初始化completion
+</span></span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">init_completion</span>(<span style="color:#f92672">&amp;</span>machine.a_comp);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">init_completion</span>(<span style="color:#f92672">&amp;</span>machine.b_comp);
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 创建thread_a
+</span></span></span><span style="display:flex;"><span>  thread_a <span style="color:#f92672">=</span> <span style="color:#a6e22e">kthread_create</span>(machine_thread_a, NULL, <span style="color:#e6db74">&#34;KThread a&#34;</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">IS_ERR</span>(thread_a))
+</span></span><span style="display:flex;"><span>  {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">goto</span> ERROR_THREAD_A;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 创建thread_b
+</span></span></span><span style="display:flex;"><span>  thread_b <span style="color:#f92672">=</span> <span style="color:#a6e22e">kthread_create</span>(machine_thread_b, NULL, <span style="color:#e6db74">&#34;KThread b&#34;</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">IS_ERR</span>(thread_b))
+</span></span><span style="display:flex;"><span>  {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">goto</span> ERROR_THREAD_B;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 
+</span></span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">wake_up_process</span>(thread_a);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">wake_up_process</span>(thread_b);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>ERROR_THREAD_B:
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">kthread_stop</span>(thread_a);
+</span></span><span style="display:flex;"><span>ERROR_THREAD_A:
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">mod_use_completion_exit</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">wait_for_completion</span>(<span style="color:#f92672">&amp;</span>machine.a_comp);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">wait_for_completion</span>(<span style="color:#f92672">&amp;</span>machine.b_comp);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">module_init</span>(mod_use_completion_init);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">module_exit</span>(mod_use_completion_exit);
+</span></span></code></pre></div><p>此外还有一些基于<code>wait_for_completion</code>函数而来的变体函数(可以设置timeout或者可以设置interrupt). 一般来说<code>wait_for_completion</code>足以满足绝大部分场景.</p>
+<h2 id="避免collision和deadlock">避免Collision和Deadlock</h2>
+<ol>
+<li><a href="#mutex">Mutex</a></li>
+<li><a href="#spinlocks">Spinlocks</a></li>
+<li><a href="#read-and-write-locks">Read and write locks</a></li>
+<li><a href="#atomic-operations">Atomic operations</a></li>
+</ol>
+<h3 id="mutex">Mutex</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#a6e22e">DEFINE_MUTEX</span>(my_mutex);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mutex_trylock</span>(<span style="color:#f92672">&amp;</span>my_mutex);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mutex_is_locked</span>(<span style="color:#f92672">&amp;</span>my_mutex);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mutex_unlock</span>(<span style="color:#f92672">&amp;</span>my_mutex);
+</span></span></code></pre></div><h3 id="spinlocks">Spinlocks</h3>
+<p>自旋锁会锁住代码正在运行的CPU, 并占用其100%的资源. 最好只在预期运行时间不超过几毫秒, 并且用户看不出任何事物明显变慢的代码上使用.</p>
+<h3 id="read-and-write-locks">Read and write locks</h3>
+<p>读写锁是一种特化的自旋锁.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#a6e22e">DEFINE_RWLOCK</span>(my_rwlock);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> flags;
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">read_lock_irqsave</span>(<span style="color:#f92672">&amp;</span>my_rwlock, flags);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">read_unlock_irqrestore</span>(<span style="color:#f92672">&amp;</span>my_rwlock, flags);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">write_lock_irqsave</span>(<span style="color:#f92672">&amp;</span>my_rwlock, flags);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">write_unlock_irqrestore</span>(<span style="color:#f92672">&amp;</span>my_rwlock, flags);
+</span></span></code></pre></div><h3 id="atomic-operations">Atomic operations</h3>
+<h2 id="练习-replacing-print-macros">练习: Replacing Print Macros</h2>
+<p><code>printk.h</code>中定义的Print Macros将字符串发送到日志当中, 当是有时, 我想让模块将字符串发送到执行了加载这个模块的命令的tty(teletype, text stream abstraction of )当中.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">print_string</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>str)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">/* The tty for the current task */</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">struct</span> tty_struct <span style="color:#f92672">*</span>my_tty <span style="color:#f92672">=</span> <span style="color:#a6e22e">get_current_tty</span>();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">/* If my_tty is NULL, the current task has no tty you can print to (i.e.,
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	* if it is a daemon). If so, there is nothing we can do.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	*/</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (my_tty) {
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> tty_operations <span style="color:#f92672">*</span>ttyops <span style="color:#f92672">=</span> my_tty<span style="color:#f92672">-&gt;</span>driver<span style="color:#f92672">-&gt;</span>ops;
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">/* my_tty-&gt;driver is a struct which holds the tty&#39;s functions,
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    * one of which (write) is used to write strings to the tty.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    * It can be used to take a string either from the user&#39;s or
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    * kernel&#39;s memory segment.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    *
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    * The function&#39;s 1st parameter is the tty to write to, because the
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    * same function would normally be used for all tty&#39;s of a certain
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    * type.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    * The 2nd parameter is a pointer to a string.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    * The 3rd parameter is the length of the string.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    *
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    * As you will see below, sometimes it&#39;s necessary to use
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    * preprocessor stuff to create code that works for different
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    * kernel versions. The (naive) approach we&#39;ve taken here does not
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    * scale well. The right way to deal with this is described in
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    * section 2 of
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    * linux/Documentation/SubmittingPatches
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    */</span>
+</span></span><span style="display:flex;"><span>    (ttyops<span style="color:#f92672">-&gt;</span>write)(my_tty, str, <span style="color:#a6e22e">strlen</span>(str));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">/* ttys were originally hardware devices, which (usually) strictly
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    * followed the ASCII standard. In ASCII, to move to a new line you
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    * need two characters, a carriage return(回车) and a line feed(换行). 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    * On Unix, the ASCII line feed is used for both purposes - so we can not
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    * just use \n, because it would not have a carriage return and the
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    * next line will start at the column right after the line feed.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    *
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    * This is why text files are different between Unix and MS Windows.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    * In CP/M and derivatives, like MS-DOS and MS Windows, the ASCII
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    * standard was strictly adhered to, and therefore a newline requires
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    * both a LF and a CR.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    */</span>
+</span></span><span style="display:flex;"><span>    (ttyops<span style="color:#f92672">-&gt;</span>write)(my_tty, <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\015\012</span><span style="color:#e6db74">&#34;</span>, <span style="color:#ae81ff">2</span>);
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h2 id="练习-flashing-keyboard-leds">练习: Flashing keyboard LEDs</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/init.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/kd.h&gt; /* For KDSETLED, */</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/module.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/tty.h&gt; /* For tty_struct */</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/vt.h&gt; /* For MAX_NR_CONSOLES, the max number of virtual console supported by kerntl */</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/vt_kern.h&gt; /* for fg_console, fg_console is the current virtual console */</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/console_struct.h&gt; /* For vc_cons, the list of virtual consoles */</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">struct</span> tty_driver <span style="color:#f92672">*</span>this_tty_driver;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">struct</span> timer_list this_timer;
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define BLINK_DELAY (HZ / 5)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define ALL_LED_ON 0x07
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define RESTORE_LEDS 0xFF
+</span></span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">timer_fn</span>(<span style="color:#66d9ef">struct</span> timer_list <span style="color:#f92672">*</span>unused)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">struct</span> tty_struct <span style="color:#f92672">*</span>t <span style="color:#f92672">=</span> vc_cons[fg_console].d<span style="color:#f92672">-&gt;</span>port.tty;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (kbledstatus <span style="color:#f92672">==</span> ALL_LEDS_ON){
+</span></span><span style="display:flex;"><span>    kbledstatus <span style="color:#f92672">=</span> RESTORE_LEDS;
+</span></span><span style="display:flex;"><span>  }<span style="color:#66d9ef">else</span>{
+</span></span><span style="display:flex;"><span>    kbledstatus <span style="color:#f92672">=</span> ALL_LEDS_ON;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  (this_tty_driver<span style="color:#f92672">-&gt;</span>ops<span style="color:#f92672">-&gt;</span>ioctl)(t, KDSETLED, kbledstatus);
+</span></span><span style="display:flex;"><span>  this_timer.expires <span style="color:#f92672">=</span> jiffies <span style="color:#f92672">+</span> BLINK_DELAY;
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">add_timer</span>(<span style="color:#f92672">&amp;</span>this_timer);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> __init <span style="color:#a6e22e">kbleds_init</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> i;
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;kbleds: scanning consoles...</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;kbleds: fg_console %x</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, fg_console);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> MAX_NR_CONSOLES; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (NULL <span style="color:#f92672">==</span> vc_cons[i].d){
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;poet_atkm: console[%i/%i] #%i, tty %p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, i, MAX_NR_CONSOLES, vc_cons[i].d<span style="color:#f92672">-&gt;</span>vc_num, (<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>)vc_cons[i].d<span style="color:#f92672">-&gt;</span>port.tty);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;kbleds: scan consoles ends&#34;</span>);
+</span></span><span style="display:flex;"><span>  this_tty_driver <span style="color:#f92672">=</span> vc_cons[fg_console].d<span style="color:#f92672">-&gt;</span>port.tty<span style="color:#f92672">-&gt;</span>driver;
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;kbleds: tty driver magic %x</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, this_tty_driver<span style="color:#f92672">-&gt;</span>magic);
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">timer_setup</span>(<span style="color:#f92672">&amp;</span>this_timer, timer_fn, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>  this_timer.expires <span style="color:#f92672">=</span> jiffies <span style="color:#f92672">+</span> BLINK_DELAY;
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">add_timer</span>(<span style="color:#f92672">&amp;</span>this_timer);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> __exit <span style="color:#a6e22e">kbleds_exit</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;kbleds: exit</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">del_timer</span>(<span style="color:#f92672">&amp;</span>this_timer);
+</span></span><span style="display:flex;"><span>  (this_tty_driver<span style="color:#f92672">-&gt;</span>ops<span style="color:#f92672">-&gt;</span>ioctl)(vc_cons[fg_console].d<span style="color:#f92672">-&gt;</span>port.tty, KDSETLED, RESTORE_LEDS);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h2 id="task-schedule">Task Schedule</h2>
+<ol>
+<li><a href="#tasklets">Tasklets</a></li>
+<li><a href="#work-queues">Work queues</a></li>
+</ol>
+<h3 id="tasklets">Tasklets</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">my_task_fn</span>(<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> data)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;example tasklet starts</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">mdelay</span>(<span style="color:#ae81ff">5000</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;example tasklet ends&#34;</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#a6e22e">DECLEARE_TASKLET</span>(my_task, my_task_fn, <span style="color:#ae81ff">0L</span>);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">example_tasklet_init</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;tasklet example init</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">tasklet_schedule</span>(<span style="color:#f92672">&amp;</span>my_task);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">mdelay</span>(<span style="color:#ae81ff">2000</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;example tasklet continues...</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">example_tasklet_exit</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;tasklet example exit</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">tasklet_kell</span>(<span style="color:#f92672">&amp;</span>my_task);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>tasklet的callback不能sleep, 并且不能访问user space data. 因为tasklet的callback运行atomic context中运行,在software interrupt里.</p>
+<p>此外, kernel只允许任意时间给定tasklet只有一个instance在运行,多个不同tasklet的callback可以并行运行.</p>
+<p>tasklet可以替换成workqueue、timer、threaded interrupt.</p>
+<p>kernel正在移除tasklet, 但目前保留了tasklet兼容.</p>
+<h3 id="work-queues">Work queues</h3>
+<p>一个Work queue中的work由Completely Fair Scheduler(CFS)方式调度.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">struct</span> workqueue_struct <span style="color:#f92672">*</span>queue <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">struct</span> work_struct work;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">work_handler</span>(<span style="color:#66d9ef">struct</span> work_struct <span style="color:#f92672">*</span>data)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;work handler function.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>)
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> __init <span style="color:#a6e22e">sched_init</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  queue <span style="color:#f92672">=</span> <span style="color:#a6e22e">alloc_workqueue</span>(<span style="color:#e6db74">&#34;Hello World&#34;</span>, WQ_UNBOUND, <span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">INIT_WORK</span>(<span style="color:#f92672">&amp;</span>work, work_handler);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">schedule_work</span>(<span style="color:#f92672">&amp;</span>work);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> __exit <span style="color:#a6e22e">sched_exit</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">destory_workqueue</span>(queue);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>大而全的万金油多线程实现.</p>
+<h2 id="interrupt-handler">Interrupt Handler</h2>
+<p>CPU和其他硬件的交互有两个类型,一种是CPU主动发送命令给硬件,另一种是硬件需要告诉CPU一些东西. 第二种称为interrupt. Interrupt类型的交互更难实现,因为硬件通常RAM数量很少, 必须在硬件方便而非CPU方便的情况下完成处理, 否则当一条信息可访问的时候CPU没有读进来, 这条信息就丢失了.</p>
+<p>Linux的硬件interrupt称为IRQ. IRQ有short和long两种. short IRQ预计花费非常短的时间, 在此期间机器的其余部分将被阻塞,并且不会处理其他中断. long IRQ预计花费更长的时间, 在此期间其他中断可能发生(除了来自同一设备的中断). 如何可能的话, 尽量将中断处理程序声明为long IRQ.</p>
+<p>当CPU收到一个中断, 它停止正在进行的程序(除非正在处理优先级更高的中断), 将某些参数保存在堆栈上, 然后调用中断处理程序. 这意味着在中断处理程序内部, 某些事情是不被允许的, 因为当前系统处于一种未知的状态. Linux通过将中断处理过程分为两部分来解决这个问题. 第一部分立刻执行并屏蔽中断线. 硬件中断必须快速处理, 第二部分处理被推迟的繁重工作. 例如Softirq.</p>
+<p>有关IRQ的更详细内容请参考&quot;APCI&quot;.</p>
+<h2 id="练习-detecting-button-presses">练习: Detecting Button Presses</h2>
+<h2 id="crypto">Crypto</h2>
+<h3 id="sha256">SHA256</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#75715e">#define SHA256_LENGTH 256
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>plaintext<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;this is a test&#34;</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">char</span> hash_sha256[SHA256_LENGTH];
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> crypto_shash <span style="color:#f92672">*</span>sha256;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> shash_desc <span style="color:#f92672">*</span>shash;
+</span></span><span style="display:flex;"><span>sha256<span style="color:#f92672">=</span><span style="color:#a6e22e">crypto_alloc_shash</span>(<span style="color:#e6db74">&#34;sha256&#34;</span>,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>shash<span style="color:#f92672">=</span><span style="color:#a6e22e">kmalloc</span>(<span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">struct</span> shash_desc)<span style="color:#f92672">+</span><span style="color:#a6e22e">crypto_shash_descsize</span>(sha256), GFP_KERNEL);
+</span></span><span style="display:flex;"><span>shash<span style="color:#f92672">-&gt;</span>tfm<span style="color:#f92672">=</span>sha256;
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">crypto_shash_init</span>(shash);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">crypto_shash_update</span>(shash, plaintex, <span style="color:#a6e22e">strlen</span>(plaintext));
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">crypto_shash_final</span>(shash,hash_sha256);
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// print plaintext &#34;plaintex&#34; and hash result shash.
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">kfree</span>(shash);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">crypto_free_shash</span>(sha256);
+</span></span></code></pre></div><h3 id="aes256">AES256</h3>
+<p>这个更复杂一些, AES变种太多, 初始化过程很漫长.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#75715e">#define SYMMETRIC_KEY_LENGTH 32
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define CIPHER_BLOCK_SIZE 16
+</span></span></span></code></pre></div><h2 id="virtual-input-output-device-driver">Virtual Input Output Device Driver</h2>
+<p>通过Event的方式与Device交互</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">send</span>(<span style="color:#66d9ef">struct</span> vinput <span style="color:#f92672">*</span>, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>, <span style="color:#66d9ef">int</span>);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">read</span>(<span style="color:#66d9ef">struct</span> vinput <span style="color:#f92672">*</span>, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>, <span style="color:#66d9ef">int</span>);
+</span></span></code></pre></div><h2 id="the-device-model">The Device Model</h2>
+<p>以上介绍了各种各样的模块做各种各样的事, 但是缺少一致性. 一致性要由我自己定义的, 控制设备启动挂起结束等等功能的一致性模型称为设备模型. 以下是一个样例:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/kernel&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/module.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/platform_device.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> dm_data{
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>greeting;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> number;
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">dm_probe</span>(<span style="color:#66d9ef">struct</span> platform_driver <span style="color:#f92672">*</span>dev)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">struct</span> dm_da <span style="color:#f92672">*</span>pa <span style="color:#f92672">=</span> (<span style="color:#66d9ef">struct</span> dm_data<span style="color:#f92672">*</span>)(dev<span style="color:#f92672">-&gt;</span>dev.platform_data);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;dm probe</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;dm greeting: %s; %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, pd<span style="color:#f92672">-&gt;</span>greeting, pd<span style="color:#f92672">-&gt;</span>number);
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">/* Your device initialization code */</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">dm_remove</span>(<span style="color:#66d9ef">struct</span> platform_driver <span style="color:#f92672">*</span>dev)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;dm example removed</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">/* Your device removal code */</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">dm_suspend</span>(<span style="color:#66d9ef">struct</span> device <span style="color:#f92672">*</span>dev)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;dm example suspend</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">/* Your device suspend code */</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">dm_resume</span>(<span style="color:#66d9ef">struct</span> device <span style="color:#f92672">*</span>dev)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;dm example resume</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">/* Your device resume code */</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> dev_pm_ops dm_pm_ops <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>  .suspend <span style="color:#f92672">=</span> dm_suspend,
+</span></span><span style="display:flex;"><span>  .resume <span style="color:#f92672">=</span> dm_resume,
+</span></span><span style="display:flex;"><span>  .poweroff <span style="color:#f92672">=</span> dm_suspend,
+</span></span><span style="display:flex;"><span>  .freeze <span style="color:#f92672">=</span> dm_suspend,
+</span></span><span style="display:flex;"><span>  .thaw <span style="color:#f92672">=</span> dm_resume,
+</span></span><span style="display:flex;"><span>  .restore <span style="color:#f92672">=</span> dm_resume,
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">struct</span> platform_driver dm_driver <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>  .driver <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>    .name <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;dm_example&#34;</span>,
+</span></span><span style="display:flex;"><span>    .pm <span style="color:#f92672">=</span> <span style="color:#f92672">&amp;</span>dm_pm_ops,
+</span></span><span style="display:flex;"><span>  },
+</span></span><span style="display:flex;"><span>  .probe <span style="color:#f92672">=</span> dm_probe,
+</span></span><span style="display:flex;"><span>  .remove <span style="color:#f92672">=</span> dm_remove,
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">dm_init</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> ret;
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;device model init</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>  ret <span style="color:#f92672">=</span> <span style="color:#a6e22e">platform_driver_register</span>(<span style="color:#f92672">&amp;</span>dm_driver);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (ret){
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">pr_err</span>(<span style="color:#e6db74">&#34;Unable to register driver</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> ret;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">dm_exit</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;dm exit</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">platform_driver_unregister</span>(<span style="color:#f92672">&amp;</span>dm_driver);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">module_init</span>(dm_init);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">module_exit</span>(dm_exit);
+</span></span></code></pre></div><h2 id="optimizations">Optimizations</h2>
+<p>注意:如果计算性能不是瓶颈, 就不要优化.</p>
+<h3 id="likely-and-unlikely-conditions">Likely and Unlikely conditions</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#75715e">// I know allocating memory always expecting succeed.
+</span></span></span><span style="display:flex;"><span>bvl <span style="color:#f92672">=</span> <span style="color:#a6e22e">bvec_alloc</span>(gfp_mask, nr_iovecs, <span style="color:#f92672">&amp;</span>idx);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">unlikely</span>(<span style="color:#f92672">!</span>bvl)){
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">mempool_free</span>(bio, bio_pool);
+</span></span><span style="display:flex;"><span>  bio <span style="color:#f92672">=</span> NULL;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">goto</span> out;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>编译器会改变生成的机器码, 当使用unlikely的时候, 机器会直接执行false分支, 当condition是true的时候, 才会发生一次跳转. 显然, 正确的情况下避免了一次分支跳转, 错误的情况下延迟也会比分支跳转高.</p>
+<h3 id="static-keys">Static Keys</h3>
+<p>How to enable:</p>
+<ol>
+<li>gcc support <code>asm goto</code> inline assembly.</li>
+<li><code>CONFIG_JUMP_LABEL=y</code></li>
+<li><code>CONFIG_HAVE_ARCH_JUMP_LABEL=y</code></li>
+<li><code>CONFIG_HAVE_ARCH_JUMP_LABEL_RELATIVE=y</code></li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#75715e">// API
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">DEFINE_STATIC_KEY_FALSE</span>(x);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">DEFINE_STATIC_KEY_TRUE</span>(x);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">DEFINE_STATIC_KEY_FALSE_RO</span>(x);<span style="color:#75715e">// read only
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">DEFINE_STATIC_KEY_TRUE_RO</span>(x); <span style="color:#75715e">// read only
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// 在一些情况下, 一个static key在module init阶段disable(或enable)之后就不会再改变, 这种情况可以声明为只读. 这时, 这个static key就只能在init阶段改值. 在运行时修改一个只读的static key的值会导致一个page fault.
+</span></span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#a6e22e">DEFINE_STATIC_KEY_FALSE</span>(fkey);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;fastpath 1</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">static_branch_unlikely</span>(<span style="color:#f92672">&amp;</span>fkey)){
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;slowpath</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;fastpath 2</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span></code></pre></div><p>以这个例子, fkey是static key, 并且值为false. 那么上述代码在fastpath 1之后会直接进入fastpath 2, 不会再做分支检查(应该是通过<code>asm goto</code>来实现的). 当fkey被修改为true时, 上述代码则一定会做分支检查.</p>
+<h2 id="common-pitfalls">Common Pitfalls</h2>
+<h3 id="using-standard-libraries">Using standard libraries</h3>
+<p>You can not do that.</p>
+<p>在kernel module中, 我只能使用kernel function. 所有的kernel function都可以在<code>/proc/kallsyms</code>中看到.</p>
+<h3 id="disabling-interrupts">Disabling interrupts</h3>
+<p>我可以禁用一小小会儿, 问题不大. 但是在禁用之后必须记得启用, 否则系统会卡死哦, 那就只能重启了.</p>
+<h2 id="where-to-go-from-here">Where To Go From Here?</h2>
+<ol>
+<li>Kernel newbies.org</li>
+<li>Documentation subdirectory within the kernel source code. (It is not always easy to understand, but is a good starting point for further investigation)</li>
+<li>Linus said, the best way to learn the kernel is to read the source code yourself.</li>
+</ol>
+<ul class="pa0">
+  
+</ul>
+
+      
+    </div></article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white white-70 dn dib-ns pv2 ph3 no-underline" href="https://fulanxisen.github.io/" >
+    &copy;  FulanXisen's blog 2026 
+  </a>
+    <div><div class="ananke-socials"></div>
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>

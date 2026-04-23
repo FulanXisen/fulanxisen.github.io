@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Cortex-M on FulanXisen&#39;s blog</title>
+    <link>https://fulanxisen.github.io/tags/cortex-m/</link>
+    <description>Recent content in Cortex-M on FulanXisen&#39;s blog</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 14 Oct 2023 16:40:08 +0800</lastBuildDate>
+    <atom:link href="https://fulanxisen.github.io/tags/cortex-m/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Embedded System from Zero to Main()</title>
+      <link>https://fulanxisen.github.io/posts/embedded_system_from_zero_to_main/</link>
+      <pubDate>Sat, 14 Oct 2023 16:40:08 +0800</pubDate>
+      <guid>https://fulanxisen.github.io/posts/embedded_system_from_zero_to_main/</guid>
+      <description>&lt;h1 id=&#34;bare-metal-c&#34;&gt;Bare metal C&lt;/h1&gt;&#xA;&lt;h2 id=&#34;power-on&#34;&gt;Power on&lt;/h2&gt;&#xA;&lt;p&gt;There must be behavior intrinsic to the chip that defines how code is executed.&lt;/p&gt;&#xA;&lt;p&gt;Digging into the &lt;a href=&#34;https://static.docs.arm.com/ddi0419/d/DDI0419D_armv6m_arm.pdf&#34;&gt;ARMv6-M Technical Reference Manual&lt;/a&gt;, which is the underlying architecture manual for the Cortex-M0+, we can find some pseudo-code that describes reset behavior:&lt;/p&gt;&#xA;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;// B1.5.5 TakeReset()&#xA;// ============&#xA;TakeReset()&#xA;    VTOR = Zeros(32);&#xA;    for i = 0 to 12&#xA;        R[i] = bits(32) UNKNOWN;&#xA;    bits(32) vectortable = VTOR;&#xA;    CurrentMode = Mode_Thread;&#xA;    LR = bits(32) UNKNOWN; // Value must be initialised by software&#xA;    APSR = bits(32) UNKNOWN; // Flags UNPREDICTABLE from reset&#xA;    IPSR&amp;lt;5:0&amp;gt; = Zeros(6); // Exception number cleared at reset&#xA;    PRIMASK.PM = &amp;#39;0&amp;#39;; // Priority mask cleared at reset&#xA;    CONTROL.SPSEL = &amp;#39;0&amp;#39;; // Current stack is Main&#xA;    CONTROL.nPRIV = &amp;#39;0&amp;#39;; // Thread is privileged&#xA;    ResetSCSRegs(); // Catch-all function for System Control Space reset&#xA;    for i = 0 to 511 // All exceptions Inactive&#xA;        ExceptionActive[i] = &amp;#39;0&amp;#39;;&#xA;    ClearEventRegister(); // See WFE instruction for more information&#xA;    SP_main = MemA[vectortable,4] AND 0xFFFFFFFC&amp;lt;31:0&amp;gt;;&#xA;    SP_process = ((bits(30) UNKNOWN):&amp;#39;00&amp;#39;);&#xA;    start = MemA[vectortable+4,4]; // Load address of reset routine&#xA;    BLXWritePC(start); // Start execution of reset routine&#xA;&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;In short, the chip does the following:&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>
