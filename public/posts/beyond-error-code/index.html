@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>My New Hugo Project</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="Home Blog About Authors Code of Conduct Contributing Tags Jobs Events Github About Memfault
+System theme
+Interrupt
+by Memfault
+RSS Subscribe Contribute Tags Slack Jobs Events
+Beyond Error Codes - Debugging Ill-Defined Problems Anchor
+18 Apr 2025by Hayden Riddiford
+It’s Friday around 4 PM. You’ve been on a productivity tear and are getting to
+wrap up for the week when, all of a sudden, things go off the rails. Logging has
+stopped entirely with no clues to the problem, your LED has stopped blinking,
+and even the debug CLI you painstakingly coded has stopped responding to any of
+your commands. “But I wasn’t even making a complicated change!” you yell into
+the void. You’ve thoroughly bricked your firmware, and none of the usual safety
+nets you’ve set for yourself are telling you why!">
+    <meta name="generator" content="Hugo 0.160.1">
+    
+    
+    
+      <meta name="robots" content="noindex, nofollow">
+    
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.css" >
+
+
+
+
+    
+
+
+    
+      
+
+    
+
+    
+
+    
+      <link rel="canonical" href="http://localhost:1313/posts/beyond-error-code/">
+    
+
+    
+    
+    <meta property="og:url" content="http://localhost:1313/posts/beyond-error-code/">
+  <meta property="og:site_name" content="My New Hugo Project">
+  <meta property="og:title" content="My New Hugo Project">
+  <meta property="og:description" content="Home Blog About Authors Code of Conduct Contributing Tags Jobs Events Github About Memfault
+System theme
+Interrupt
+by Memfault RSS Subscribe Contribute Tags Slack Jobs Events
+Beyond Error Codes - Debugging Ill-Defined Problems Anchor 18 Apr 2025by Hayden Riddiford
+It’s Friday around 4 PM. You’ve been on a productivity tear and are getting to wrap up for the week when, all of a sudden, things go off the rails. Logging has stopped entirely with no clues to the problem, your LED has stopped blinking, and even the debug CLI you painstakingly coded has stopped responding to any of your commands. “But I wasn’t even making a complicated change!” you yell into the void. You’ve thoroughly bricked your firmware, and none of the usual safety nets you’ve set for yourself are telling you why!">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+
+  <meta itemprop="name" content="My New Hugo Project">
+  <meta itemprop="description" content="Home Blog About Authors Code of Conduct Contributing Tags Jobs Events Github About Memfault
+System theme
+Interrupt
+by Memfault RSS Subscribe Contribute Tags Slack Jobs Events
+Beyond Error Codes - Debugging Ill-Defined Problems Anchor 18 Apr 2025by Hayden Riddiford
+It’s Friday around 4 PM. You’ve been on a productivity tear and are getting to wrap up for the week when, all of a sudden, things go off the rails. Logging has stopped entirely with no clues to the problem, your LED has stopped blinking, and even the debug CLI you painstakingly coded has stopped responding to any of your commands. “But I wasn’t even making a complicated change!” you yell into the void. You’ve thoroughly bricked your firmware, and none of the usual safety nets you’ve set for yourself are telling you why!">
+  <meta itemprop="wordCount" content="5352">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="My New Hugo Project">
+  <meta name="twitter:description" content="Home Blog About Authors Code of Conduct Contributing Tags Jobs Events Github About Memfault
+System theme
+Interrupt
+by Memfault RSS Subscribe Contribute Tags Slack Jobs Events
+Beyond Error Codes - Debugging Ill-Defined Problems Anchor 18 Apr 2025by Hayden Riddiford
+It’s Friday around 4 PM. You’ve been on a productivity tear and are getting to wrap up for the week when, all of a sudden, things go off the rails. Logging has stopped entirely with no clues to the problem, your LED has stopped blinking, and even the debug CLI you painstakingly coded has stopped responding to any of your commands. “But I wasn’t even making a complicated change!” you yell into the void. You’ve thoroughly bricked your firmware, and none of the usual safety nets you’ve set for yourself are telling you why!">
+
+	
+  </head><body class="ma0 avenir bg-near-white development is-page is-page page-beyond-error-code">
+    
+   
+  
+
+  <header>
+    <div class="bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l center items-center justify-between">
+    <a href="/" class="f3 fw2 hover-white white-90 dib no-underline">
+      
+        My New Hugo Project
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      <div class="ananke-socials"></div>
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+
+  <article class="page-beyond-error-code flex-l mw7 center ph3 flex-wrap justify-between">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked ttu">
+          
+        Posts
+      </aside><div id="sharing" class="mt3 ananke-socials"></div>
+<h1 class="f1 athelas mt3 mb1"></h1>
+      
+      
+      
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-100-l"><p><a href="https://interrupt.memfault.com/">Home</a> <a href="https://interrupt.memfault.com/blog" title="Blog">Blog</a> <a href="https://interrupt.memfault.com/about" title="About">About</a> <a href="https://interrupt.memfault.com/authors" title="Authors">Authors</a> <a href="https://interrupt.memfault.com/code-of-conduct" title="Code of Conduct">Code of Conduct</a> <a href="https://interrupt.memfault.com/contributing" title="Contributing">Contributing</a> <a href="https://interrupt.memfault.com/tags" title="Tags">Tags</a> <a href="https://interrupt.memfault.com/jobs">Jobs</a> <a href="https://interrupt.memfault.com/events">Events</a> <a href="https://github.com/memfault/interrupt">Github</a> <a href="https://memfault.com/">About Memfault</a></p>
+<p>System theme</p>
+<p><a href="https://interrupt.memfault.com/"><img src="https://interrupt.memfault.com/img/interrupt-logo.svg" alt="Interrupt Logo"><strong>Interrupt</strong></a></p>
+<h3 id="by-memfault">by <a href="https://memfault.com/">Memfault</a></h3>
+<p><a href="https://interrupt.memfault.com/feed.xml">RSS</a> <a href="https://go.memfault.com/interrupt-subscribe">Subscribe</a> <a href="https://interrupt.memfault.com/contributing">Contribute</a> <a href="https://interrupt.memfault.com/tags">Tags</a> <a href="https://interrupt-slack.herokuapp.com/">Slack</a> <a href="https://interrupt.memfault.com/jobs">Jobs</a> <a href="https://interrupt.memfault.com/events">Events</a></p>
+<h2 id="beyond-error-codes---debugging-ill-defined-problems-anchor">Beyond Error Codes - Debugging Ill-Defined Problems <a href="https://interrupt.memfault.com/blog/debugging-steps#beyond-error-codes-debugging-ill-defined-problems">Anchor</a></h2>
+<p>18 Apr 2025by <a href="https://interrupt.memfault.com/authors/haydenriddeford">Hayden Riddiford</a></p>
+<p>It’s Friday around 4 PM. You’ve been on a productivity tear and are getting to
+wrap up for the week when, all of a sudden, things go off the rails. Logging has
+stopped entirely with no clues to the problem, your LED has stopped blinking,
+and even the debug CLI you painstakingly coded has stopped responding to any of
+your commands. “But I wasn’t even making a complicated change!” you yell into
+the void. You’ve thoroughly bricked your firmware, and none of the usual safety
+nets you’ve set for yourself are telling you why!</p>
+<p>These types of problems can be extremely frustrating and intimidating when they
+occur. They often undermine confidence in the codebase, making it seem as if
+problems could jump out <em>at any time</em> when you make <em>any change whatsoever.</em>
+I’ve encountered these sorts of problems many times in my career. Each one has
+served as a painful lesson in debugging issues like this.</p>
+<p>The good news is there has <em>always</em> been an explanation for any issue I’ve
+encountered. And they’ve yet to be
+<a href="https://www.bbc.com/future/article/20221011-how-space-weather-causes-computer-errors">caused by a rogue neutron</a>,
+despite how often I wish the culprit was someone other than myself.</p>
+<p>The following guide serves as a prescriptive, step-by-step way of debugging
+errors that on their face appear to be intangible.</p>
+<blockquote>
+<p>🎬
+<em><a href="https://www.youtube.com/watch?v=bgx4p-Voqkg">Listen to Hayden on Interrupt Live</a></em>
+<em>talk about the content and motivations behind writing this article.</em></p>
+</blockquote>
+<p>Like Interrupt? <a href="https://go.memfault.com/interrupt-subscribe"><strong>Subscribe</strong></a> to get our latest posts straight to your inbox.</p>
+<h2 id="table-of-contents-anchor">Table of Contents <a href="https://interrupt.memfault.com/blog/debugging-steps#table-of-contents">Anchor</a></h2>
+<ul>
+<li><a href="https://interrupt.memfault.com/blog/debugging-steps#steps">Steps</a>  - <a href="https://interrupt.memfault.com/blog/debugging-steps#step-1-see-what-changed">Step 1: See What Changed</a>
+<ul>
+<li><a href="https://interrupt.memfault.com/blog/debugging-steps#step-2---utilize-all-compiler-error-reporting-capabilities">Step 2 - Utilize All Compiler Error Reporting Capabilities</a></li>
+<li><a href="https://interrupt.memfault.com/blog/debugging-steps#step-3---utilize-all-mcu-error-reporting-capabilities">Step 3 - Utilize All MCU Error Reporting Capabilities</a></li>
+<li><a href="https://interrupt.memfault.com/blog/debugging-steps#step-4---isolate-the-problem-surface-area-with-logging-andor-debugging">Step 4 - Isolate the Problem Surface Area with Logging and/or Debugging</a></li>
+<li><a href="https://interrupt.memfault.com/blog/debugging-steps#step-5---keep-an-eye-on-your-stack">Step 5 - Keep an Eye on Your Stack</a></li>
+<li><a href="https://interrupt.memfault.com/blog/debugging-steps#step-6---keep-an-eye-on-your-heap">Step 6 - Keep an Eye on Your Heap</a></li>
+<li><a href="https://interrupt.memfault.com/blog/debugging-steps#step-7---vet-critical-peripherals">Step 7 - Vet Critical Peripherals</a></li>
+<li><a href="https://interrupt.memfault.com/blog/debugging-steps#step-8---mcu-errata-and-application-notes">Step 8 - MCU Errata and Application Notes</a></li>
+<li><a href="https://interrupt.memfault.com/blog/debugging-steps#step-9---ask-for-help">Step 9 - Ask for Help</a></li>
+</ul>
+</li>
+<li><a href="https://interrupt.memfault.com/blog/debugging-steps#case-studies">Case Studies</a>  - <a href="https://interrupt.memfault.com/blog/debugging-steps#case-study-1---creative-stack-clobbering">Case Study #1 - Creative Stack Clobbering</a>
+<ul>
+<li><a href="https://interrupt.memfault.com/blog/debugging-steps#case-study-2---undefined-fun-times">Case Study #2 - Undefined Fun Times</a></li>
+<li><a href="https://interrupt.memfault.com/blog/debugging-steps#case-study-3---the-mystery-of-the-missing-serial-bytes">Case Study #3 - The Mystery of the Missing Serial Bytes</a></li>
+<li><a href="https://interrupt.memfault.com/blog/debugging-steps#case-study-4---memory-faults-in-the-depths-of-hell">Case Study #4 - Memory Faults in the Depths of Hell</a></li>
+</ul>
+</li>
+<li><a href="https://interrupt.memfault.com/blog/debugging-steps#conclusion">Conclusion</a></li>
+</ul>
+<h2 id="steps-anchor">Steps <a href="https://interrupt.memfault.com/blog/debugging-steps#steps">Anchor</a></h2>
+<p>I wrote these steps to get the most information about the error with as little
+effort as possible. Each step increases in level of effort as you go along. The
+goal is that at some point throughout the steps, you can gain enough information
+about the error to isolate and fix it. At the end of the steps, I present a
+couple of case studies from my personal experience to showcase how I have used
+these steps to debug issues.</p>
+<p>While there are some “hardware” aspects to some of the bugs described, I should
+note that I designed this guide for debugging “software-induced” errors.
+Therefore, the following errors (while just as critical to fix) are out of the
+scope of this article:</p>
+<ul>
+<li>Poorly/incorrectly designed circuit boards</li>
+<li>ESD damage or general IC damage/failure</li>
+<li>Brownouts/inadequate power supply</li>
+</ul>
+<h3 id="step-1-see-what-changed-anchor">Step 1: See What Changed <a href="https://interrupt.memfault.com/blog/debugging-steps#step-1-see-what-changed">Anchor</a></h3>
+<p>This step seems insultingly simple, and yet it is one I often forget myself.
+Unless you’ve never successfully gotten your firmware to boot, presumably, there
+was a time when your firmware functioned in some capacity. Being able to diff
+your codebase between “working” and “broken” states is crucial for giving you a
+nudge toward what might be broken. You may not understand precisely what is
+happening yet, but that’s ok. Even knowing the <em>general area</em> the problem might
+be in is valuable information.</p>
+<p>Find the smallest possible change you can make that induces the bad state.
+Depending on when you last made a commit, this step might involve adding
+incremental changes between the last working commit and the current broken
+state. There’s even a
+<a href="https://interrupt.memfault.com/blog/git-bisect">great article</a> already on
+Interrupt about using git bisect to accomplish what I’m describing.</p>
+<p>Now that you have a general idea of where the problem may lie, it’s time to
+utilize some error reporting capabilities built into your compiler and MCU.</p>
+<h3 id="step-2---utilize-all-compiler-error-reporting-capabilities-anchor">Step 2 - Utilize All Compiler Error Reporting Capabilities <a href="https://interrupt.memfault.com/blog/debugging-steps#step-2---utilize-all-compiler-error-reporting-capabilities">Anchor</a></h3>
+<p>If you’re using vendor tooling that auto-generates your build system for you,
+you might be missing out on some no-effort error prevention! There are a variety
+of compiler flags and static analysis tools in your compiler that can make your
+life easier. One of these (<code>-Wreturn-type</code>) would have saved me immediately in
+<a href="https://interrupt.memfault.com/blog/debugging-steps#case-study-2---undefined-fun-times">one of my examples</a>. Philip Johnston over
+at Embedded Artistry has written a
+<a href="https://embeddedartistry.com/blog/2023/09/20/leveraging-your-toolchain-to-improve-security/">great blog post</a>
+on some of the flags he uses and why they’re important.</p>
+<h3 id="step-3---utilize-all-mcu-error-reporting-capabilities-anchor">Step 3 - Utilize All MCU Error Reporting Capabilities <a href="https://interrupt.memfault.com/blog/debugging-steps#step-3---utilize-all-mcu-error-reporting-capabilities">Anchor</a></h3>
+<p>Nearly every MCU I’ve worked with has some fault-reporting capability. A
+<a href="https://interrupt.memfault.com/blog/cortex-m-hardfault-debug">fantastic Interrupt article</a>
+I find myself coming back to time and time again details hard fault handlers,
+specifically on Cortex-M platforms.</p>
+<p>Almost all of the problems I’ll describe in my case studies eventually presented
+themselves as triggering a hard fault (and thus ending up in a hard fault
+handler). It is common for HAL code provided by a vendor to provide weakly
+defined <em>default</em> hard fault handlers like so:</p>
+<pre tabindex="0"><code>void Default_Handler()
+{
+  while (1) {
+  }
+}
+void HardFault_Handler()   __attribute__((weak, alias(&#34;Default_Handler&#34;)));
+</code></pre><p>At the very least, replacing these handlers with something that at least logs
+what’s happened can immediately point you in the direction of the problem:</p>
+<pre tabindex="0"><code>void HardFault_Handler()   {
+  log(&#34;A hard fault occurred!&#34;);
+  asm volatile (&#34;bkpt #0&#34;);
+  while(1) {};
+}
+</code></pre><p>Note the ARM-specific “breakpoint” instruction for allowing an automatic halt
+when a debugger is connected.</p>
+<p>The specificity of fault reporting will vary by MCU, but you should try to gain
+as much knowledge as possible about the fault that’s occurring. For example, on
+a Cortex-M7-based MCU, you can learn if the fault was:</p>
+<ul>
+<li>Caused by an invalid memory access (and sometimes what the offending bad
+address was)</li>
+<li>An unaligned load or store</li>
+<li>A divide by zero</li>
+<li>An undefined instruction</li>
+<li>An MPU (memory protection unit) violation (trying to write to a region marked
+read-only, for instance)</li>
+</ul>
+<p>Sometimes, you get lucky, and the information received lets you immediately
+isolate the error. Otherwise, this gives you a clue for the general area to look
+at. For instance, if I see a hard fault from trying to access a bad memory
+address, I know to look for some form of memory “corruption”. While this can
+encompass a broad range of issues, I know at least the general problem I’m
+looking for.</p>
+<p>Having exhausted some minimal effort options, let’s now take a more hands on
+approach to isolating the problem.</p>
+<h3 id="step-4---isolate-the-problem-surface-area-with-logging-andor-debugging-anchor">Step 4 - Isolate the Problem Surface Area with Logging and/or Debugging <a href="https://interrupt.memfault.com/blog/debugging-steps#step-4---isolate-the-problem-surface-area-with-logging-andor-debugging">Anchor</a></h3>
+<p>This step aims to isolate where the problem occurs to the smallest possible
+piece of code. I don’t say “line of code” here because sometimes problems
+(especially related to stack/heap corruption) don’t happen in the same place
+each time. Firmware is often quite dynamic, responding to stimuli from the
+outside world. Here, we are trying to remove as many changing variables as
+possible. Ideally, we want to be able to reproduce the fault in the same place
+and the same way each time.</p>
+<p>Methods to accomplish this can include:</p>
+<ul>
+<li>Adding log statements before/after the suspected fault area, moving them
+closer and closer together until the offending code is isolated</li>
+<li>Attaching a debugger and seeing if you can generate the fault while “stepping
+through” code</li>
+<li>Simplifying/mocking certain aspects of your firmware to make runs more
+repeatable (for instance, fixing a sensor to a specific value or set of
+values)</li>
+<li>For problems that only happen sporadically, setting up as much logging as you
+can surrounding the suspect code (state of the system, state of variables,
+etc.) and letting your firmware run overnight can help catch the issue. It
+must be noted that Memfault’s entire platform is dedicated to catching errors
+like these in shipped products! With cloud connected devices, you wouldn’t
+even need a debugger connected as core dumps are automatically uploaded for
+later analysis.</li>
+</ul>
+<p>Don’t feel discouraged if you’ve completed this step and you <em>still</em> don’t quite
+understand what’s happening. For example, you may know that a bad memory access
+occurs at a specific function call in your program. But you still have no idea
+<em>why</em> it’s occurring. You might even call this function elsewhere, and it
+<em>doesn’t</em> generate a fault!</p>
+<p>Now that you’ve hopefully isolated more or less where the error is occurring, we
+can start to dig into more subtle and nuanced potential root causes.</p>
+<h3 id="step-5---keep-an-eye-on-your-stack-anchor">Step 5 - Keep an Eye on Your Stack <a href="https://interrupt.memfault.com/blog/debugging-steps#step-5---keep-an-eye-on-your-stack">Anchor</a></h3>
+<p>I’ve created a general rule for myself: Whenever there’s a hideous,
+hard-to-repeat, totally illogical, nonsensical issue happening in my firmware, I
+take a breath and ask myself: Is there any possibility I’m overflowing my stack?
+Several times, the answer to that question has been a resounding “yes”. Catching
+and debugging stack overflows is a topic that deserves an entire article;
+however, there are a couple of easy things to try that might help answer this
+question.</p>
+<p>Do you know where your stack(s) live? This sounds like a silly question,
+however, there are <em>many</em> different potential configurations for where a stack
+lives in memory <em>especially</em> if you’re using an RTOS. This involves looking into
+your
+<a href="https://embeddedartistry.com/blog/2019/04/08/a-general-overview-of-what-happens-before-main/">startup code</a>
+to see where the initial stack pointer gets set and where that address comes
+from (hardcoded, linker symbol, etc.). In an RTOS that performs context
+switching, there will generally be a different stack for each thread/task in
+your system, <em>any</em> of which can overflow.</p>
+<p>The easiest way to start probing for a potential stack overflow is to make your
+stack(s) bigger and see if that resolves the problem. More precise methods for
+catching overflows involve using “canary values” near the end of your stack or
+utilizing the MPU to generate a fault if the stack overflows into a forbidden
+region.
+<a href="https://embeddedartistry.com/blog/2020/05/18/implementing-stack-smashing-protection-for-microcontrollers-and-embedded-artistrys-libc/">This article</a>
+on Embedded Artistry details the “canary method” while
+<a href="https://www.iar.com/knowledge/learn/programming/rtos-detecting-stack-overflows-part-2">this article</a>
+discusses utilizing the MPU, among other methods. Another thing to note is that
+if utilizing an RTOS, you may already have access to some optional stack
+overflow protection checks (usually at the cost of performance). For instance,
+FreeRTOS
+<a href="https://www.freertos.org/Documentation/02-Kernel/02-Kernel-features/09-Memory-management/02-Stack-usage-and-stack-overflow-checking">offers stack protection</a>
+features.</p>
+<p>Knowing where your stack “starts” and “ends” can be helpful when debugging. If
+you can pause on a breakpoint near the point of failure, you can read the stack
+pointer to get a glance at how close to an overflow condition you are.</p>
+<p>Similarly to the stack, another troublesome piece of memory management could be
+our culprit.</p>
+<h3 id="step-6---keep-an-eye-on-your-heap-anchor">Step 6 - Keep an Eye on Your Heap <a href="https://interrupt.memfault.com/blog/debugging-steps#step-6---keep-an-eye-on-your-heap">Anchor</a></h3>
+<p>Do you use dynamic memory allocation (think <code>malloc()</code>, <code>calloc()</code>, <code>realloc()</code>)
+in your application? If you answered no, are you sure? Generally speaking, to
+even use any memory allocation functions (which are provided in the standard
+library) a “system call” function <code>_sbrk_r</code> must be defined. For convenience,
+many “code generation” style vendor tools will generate a default implementation
+of <code>_sbrk_r</code> for you, as well as linker scripts and symbols that locate your
+stack and heap. There are also a host of functions in the C and C++ standard
+libraries that (implementation dependent) end up allocating memory under the
+hood (<code>printf()</code>, <code>sprintf()</code>, <code>std::string</code>, <code>std::Vector</code> to name only a few).
+The combination of these two leads many people (myself included at one point!)
+to have dynamic memory allocation in their program under the hood without them
+even realizing it. When starting a new project, I like to start by defining
+<code>_sbrk_r</code> with a placeholder like so to ensure any memory allocation I wasn’t
+expecting makes itself known:</p>
+<pre tabindex="0"><code>char *_sbrk_r(int incr)
+{
+  log(&#34;Not so fast!&#34;);
+  asm volatile (&#34;bkpt #0&#34;);
+  while(1) {};
+  // Unreachable
+  return NULL;
+}
+</code></pre><p>Dynamic memory allocation isn’t inherently a bad thing, however, it opens up the
+door for an entirely different class of errors. The
+<a href="https://docs.oracle.com/cd/E60778_01/html/E60757/glmrb.html">following article</a>
+from Oracle does a fairly good job at succinctly summing up some of the errors
+you could expect when using dynamic memory allocation.</p>
+<p>There’s another error worth mentioning when the heap gets involved that is
+pretty specific to bare metal systems like the ones we work with. Oftentimes,
+the heap and stack on a bare metal system are configured like so:</p>
+<p><img src="https://interrupt.memfault.com/img/debugging-steps/stack_heap_diagram.png" alt="RAM layout"></p>
+<p>The stack grows <em>downward</em> in address space, while the heap grows <em>upwards.</em>
+Like two trains rushing towards each other on the same track, one getting large
+enough will <em>eventually</em> start to clobber the other. This produces behavior very
+similar to a stack overflow. Fortunately, because any heap expansion is called
+explicitly in code, checks can and should be implemented to trigger an error
+condition if the heap is about to grow beyond its bounds. Some RTOSes even
+include their own heap management schemes, such as
+<a href="https://www.freertos.org/Documentation/02-Kernel/02-Kernel-features/09-Memory-management/01-Memory-management">FreeRTOS</a>
+and
+<a href="https://docs.zephyrproject.org/latest/kernel/memory_management/heap.html">Zephyr</a>.
+Similar to stack inspection, stopping the program with a debugger and taking a
+look at the state of your heap (and the variables that have been allocated
+within it) before the offending portion of code can sometimes yield insights
+into potential memory corruption issues.</p>
+<p>Having vetted the stack and the heap, it’s time to step down a level and get a
+little closer to the MCU itself.</p>
+<h3 id="step-7---vet-critical-peripherals-anchor">Step 7 - Vet Critical Peripherals <a href="https://interrupt.memfault.com/blog/debugging-steps#step-7---vet-critical-peripherals">Anchor</a></h3>
+<p>We are now entering a rather not-fun section of debugging, which could
+uncharitably be called “grasping at straws”. At this point, you’ve gained a lot
+of confidence about bad behavior you <em>aren’t</em> doing, and yet you’re still
+getting that hard fault, nonsensical memory access, etc. Now, you’ll want to
+turn a critical gaze toward “mission-critical” peripherals that could be
+misconfigured. I’ll go through a couple of categories of peripherals that fall
+into this category and some common pitfalls for each.</p>
+<h4 id="memory-mapped-ramflash-anchor">Memory Mapped RAM/Flash <a href="https://interrupt.memfault.com/blog/debugging-steps#memory-mapped-ramflash">Anchor</a></h4>
+<p>Memory Mapped RAM/Flash refers to an MCU that can map external RAM or Flash ICs
+in memory. A common example many readers may have experience with is the
+Raspberry Pi Pico. This chip (the RP2040 or new RP2350) has only immutable ROM
+memory internally for persistent storage and instead executes code loaded on an
+external flash IC. “Memory mapped” means that once appropriately configured, the
+processor can treat memory locations on these external chips as lying in a
+normal address space. As I will demonstrate in
+<a href="https://interrupt.memfault.com/blog/debugging-steps#case-study-4---memory-faults-in-the-depths-of-hell">one of my case studies</a>,
+misconfiguring one of these ICs can lead to VERY odd behavior. The configuration
+of these devices and the peripherals that enable memory mapping should be
+investigated using a fine-toothed comb.</p>
+<h4 id="dma-anchor">DMA <a href="https://interrupt.memfault.com/blog/debugging-steps#dma">Anchor</a></h4>
+<p>DMA refers to direct memory access, a peripheral whose purpose is to perform
+memory transfers in parallel while the processor does other things. The DMA
+should be used <em>very</em> carefully, as it is incredibly easy to corrupt memory
+without careful usage. C and C++ do not know what the DMA is “doing” at any
+given time, so take extra care to verify whether or not the DMA is currently
+operating on a region of memory. Embedded engineers can do various dangerous
+things with the DMA, including:</p>
+<ul>
+<li>Telling the DMA to copy memory from an array that is about to go out of scope,
+the DMA will happily keep copying memory out of a location that is no longer
+valid</li>
+<li>Trying to modify memory <em>in code</em> that the DMA is already actively writing to,
+neither operation will succeed as intended</li>
+<li>Using the DMA with cached memory (see next topic)</li>
+</ul>
+<h4 id="caching-anchor">Caching <a href="https://interrupt.memfault.com/blog/debugging-steps#caching">Anchor</a></h4>
+<p>As MCUs grow more complex, many are starting to come with instruction (ICache)
+and data (DCache) caches. While caching can significantly speed up program
+execution, it also brings several capital H headaches. To vastly oversimplify
+it, a processor’s cache stores a copy of commonly accessed data in a special
+location that’s much faster to access than getting it from RAM or flash storage.
+Generally, the processor handles deciding when and what to fetch from the cache
+(vs the actual memory location) for you. It gets complicated when you start
+bringing in peripherals like the DMA. The DMA often operates without “letting
+the processor know” that the cache needs to be refreshed, leading to fetching
+stale/erroneous data. If you even slightly suspect the cache might be
+contributing to your issue, try turning all caching off. Some processors even
+allow you to manually flush the cache with a register write. So, a more nuanced
+approach could be adding a call to flush the cache before a suspect operation.</p>
+<h4 id="mpu-anchor">MPU <a href="https://interrupt.memfault.com/blog/debugging-steps#mpu">Anchor</a></h4>
+<p>Some MCUs come with a “Memory Protection Unit” or MPU. The MPU is used to
+designate what is allowed in specific regions of memory. For instance, one
+region might be read-only and allow code execution, while another might be
+read/write but disallow code execution. The MPU can often be complicated to
+configure, and misconfiguration can lead to unintentional hard faults. For
+example, this kind soul provides an
+<a href="https://github.com/MisterHW/BSICS-SVR/blob/master/doc/readme_mpu.md">extremely detailed write-up</a>
+on the trials and tribulations of configuring the MPU for Cortex-M7-based STM32
+chips.</p>
+<h4 id="interrupt-controller-anchor">Interrupt Controller <a href="https://interrupt.memfault.com/blog/debugging-steps#interrupt-controller">Anchor</a></h4>
+<p>I could dedicate far more than a paragraph to all the trials and tribulations of
+configuring interrupts and interrupt handlers correctly, however, given the
+already large scope of this article, I’ll simply provide a couple of reminders:</p>
+<ul>
+<li>Do you have data that can be accessed in both interrupt and non-interrupt
+contexts? If so, ensure you protect against any potential data races.
+<a href="https://blog.regehr.org/archives/28">This article</a> may surprise some, the
+<code>volatile</code> qualifier <em>does not</em> provide a means of thread synchronization.</li>
+<li>Is there anywhere in your code you disable/mask interrupts? Take extra care
+during these “critical sections” to avoid missing interrupts and potentially
+causing unintended behavior.</li>
+<li>If using an RTOS, are you using the appropriate interrupt/non-interrupt APIs
+(if applicable)? For instance, FreeRTOS has separate “interrupt safe” and
+“non-interrupt safe” APIs, and you must use them correctly to avoid undefined
+behavior.</li>
+</ul>
+<h3 id="step-8---mcu-errata-and-application-notes-anchor">Step 8 - MCU Errata and Application Notes <a href="https://interrupt.memfault.com/blog/debugging-steps#step-8---mcu-errata-and-application-notes">Anchor</a></h3>
+<p>The reason checking the eratta and application notes is so far down the list is
+that this assumes at one point you <em>did</em> at least glance through the errata
+section of your MCU’s datasheet. Now, we’re digging back through errata and
+application notes, hoping that we missed something during the first readthrough
+and that we could attribute our odd behavior to a silicon bug or a known issue.
+Application notes can be extremely helpful to read through, especially for some
+of the more complicated/mission-critical peripherals listed above. Using the
+same STM32 example as for the MPU, ST has
+<a href="https://www.st.com/resource/en/application_note/an4031-using-the-stm32f2-stm32f4-and-stm32f7-series-dma-controller-stmicroelectronics.pdf">provided an application note</a>
+specifically on using the DMA. There’s even a specific section with “Tips and
+Warnings”!</p>
+<h3 id="step-9---ask-for-help-anchor">Step 9 - Ask for Help <a href="https://interrupt.memfault.com/blog/debugging-steps#step-9---ask-for-help">Anchor</a></h3>
+<p>And, when all else fails… there’s nothing wrong with asking for help. Tracking
+down and eliminating an especially brutal bug is very rewarding however at the
+end of the day products need to ship, days need to end, and people need to
+sleep. Other than the obvious of asking someone on your team or consulting Stack
+Overflow, I’ve found the following to be helpful:</p>
+<ul>
+<li>Vendor-specific forums for your chip</li>
+<li>Reaching out to a vendor and speaking with a Field Applications Engineer to
+help debug what might be wrong</li>
+<li>Looking at open-source projects that use your chip and may be using it in
+similar ways</li>
+</ul>
+<h2 id="case-studies-anchor">Case Studies <a href="https://interrupt.memfault.com/blog/debugging-steps#case-studies">Anchor</a></h2>
+<h3 id="case-study-1---creative-stack-clobbering-anchor">Case Study #1 - Creative Stack Clobbering <a href="https://interrupt.memfault.com/blog/debugging-steps#case-study-1---creative-stack-clobbering">Anchor</a></h3>
+<p>I was in the middle of testing my
+<a href="https://github.com/haydenridd/zig-rtt">port of Segger’s Real Time Trace (RTT)</a>
+to an implementation written in the up-and-coming Zig Programming Language. My
+port (as well as the original RTT source code) has a feature that lets you
+specify a linker section to place your RTT control block. The control block is
+where the JLink probe writes/reads to enable transfer to/from the device. At
+this point, I had validated all other use cases other than this manual control
+block placement. Feeling very smart and very accomplished, I coded up the last
+sanity check, where I put the RTT control block in a newly defined linker
+section <em>at the end of RAM.</em> All of a sudden, reality started to crumble. Hard
+faults began appearing after a couple of logging statements. Seemingly <em>what</em> I
+logged and <em>how much</em> affected this program’s crashing behavior.</p>
+<h4 id="step-1---see-what-changed-anchor">Step 1 - See What Changed <a href="https://interrupt.memfault.com/blog/debugging-steps#step-1---see-what-changed">Anchor</a></h4>
+<p>Fortunately, it is quite obvious in this case. Placing the control block at the
+end of RAM appears to break the code.</p>
+<h4 id="step-2---utilize-all-compiler-error-reporting-capabilities-anchor-1">Step 2 - Utilize All Compiler Error Reporting Capabilities <a href="https://interrupt.memfault.com/blog/debugging-steps#step-2---utilize-all-compiler-error-reporting-capabilities-1">Anchor</a></h4>
+<p>Already done!</p>
+<h4 id="step-3---utilize-all-mcu-error-reporting-capabilities-anchor-1">Step 3 - Utilize All MCU Error Reporting Capabilities <a href="https://interrupt.memfault.com/blog/debugging-steps#step-3---utilize-all-mcu-error-reporting-capabilities-1">Anchor</a></h4>
+<p>Also already done, and the error reporting, in this case, indicated “a hard
+fault was occurring”. I was using the Cortex M0+-based RP2040, so the hard fault
+cause doesn’t get any more specific.</p>
+<h4 id="step-4---isolate-the-problem-surface-area-with-logging-andor-debugging-anchor-1">Step 4 - Isolate the Problem Surface Area with Logging and/or Debugging <a href="https://interrupt.memfault.com/blog/debugging-steps#step-4---isolate-the-problem-surface-area-with-logging-andor-debugging-1">Anchor</a></h4>
+<p>This step was pretty straightforward; I could initialize the control block
+without issue, however, one or more logging statements initiate the hard fault.</p>
+<h4 id="step-5---keep-an-eye-on-your-stack-anchor-1">Step 5 - Keep an Eye on Your Stack <a href="https://interrupt.memfault.com/blog/debugging-steps#step-5---keep-an-eye-on-your-stack-1">Anchor</a></h4>
+<p>I quickly noticed that near the point of failure, variables all of a sudden
+started to have… wrong values. Wait… where is my stack again? Oh. <em>OH.</em> The
+astute reader probably already guessed from context, but my stack was
+<em>hard-coded</em> to start <em>at the end of RAM.</em> I had gotten complacent with other
+projects that used linker symbols to place the stack start and assumed that
+defining a new linker section for the RTT control block would protect against
+accidentally overriding the stack. This assumption was incorrect. I had created
+a monster where entering my logging functions would push data onto the stack,
+but writing bytes to my control block <em>would actively clobber said stack data.</em>
+Thus, oddball logging behavior where a couple of characters would transfer
+successfully, followed by a hard fault.</p>
+<h3 id="case-study-2---undefined-fun-times-anchor">Case Study #2 - Undefined Fun Times <a href="https://interrupt.memfault.com/blog/debugging-steps#case-study-2---undefined-fun-times">Anchor</a></h3>
+<p>For the sake of simplicity, I had a class with two methods that looked something
+like so:</p>
+<pre tabindex="0"><code>class ThisShouldBeFun {
+
+  public:
+  ...
+
+  int first_function() {
+    // Lots of sufficiently complicated code
+  }
+
+  void second_function() {
+    // Has some side effect that changes the internal state of the class
+  }
+};
+</code></pre><p>I had some odd behavior in my code, and after some debugging, I realized that
+even though I was calling first_function, somehow second_function was getting
+executed as well!?</p>
+<h4 id="step-1---see-what-changed-anchor-1">Step 1 - See What Changed <a href="https://interrupt.memfault.com/blog/debugging-steps#step-1---see-what-changed-1">Anchor</a></h4>
+<p>I previously wasn’t using first_function, although it had been added to the
+class a while ago, so it didn’t appear in any recent diffs.</p>
+<h4 id="step-2---utilize-all-compiler-error-reporting-capabilities-anchor-2">Step 2 - Utilize All Compiler Error Reporting Capabilities <a href="https://interrupt.memfault.com/blog/debugging-steps#step-2---utilize-all-compiler-error-reporting-capabilities-2">Anchor</a></h4>
+<p>Observers probably already saw my error: I didn’t include a return statement.
+Per the <a href="https://en.cppreference.com/w/cpp/language/return">C++ standard</a>, a
+non-void function terminating without returning a value is undefined behavior.
+In my case, it appears as if that undefined behavior caused the next instruction
+to be <em>the second function’s address.</em> I can wave my hands a little bit about
+the in-memory layout of C++ classes, and how this might have happened, but I’ve
+never been able to replicate this in Godbolt. You’ll just have to take my word
+that in this specific corner of the universe, undefined behavior caused
+first_function to terminate by calling second_function. The warning flag
+<code>-Wreturn-type</code> (included in <code>-Wall</code>) would have saved me a major headache.</p>
+<h3 id="case-study-3---the-mystery-of-the-missing-serial-bytes-anchor">Case Study #3 - The Mystery of the Missing Serial Bytes <a href="https://interrupt.memfault.com/blog/debugging-steps#case-study-3---the-mystery-of-the-missing-serial-bytes">Anchor</a></h3>
+<p>I was on a project that had two boards that communicated with each other via
+serial over UART. I was onboarding onto this project at the time, and an
+existing issue I noticed was that a packet (these boards implemented Modbus)
+would fail its CRC check and the command would have to be retried. Because of
+this retry routine, the communication still functioned, albeit not as fast as it
+could have. Eventually, and seemingly out of the blue, the number of CRC
+failures in packets skyrocketed, making the communication unusable and demanding
+immediate attention.</p>
+<h4 id="step-1---see-what-changed-anchor-2">Step 1 - See What Changed <a href="https://interrupt.memfault.com/blog/debugging-steps#step-1---see-what-changed-2">Anchor</a></h4>
+<p>Trying to narrow down what changed was pretty maddening. None of the code
+changes had anything to do with code that touched serial communication. And yet,
+I could revert commits and get reliably “better” communication behavior, albeit
+with occasional failures. There also seemed to be a bizarre time component where
+serial communication would seem fine at first, but rapidly degraded after a
+minute or two.</p>
+<h4 id="step-2---utilize-all-compiler-error-reporting-capabilities-anchor-3">Step 2 - Utilize All Compiler Error Reporting Capabilities <a href="https://interrupt.memfault.com/blog/debugging-steps#step-2---utilize-all-compiler-error-reporting-capabilities-3">Anchor</a></h4>
+<p>Done, and no findings.</p>
+<h4 id="step-3---utilize-all-mcu-error-reporting-capabilities-anchor-2">Step 3 - Utilize All MCU Error Reporting Capabilities <a href="https://interrupt.memfault.com/blog/debugging-steps#step-3---utilize-all-mcu-error-reporting-capabilities-2">Anchor</a></h4>
+<p>Done, and no findings (this issue wasn’t generating hard faults).</p>
+<h4 id="step-4---isolate-the-problem-surface-area-with-logging-andor-debugging-anchor-2">Step 4 - Isolate the Problem Surface Area with Logging and/or Debugging <a href="https://interrupt.memfault.com/blog/debugging-steps#step-4---isolate-the-problem-surface-area-with-logging-andor-debugging-2">Anchor</a></h4>
+<p>The findings in Step 1 made us all feel pretty miserable about the root cause,
+but due to the failure point, we were at least pretty sure the issue lay
+somewhere in the serial driver/peripheral configuration.</p>
+<h4 id="step-5---keep-an-eye-on-your-stack-anchor-2">Step 5 - Keep an Eye on Your Stack <a href="https://interrupt.memfault.com/blog/debugging-steps#step-5---keep-an-eye-on-your-stack-2">Anchor</a></h4>
+<p>We found no evidence of stack overflows.</p>
+<h4 id="step-6---keep-an-eye-on-your-heap-anchor-1">Step 6 - Keep an Eye on Your Heap <a href="https://interrupt.memfault.com/blog/debugging-steps#step-6---keep-an-eye-on-your-heap-1">Anchor</a></h4>
+<p>N/A, we weren’t using a heap.</p>
+<h4 id="step-7---vet-critical-peripherals-anchor-1">Step 7 - Vet Critical Peripherals: <a href="https://interrupt.memfault.com/blog/debugging-steps#step-7---vet-critical-peripherals-1">Anchor</a></h4>
+<p>Thus, a long and painful slog through our UART driver code started. We were
+using the DMA to automatically transfer received bytes into a memory buffer on
+reception in the UART. Then, we serviced said buffer in an RTOS task whenever
+bytes were available. We couldn’t get rid of these bad bytes causing CRC
+failures no matter how closely we examined our peripheral configuration against
+the datasheet. The breakthrough came when I finally remembered something: this
+MCU has a cache. Turning off caching immediately fixed the problem. No more
+erroneous bytes, and thus no more CRC failures. Which led us to…</p>
+<h4 id="step-8---mcu-errata-and-application-notes-anchor-1">Step 8 - MCU Errata and Application Notes: <a href="https://interrupt.memfault.com/blog/debugging-steps#step-8---mcu-errata-and-application-notes-1">Anchor</a></h4>
+<p>Reading an
+<a href="https://www.st.com/resource/en/application_note/an4839-level-1-cache-on-stm32f7-series-and-stm32h7-series-stmicroelectronics.pdf">application note</a>
+on caching on our MCU, we quickly realized the DMA does not at all care about
+the state of the cache. Once we fixed our cache management regarding the memory
+buffer in which our UART bytes were stored, we could turn the cache back on
+while eliminating the mysterious bad bytes. Because the cache was often out of
+date before implementing cache management, whether or not the received bytes
+were correct was almost entirely random, depending on other code execution and
+cache hits/misses. Thus, changing unrelated bits of code changed cache behavior
+and thus changed how often we got bad bytes.</p>
+<h3 id="case-study-4---memory-faults-in-the-depths-of-hell-anchor">Case Study #4 - Memory Faults in the Depths of Hell <a href="https://interrupt.memfault.com/blog/debugging-steps#case-study-4---memory-faults-in-the-depths-of-hell">Anchor</a></h3>
+<p><img src="https://interrupt.memfault.com/img/debugging-steps/doom1.gif" alt="Doom 1 GIF"></p>
+<p>This last one is the most painful yet satisfying bug I’ve ever dealt with. To
+set the stage, I was in the process of porting DOOM to the display board on the
+TK-02 coffee machine (I currently work as the lead firmware engineer at Terra
+Kaffe). This was entirely a side project for the fun and the challenge. Porting
+Doom to a “bare metal” system is a little spicier than for one with an actual
+OS. For instance, I replaced all allocation calls in Doom’s engine with an arena
+allocator that made use of an external SDRAM IC we use. This will become
+relevant later. Frustratingly, things were <em>almost</em> working. I would
+occasionally get the Doom splash screen to appear on the screen, but at
+seemingly random times, shortly thereafter, everything would freeze.</p>
+<h4 id="step-1---see-what-changed-anchor-3">Step 1 - See What Changed <a href="https://interrupt.memfault.com/blog/debugging-steps#step-1---see-what-changed-3">Anchor</a></h4>
+<p>I didn’t have a baseline to diff against, as I was in the early stages of
+getting the engine running at all.</p>
+<h4 id="step-2---utilize-all-compiler-error-reporting-capabilities-anchor-4">Step 2 - Utilize All Compiler Error Reporting Capabilities <a href="https://interrupt.memfault.com/blog/debugging-steps#step-2---utilize-all-compiler-error-reporting-capabilities-4">Anchor</a></h4>
+<p>Done, and no findings.</p>
+<h4 id="step-3---utilize-all-mcu-error-reporting-capabilities-anchor-3">Step 3 - Utilize All MCU Error Reporting Capabilities <a href="https://interrupt.memfault.com/blog/debugging-steps#step-3---utilize-all-mcu-error-reporting-capabilities-3">Anchor</a></h4>
+<p>Whenever the program would freeze up, I would get an MPU access violation that
+told me I was trying to access an invalid address. The address always had the
+form <code>0xFFXXXXXX</code>, which was indeed invalid.</p>
+<h4 id="step-4---isolate-the-problem-surface-area-with-logging-andor-debugging-anchor-3">Step 4 - Isolate the Problem Surface Area with Logging and/or Debugging <a href="https://interrupt.memfault.com/blog/debugging-steps#step-4---isolate-the-problem-surface-area-with-logging-andor-debugging-3">Anchor</a></h4>
+<p>The code that kept throwing faults was in the section of the engine that
+decompresses assets from the <code>.WAD</code> file (The DOOM engine’s proprietary data
+compression format that would generally be stored on a floppy disk or CD-ROM)
+and stores them in RAM via the arena allocator I mentioned before.
+Frustratingly, it wasn’t always in the same place. Sometimes, it would get to
+the splash screen, other times it would crash almost instantly. When it did make
+it to the splash screen there were always lots of warnings from the engine about
+bad assets, and some assets (character textures, etc.) were missing. Using a
+debugger to walk up stack traces, it was clear that sometimes <em>when accessing</em>
+<em>something in SDRAM</em>, a bogus address (beginning in <code>0xFF</code>) would be produced.</p>
+<h4 id="step-5---keep-an-eye-on-your-stack-anchor-3">Step 5 - Keep an Eye on Your Stack <a href="https://interrupt.memfault.com/blog/debugging-steps#step-5---keep-an-eye-on-your-stack-3">Anchor</a></h4>
+<p>Values having bogus addresses did seem to point to a potential stack overflow,
+but further investigation yielded no evidence the stack was getting anywhere
+close to overflowing.</p>
+<h4 id="step-6---keep-an-eye-on-your-heap-anchor-2">Step 6 - Keep an Eye on Your Heap <a href="https://interrupt.memfault.com/blog/debugging-steps#step-6---keep-an-eye-on-your-heap-2">Anchor</a></h4>
+<p>We weren’t using the heap <em>per se</em>, however, the arena allocator functioned
+essentially as a heap. Careful investigation and logging of the allocator
+revealed we weren’t getting close to any overflow situations regarding the heap.</p>
+<h4 id="step-7---vet-critical-peripherals-anchor-2">Step 7 - Vet Critical Peripherals <a href="https://interrupt.memfault.com/blog/debugging-steps#step-7---vet-critical-peripherals-2">Anchor</a></h4>
+<p>While I spent many hours excitedly getting pieces of the DOOM engine working, I
+never thought to double-check some of my initial MCU configurations. After all,
+I had a “known good” production version of this configuration running the
+<em>actual</em> coffee machine firmware. But after many days and hours, convinced I had
+somehow screwed something up in the engine implementation, I found the culprit:
+a copy-paste error in a setup call that left one pin of the SDRAM IC
+misconfigured, and electrically floating (only in the Doom project, the actual
+production code was configured correctly). The pin that happened to be floating
+controlled single-byte masking of the received data. Lo and behold, the single
+byte it masked happened to be the most significant byte… So, I essentially
+created a “random memory fault generator”. When the misconfigured pin floated a
+little too high, it masked the MSB, mangling the received data to be
+<code>0xFFXXXXXX</code>. This explained the odd engine behavior. If the stars aligned and
+the SDRAM read errors only happened on non-critical textures (and in a way that
+didn’t generate an MPU fault) the game would barely get to the splash screen. In
+the end, it was all worth it to rip and tear on the TK-02:</p>
+<p><img src="https://interrupt.memfault.com/img/debugging-steps/doom2.gif" alt="Doom 2 GIF"></p>
+<h2 id="conclusion-anchor">Conclusion <a href="https://interrupt.memfault.com/blog/debugging-steps#conclusion">Anchor</a></h2>
+<p>Debugging elusive firmware failures can be incredibly maddening — but also
+deeply rewarding once you find the root cause. With the right strategy, even the
+most mysterious issues can be unraveled step by step. I’d love to hear your
+thoughts on these strategies or debugging stories of your own!</p>
+<p>Like Interrupt? <a href="https://go.memfault.com/interrupt-subscribe"><strong>Subscribe</strong></a> to get our latest posts straight to your inbox.</p>
+<p>See anything you&rsquo;d like to change? Submit a pull request or open an issue on our <a href="https://github.com/memfault/interrupt">GitHub</a></p>
+<p><img src="https://interrupt.memfault.com/img/author/haydenriddiford.jpeg" alt=""><a href="https://interrupt.memfault.com/authors/haydenriddeford">Hayden Riddiford</a> is a firmware engineer with experience in consumer products and IoT. He is currently an embedded systems engineer at Terra Kaffe.</p>
+<p>Beyond Error Codes - Debugging Ill-Defined Problems | Interrupt - Blog - Interrupt1 reply<a href="https://community.memfault.com/t/beyond-error-codes-debugging-ill-defined-problems-interrupt/960/2" title="April 21, 2025,  3:10pm">April 2025</a></p>
+<p><a href="https://community.memfault.com/u/jordan.melnychuk"><img src="https://avatars.discourse-cdn.com/v4/letter/j/e274bd/45.png" alt=""></a></p>
+<h3 id="jordanmelnychuk"><a href="https://community.memfault.com/u/jordan.melnychuk">jordan.melnychuk</a></h3>
+<p>Awesome article, bookmarking it to steal these next time I’m ripping my hair out. The DCache point is timely because I was recently bitten by that moving from an M4 to M7…</p>
+<p>Another thing I have gotten in a habit of doing for spurious corruption/reboots is disabling watchdog timers and seeing if the issue goes away. <em>Especially</em> if the issue happens with high CPU usage, or during long running operations like OTA/reflashes. Also check your datasheets and debugger config to see if it pauses counters/timers after hitting a breakpoint. Otherwise you might get an avalanche of interrupts when stepping.</p>
+<p>And glad to see you’re still crushing after college!</p>
+<p><a href="https://community.memfault.com/"><img src="https://community.memfault.com/embed/comments?embed_url=https%3A%2F%2Finterrupt.memfault.com%2Fblog%2Fdebugging-steps" alt=""></a><a href="https://community.memfault.com/t/beyond-error-codes-debugging-ill-defined-problems-interrupt/960/2">Continue Discussion</a></p>
+<h3 id="search">Search</h3>
+<table>
+  <thead>
+      <tr>
+          <th></th>
+          <th></th>
+          <th></th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td></td>
+          <td></td>
+          <td></td>
+      </tr>
+      <tr>
+          <td>&mdash;</td>
+          <td>&mdash;</td>
+          <td></td>
+      </tr>
+      <tr>
+          <td></td>
+          <td>×</td>
+          <td></td>
+      </tr>
+  </tbody>
+</table>
+<p>Custom Search</p>
+<table>
+  <thead>
+      <tr>
+          <th></th>
+          <th></th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td></td>
+          <td>Sort by<!-- raw HTML omitted -->Relevance<!-- raw HTML omitted -->Date</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="subscribe"><strong>Subscribe</strong></h3>
+<p><strong>Enter your email below to receive new Interrupt posts straight to your mailbox.</strong></p>
+<p>Email*</p>
+<h3 id="latest-blog-posts">Latest Blog Posts</h3>
+<p>See the latest content from the Interrupt community.</p>
+<p><a href="https://interrupt.memfault.com/#latest-blog-posts">View latest blog posts\
+<img src="https://interrupt.memfault.com/img/chevron-right.svg" alt=""></a></p>
+<h3 id="top-blog-posts">Top Blog Posts</h3>
+<p>Read the posts that readers love the most.</p>
+<p><a href="https://interrupt.memfault.com/#top-blog-posts">View top blog posts\
+<img src="https://interrupt.memfault.com/img/chevron-right.svg" alt=""></a></p>
+<p><img src="https://interrupt.memfault.com/img/memfault-logo.png" alt="">
+Brought to you with ❤️ by Memfault.</p>
+<p><a href="https://memfault.com/">Learn more\
+<img src="https://interrupt.memfault.com/img/chevron-right.svg" alt=""></a></p>
+<h3 id="share-on">Share on:</h3>
+<p><a href="https://interrupt.memfault.com/feed.xml">RSS</a> <a href="https://interrupt-slack.herokuapp.com/">Slack</a> <a href="https://go.memfault.com/interrupt-subscribe">Subscribe</a> <a href="https://interrupt.memfault.com/contributing">Contribute</a> <a href="https://community.memfault.com/">Community</a> <a href="https://memfault.com/">Memfault.com</a></p>
+<p>© 2026 - Memfault, Inc.</p>
+<table>
+  <thead>
+      <tr>
+          <th></th>
+          <th></th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td></td>
+          <td></td>
+      </tr>
+  </tbody>
+</table>
+<ul class="pa0">
+  
+</ul>
+
+      
+    </div></article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white white-70 dn dib-ns pv2 ph3 no-underline" href="http://localhost:1313/" >
+    &copy;  My New Hugo Project 2026 
+  </a>
+    <div><div class="ananke-socials"></div>
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>

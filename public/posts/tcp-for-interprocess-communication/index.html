@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>Tcp for Interprocess Communication | My New Hugo Project</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="Sample article showcasing syntax highlighting and formatting for Code Blocks with a custom theme.">
+    <meta name="generator" content="Hugo 0.160.1">
+    
+    
+    
+      <meta name="robots" content="noindex, nofollow">
+    
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.css" >
+
+
+
+
+    
+
+
+    
+      
+
+    
+
+    
+
+    
+      <link rel="canonical" href="http://localhost:1313/posts/tcp-for-interprocess-communication/">
+    
+
+    
+    
+    <meta property="og:url" content="http://localhost:1313/posts/tcp-for-interprocess-communication/">
+  <meta property="og:site_name" content="My New Hugo Project">
+  <meta property="og:title" content="Tcp for Interprocess Communication">
+  <meta property="og:description" content="Sample article showcasing syntax highlighting and formatting for Code Blocks with a custom theme.">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2024-08-01T00:00:00+00:00">
+    <meta property="article:modified_time" content="2024-08-01T00:00:00+00:00">
+
+  <meta itemprop="name" content="Tcp for Interprocess Communication">
+  <meta itemprop="description" content="Sample article showcasing syntax highlighting and formatting for Code Blocks with a custom theme.">
+  <meta itemprop="datePublished" content="2024-08-01T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2024-08-01T00:00:00+00:00">
+  <meta itemprop="wordCount" content="1053">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Tcp for Interprocess Communication">
+  <meta name="twitter:description" content="Sample article showcasing syntax highlighting and formatting for Code Blocks with a custom theme.">
+
+	
+  </head><body class="ma0 avenir bg-near-white development is-page is-page page-tcp-for-interprocess-communication">
+    
+   
+  
+
+  <header>
+    <div class="bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l center items-center justify-between">
+    <a href="/" class="f3 fw2 hover-white white-90 dib no-underline">
+      
+        My New Hugo Project
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      <div class="ananke-socials"></div>
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+
+  <article class="page-tcp-for-interprocess-communication flex-l mw7 center ph3 flex-wrap justify-between">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked ttu">
+          
+        Posts
+      </aside><div id="sharing" class="mt3 ananke-socials"></div>
+<h1 class="f1 athelas mt3 mb1">Tcp for Interprocess Communication</h1>
+      
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2024-08-01T00:00:00Z">August 1, 2024</time>
+      
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-100-l"><p>Features of TCP (Transmission Control Protocol) are decided by TCP specification, also influence behaviors of TCP application.</p>
+<p>This post relates features (in theory) and behaviors (in practice) of TCP.</p>
+<h2 id="features-of-tcp">Features of TCP</h2>
+<ol>
+<li>connection-oriented protocol (must establish connection before data transmission)</li>
+<li>end-to-end communication</li>
+<li>reliable</li>
+<li>full duplex</li>
+<li>data is transmitted as bytes stream</li>
+<li>the transmitted data has no message boundary (consistent with 4)</li>
+</ol>
+<h2 id="connection-oriented">Connection-Oriented</h2>
+<p>At first, TCP communication must establish connection. So how to establish connection in theory?</p>
+<p>Suppose two roles, S and C, will establish a connection. Does S must know C and C must know S in advance? It is not true. Only one role knows its destination is enough. Let C know its destination is S. C can send a &ldquo;Connection Establishment Request&rdquo; to S. Now, S should listen the incoming requests in advance, so that S can identify any request once it appears.</p>
+<p>In practice, the role listening to incoming requests is called server, the role initiating a connection request to the server is called client.</p>
+<p>Firstly, server listens to the address ( IP address with the port) agreed with the client.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">use</span> std::net::TcpListener;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">let</span> listener <span style="color:#f92672">=</span> TcpListener::bind(<span style="color:#e6db74">&#34;127.0.0.1:80&#34;</span>).unwrap();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">match</span> listener.accept() {
+</span></span><span style="display:flex;"><span>    Ok((_socket, addr)) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">println!</span>(<span style="color:#e6db74">&#34;new client: </span><span style="color:#e6db74">{addr:?}</span><span style="color:#e6db74">&#34;</span>),
+</span></span><span style="display:flex;"><span>    Err(e) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">println!</span>(<span style="color:#e6db74">&#34;couldn&#39;t get client: </span><span style="color:#e6db74">{e:?}</span><span style="color:#e6db74">&#34;</span>),
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Above code listens to <code>127.0.0.1:80</code>, once it returned, the listener is ready for accepting incoming connections. If we assign a port <code>0</code>, the port number is allocated by OS.</p>
+<p>The <code>accept()</code> will block the calling thread until a new TCP connection is established. If there is exactly one client, one <code>accept()</code> call is enough. If there are many clients, we should use a loop to accept more than one clients.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">loop</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">match</span> listener.accept() {
+</span></span><span style="display:flex;"><span>    Ok((_socket, addr)) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">println!</span>(<span style="color:#e6db74">&#34;new client: </span><span style="color:#e6db74">{addr:?}</span><span style="color:#e6db74">&#34;</span>),
+</span></span><span style="display:flex;"><span>    Err(e) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">println!</span>(<span style="color:#e6db74">&#34;couldn&#39;t get client: </span><span style="color:#e6db74">{e:?}</span><span style="color:#e6db74">&#34;</span>),
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Then, server and client will exchange data by the TCP stream.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">let</span> (stream: <span style="color:#a6e22e">TcpStream</span>, address: <span style="color:#a6e22e">SocketAddress</span>) <span style="color:#f92672">=</span> listener.accept().unwrap();
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">let</span> buf: Vec<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">u8</span><span style="color:#f92672">&gt;</span> <span style="color:#f92672">=</span>  <span style="color:#a6e22e">vec!</span>[<span style="color:#ae81ff">0</span>; <span style="color:#ae81ff">1024</span>];
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">match</span> stream.read(buf.as_mut()) {
+</span></span><span style="display:flex;"><span>  Ok(<span style="color:#ae81ff">0</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">println!</span>(<span style="color:#e6db74">&#34;connection was shutdown&#34;</span>),
+</span></span><span style="display:flex;"><span>  Ok(n) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">println!</span>(<span style="color:#e6db74">&#34;read: </span><span style="color:#e6db74">{n}</span><span style="color:#e6db74">&#34;</span>),
+</span></span><span style="display:flex;"><span>  Err(e) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">println!</span>(<span style="color:#e6db74">&#34;couldn&#39;t read: </span><span style="color:#e6db74">{e:?}</span><span style="color:#e6db74">&#34;</span>),
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>It&rsquo;s worth noting that</p>
+<ol>
+<li>The <code>read</code> method comes from <code>Read</code> trait</li>
+<li>In TCP situation, the <code>read</code> method blocks waiting for data.</li>
+<li>the <code>read</code> method returns <code>Ok(0)</code> if TCP connection shutdown.</li>
+</ol>
+<p>So, in order to ensure the execution of the other parts of the program, the <code>read</code> operation should be placed in an individual thread which contains no other operations. As we mentioned, the <code>accept</code> also blocks waiting for connections. There will be a code snippet like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">use</span> std::net::TcpListener;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">let</span> listener <span style="color:#f92672">=</span> TcpListener::bind(<span style="color:#e6db74">&#34;127.0.0.1:80&#34;</span>).unwrap();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>spawn(<span style="color:#66d9ef">move</span> <span style="color:#f92672">||</span> {
+</span></span><span style="display:flex;"><span> <span style="color:#66d9ef">loop</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">match</span> listener.accept() {
+</span></span><span style="display:flex;"><span>      Ok((socket, addr)) <span style="color:#f92672">=&gt;</span> {
+</span></span><span style="display:flex;"><span>        spawn(<span style="color:#66d9ef">move</span> <span style="color:#f92672">||</span> {
+</span></span><span style="display:flex;"><span>          socket.read(<span style="color:#f92672">..</span>.);
+</span></span><span style="display:flex;"><span>        });
+</span></span><span style="display:flex;"><span>      },
+</span></span><span style="display:flex;"><span>      Err(e) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">println!</span>(<span style="color:#e6db74">&#34;couldn&#39;t get client: </span><span style="color:#e6db74">{e:?}</span><span style="color:#e6db74">&#34;</span>),
+</span></span><span style="display:flex;"><span>    };
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>});
+</span></span></code></pre></div><p>In above code, One thread to accept any incoming connection. One thread for each stream to read data.</p>
+<p>todo: how to accept tcp connection, how to handle stream</p>
+<h2 id="end-to-end">End-to-End</h2>
+<p>todo: can&rsquo;t boardcast</p>
+<h2 id="reliable">Reliable</h2>
+<p>todo: the reason network buffer may become full</p>
+<h2 id="data-has-no-memory-boundary">Data has No Memory Boundary</h2>
+<p>todo: application layer protocol</p>
+<h2 id="readwrite-data-packet-via-tcp-stream">Read/Write Data Packet via TCP Stream</h2>
+<p>TCP是连续的字节流，分割成单独的请求是应用层协议的事情。所以，直接读取TCP Stream的内容，可能刚好是一个完整的请求，可能只有一个请求的前一部分，也可能有一个半的请求等等的情况。</p>
+<p>一般在应用层定义一个固定大小的Request Header，其中包含一个field指明Data的长度。</p>
+<p>当Sender发送Request到Receiver时，Sender显然可以一次性把Request中的header和data写入Stream中。</p>
+<p>当Receiver接收来自Sender的Request时，Receiver先从Stream中读取固定大小的RequestHeader.</p>
+<p>从header中的data_len field得知data的长度，再继续从Stream中读取已知大小的data.</p>
+<h2 id="blockingnon-blocking">Blocking/Non-Blocking</h2>
+<h2 id="code-snippet">Code Snippet</h2>
+<ul>
+<li>start a TCP listener to accept exactly one TCP connection</li>
+<li>a TCP Server as data receiver and a TCP Client as data sender</li>
+<li>define application layer protocol
+<ul>
+<li>define packet header, packet data format</li>
+<li>implement header encode manually</li>
+<li>implement header decode via <code>From&lt;&amp;[u8]&gt;</code> trait</li>
+<li>implement data encode via <code>serde::Serialize</code></li>
+<li>implement data decode via <code>serde::Deserialize</code></li>
+</ul>
+</li>
+<li>[TODO] show TCP <code>write_all</code> operation will be stuck in blocking mode if network buffer was full</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">use</span> core::time;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">use</span> std::{
+</span></span><span style="display:flex;"><span>    io::{Read, Write},
+</span></span><span style="display:flex;"><span>    net::{Shutdown, TcpListener, TcpStream},
+</span></span><span style="display:flex;"><span>    thread,
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">use</span> anyhow::{Ok, Result};
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">use</span> serde;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">use</span> serde_json;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// I do not use serde to serialize and deserialize RequestHeader, because json format is not fixed sized.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// I manually encode and decode it.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// use bincode crate may be also a good choice.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#[derive(Debug)]</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">RequestHeader</span> {
+</span></span><span style="display:flex;"><span>    data_len: <span style="color:#66d9ef">u64</span>,
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// RequestData can be complex, use serde to make it simple
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#[derive(Debug, serde::Serialize, serde::Deserialize)]</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">RequestData</span> {
+</span></span><span style="display:flex;"><span>    data: Vec<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">u8</span><span style="color:#f92672">&gt;</span>,
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">impl</span> RequestData {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// len in bytes
+</span></span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">len</span>(<span style="color:#f92672">&amp;</span>self) -&gt; <span style="color:#66d9ef">u64</span> {
+</span></span><span style="display:flex;"><span>        self.data.len() <span style="color:#66d9ef">as</span> <span style="color:#66d9ef">u64</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// This struct may never be used directly.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// Because I encode and send header first,
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// and then serialize and deserialize data.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#[allow(dead_code)]</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Request</span> {
+</span></span><span style="display:flex;"><span>    header: <span style="color:#a6e22e">RequestHeader</span>,
+</span></span><span style="display:flex;"><span>    data: <span style="color:#a6e22e">RequestData</span>,
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// impl From trait so that I can build RequestHeader from &amp;[u8]
+</span></span></span><span style="display:flex;"><span><span style="color:#66d9ef">impl</span> From<span style="color:#f92672">&lt;&amp;</span>[<span style="color:#66d9ef">u8</span>]<span style="color:#f92672">&gt;</span> <span style="color:#66d9ef">for</span> RequestHeader {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">from</span>(slice: <span style="color:#66d9ef">&amp;</span>[<span style="color:#66d9ef">u8</span>]) -&gt; <span style="color:#a6e22e">Self</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">let</span> (int_bytes, _rest) <span style="color:#f92672">=</span> slice.split_at(std::mem::size_of::<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">u64</span><span style="color:#f92672">&gt;</span>());
+</span></span><span style="display:flex;"><span>        Self {
+</span></span><span style="display:flex;"><span>            data_len: <span style="color:#66d9ef">u64</span>::from_be_bytes(int_bytes.try_into().unwrap()),
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">impl</span> RequestHeader {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// impl this so that I can extract &amp;[u8] from RequestHeader,
+</span></span></span><span style="display:flex;"><span>    <span style="color:#75715e">// slice is a mutable input here, it can&#39;t fit From trait&#39;s fn signature
+</span></span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">to_u8_slice</span>(<span style="color:#f92672">&amp;</span>self, slice: <span style="color:#66d9ef">&amp;</span><span style="color:#a6e22e">mut</span> [<span style="color:#66d9ef">u8</span>]) {
+</span></span><span style="display:flex;"><span>        slice.copy_from_slice(<span style="color:#f92672">&amp;</span>self.data_len.to_be_bytes())
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// getter of data_len
+</span></span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">data_len</span>(<span style="color:#f92672">&amp;</span>self) -&gt; <span style="color:#66d9ef">u64</span> {
+</span></span><span style="display:flex;"><span>        self.data_len
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#66d9ef">LOCAL_ADDRESS</span>: <span style="color:#66d9ef">&amp;</span><span style="color:#66d9ef">str</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;127.0.0.1:12344&#34;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// server as Receiver
+</span></span></span><span style="display:flex;"><span><span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">tcp_server</span>() -&gt; Result<span style="color:#f92672">&lt;</span>()<span style="color:#f92672">&gt;</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">let</span> tcp_listener <span style="color:#f92672">=</span> TcpListener::bind(<span style="color:#66d9ef">LOCAL_ADDRESS</span>)<span style="color:#f92672">?</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">println!</span>(<span style="color:#e6db74">&#34;bind to </span><span style="color:#e6db74">{:?}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#66d9ef">LOCAL_ADDRESS</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">let</span> tcp_stream_join_handle <span style="color:#f92672">=</span> thread::spawn(<span style="color:#66d9ef">move</span> <span style="color:#f92672">||</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">let</span> (<span style="color:#66d9ef">mut</span> tcp_stream, socket_address) <span style="color:#f92672">=</span> tcp_listener.accept()<span style="color:#f92672">?</span>;
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">println!</span>(<span style="color:#e6db74">&#34;accept socket address: </span><span style="color:#e6db74">{:?}</span><span style="color:#e6db74">&#34;</span>, socket_address);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">loop</span> {
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">// pre-allocate memory space for header
+</span></span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> header_buffer: Vec<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">u8</span><span style="color:#f92672">&gt;</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">vec!</span>[<span style="color:#ae81ff">0</span>; std::mem::size_of::<span style="color:#f92672">&lt;</span>RequestHeader<span style="color:#f92672">&gt;</span>()];
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">// read header data from stream
+</span></span></span><span style="display:flex;"><span>            tcp_stream.read_exact(header_buffer.as_mut())<span style="color:#f92672">?</span>;
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">// build header from &amp;[u8]
+</span></span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">let</span> header <span style="color:#f92672">=</span> RequestHeader::from(header_buffer.as_ref());
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">println!</span>(<span style="color:#e6db74">&#34;read header: </span><span style="color:#e6db74">{:?}</span><span style="color:#e6db74">&#34;</span>, header);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">// pre-allocate memory space for data
+</span></span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> data_buffer: Vec<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">u8</span><span style="color:#f92672">&gt;</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">vec!</span>[<span style="color:#ae81ff">0</span>; header.data_len() <span style="color:#66d9ef">as</span> <span style="color:#66d9ef">usize</span>];
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">// read data from stream
+</span></span></span><span style="display:flex;"><span>            tcp_stream.read_exact(data_buffer.as_mut()).unwrap();
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">// deserialize Vec&lt;u8&gt; to data structure via serde
+</span></span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">let</span> data: <span style="color:#a6e22e">RequestData</span> <span style="color:#f92672">=</span> serde_json::from_slice(data_buffer.as_ref()).unwrap();
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">println!</span>(<span style="color:#e6db74">&#34;read data: </span><span style="color:#e6db74">{:?}</span><span style="color:#e6db74">&#34;</span>, data);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">#[allow(unreachable_code)]</span>
+</span></span><span style="display:flex;"><span>        Ok(())
+</span></span><span style="display:flex;"><span>    });
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">//let result = tcp_stream_join_handle.join().unwrap();
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    Ok(())
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// client as sender
+</span></span></span><span style="display:flex;"><span><span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">tcp_client</span>() -&gt; Result<span style="color:#f92672">&lt;</span>()<span style="color:#f92672">&gt;</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> tcp_stream <span style="color:#f92672">=</span> TcpStream::connect(<span style="color:#66d9ef">LOCAL_ADDRESS</span>)<span style="color:#f92672">?</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">println!</span>(<span style="color:#e6db74">&#34;connect to </span><span style="color:#e6db74">{:?}</span><span style="color:#e6db74">&#34;</span>, <span style="color:#66d9ef">LOCAL_ADDRESS</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">let</span> tcp_stream_join_handle <span style="color:#f92672">=</span> thread::spawn(<span style="color:#66d9ef">move</span> <span style="color:#f92672">||</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> i <span style="color:#66d9ef">in</span> <span style="color:#ae81ff">0</span><span style="color:#f92672">..</span><span style="color:#ae81ff">10</span> {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">let</span> data: <span style="color:#a6e22e">RequestData</span> <span style="color:#f92672">=</span> RequestData {
+</span></span><span style="display:flex;"><span>                data: <span style="color:#a6e22e">vec</span><span style="color:#f92672">!</span>[i <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>, i <span style="color:#f92672">+</span> <span style="color:#ae81ff">2</span>, i <span style="color:#f92672">+</span> <span style="color:#ae81ff">3</span>, i <span style="color:#f92672">+</span> <span style="color:#ae81ff">4</span>],
+</span></span><span style="display:flex;"><span>            };
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">// serialize data to vec u8 via serde
+</span></span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">let</span> data_buffer <span style="color:#f92672">=</span> serde_json::to_vec(<span style="color:#f92672">&amp;</span>data)<span style="color:#f92672">?</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">// header store data_len in bytes
+</span></span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">let</span> header <span style="color:#f92672">=</span> RequestHeader {
+</span></span><span style="display:flex;"><span>                data_len: <span style="color:#a6e22e">data_buffer</span>.len() <span style="color:#66d9ef">as</span> <span style="color:#66d9ef">u64</span>,
+</span></span><span style="display:flex;"><span>            };
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">// declare buffer of header
+</span></span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> header_buffer: Vec<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">u8</span><span style="color:#f92672">&gt;</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">vec!</span>[<span style="color:#ae81ff">0</span>; std::mem::size_of::<span style="color:#f92672">&lt;</span>RequestHeader<span style="color:#f92672">&gt;</span>()];
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">// encode header into buffer
+</span></span></span><span style="display:flex;"><span>            header.to_u8_slice(header_buffer.as_mut());
+</span></span><span style="display:flex;"><span>            tcp_stream.write_all(<span style="color:#f92672">&amp;</span>header_buffer)<span style="color:#f92672">?</span>;
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">println!</span>(<span style="color:#e6db74">&#34;send header buffer: </span><span style="color:#e6db74">{:?}</span><span style="color:#e6db74">&#34;</span>, header_buffer);
+</span></span><span style="display:flex;"><span>            tcp_stream.write_all(<span style="color:#f92672">&amp;</span>data_buffer)<span style="color:#f92672">?</span>;
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">println!</span>(<span style="color:#e6db74">&#34;send data buffer: </span><span style="color:#e6db74">{:?}</span><span style="color:#e6db74">&#34;</span>, data_buffer);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            tcp_stream.flush()<span style="color:#f92672">?</span>;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        tcp_stream.shutdown(Shutdown::Both)<span style="color:#f92672">?</span>;
+</span></span><span style="display:flex;"><span>        Ok(())
+</span></span><span style="display:flex;"><span>    });
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    Ok(())
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">main</span>() -&gt; Result<span style="color:#f92672">&lt;</span>()<span style="color:#f92672">&gt;</span> {
+</span></span><span style="display:flex;"><span>    tcp_server()<span style="color:#f92672">?</span>;
+</span></span><span style="display:flex;"><span>    tcp_client()<span style="color:#f92672">?</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// NOTE: leave some time to let threads run
+</span></span></span><span style="display:flex;"><span>    thread::sleep(time::Duration::from_secs(<span style="color:#ae81ff">10</span>));
+</span></span><span style="display:flex;"><span>    Ok(())
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><pre tabindex="0"><code></code></pre><ul class="pa0">
+  
+</ul>
+
+      
+    </div></article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white white-70 dn dib-ns pv2 ph3 no-underline" href="http://localhost:1313/" >
+    &copy;  My New Hugo Project 2026 
+  </a>
+    <div><div class="ananke-socials"></div>
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>

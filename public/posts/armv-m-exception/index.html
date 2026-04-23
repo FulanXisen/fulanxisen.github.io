@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>A Practical guide to ARM Cortex-M Exception Handling | My New Hugo Project</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="ARM Cortex-M serials Exception Handling">
+    <meta name="generator" content="Hugo 0.160.1">
+    
+    
+    
+      <meta name="robots" content="noindex, nofollow">
+    
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.css" >
+
+
+
+
+    
+
+
+    
+      
+
+    
+
+    
+
+    
+      <link rel="canonical" href="http://localhost:1313/posts/armv-m-exception/">
+    
+
+    
+    
+    <meta property="og:url" content="http://localhost:1313/posts/armv-m-exception/">
+  <meta property="og:site_name" content="My New Hugo Project">
+  <meta property="og:title" content="A Practical guide to ARM Cortex-M Exception Handling">
+  <meta property="og:description" content="ARM Cortex-M serials Exception Handling">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:tag" content="Arm">
+
+  <meta itemprop="name" content="A Practical guide to ARM Cortex-M Exception Handling">
+  <meta itemprop="description" content="ARM Cortex-M serials Exception Handling">
+  <meta itemprop="wordCount" content="4368">
+  <meta itemprop="keywords" content="Arm">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="A Practical guide to ARM Cortex-M Exception Handling">
+  <meta name="twitter:description" content="ARM Cortex-M serials Exception Handling">
+
+	
+  </head><body class="ma0 avenir bg-near-white development is-page is-page page-armv-m-exception">
+    
+   
+  
+
+  <header>
+    <div class="bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l center items-center justify-between">
+    <a href="/" class="f3 fw2 hover-white white-90 dib no-underline">
+      
+        My New Hugo Project
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      <div class="ananke-socials"></div>
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+
+  <article class="page-armv-m-exception flex-l mw7 center ph3 flex-wrap justify-between">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked ttu">
+          
+        Posts
+      </aside><div id="sharing" class="mt3 ananke-socials"></div>
+<h1 class="f1 athelas mt3 mb1">A Practical guide to ARM Cortex-M Exception Handling</h1>
+      
+      
+      
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-100-l"><p>几乎所有嵌入式系统都在某种程度上依赖于处理异步事件的能力。
+例如，它从加速度计读取外部传感器数据，以便计算步数
+或处理周期性计时器事件以触发RTOS的上下文切换。</p>
+<p>在本文中，我们将深入研究ARM Cortex-M 的Exception Model如何支持异步事件的处理。
+本文将介绍支持的不同异常类型、术语(NVIC、ISR、Priority)、configuration registers及其常用设置、与Exception有关的Advanced Topic以及一些用C编写的examples。</p>
+<blockquote>
+<p>注意:在大多数情况下，所有Cortex-M处理器(ARMv6-M、ARMv7-M和ARMv8-M体系结构)的异常处理机制是相同的。本文将在下面的相关章节中指出它们的差异。</p>
+</blockquote>
+<h2 id="arm-exception-model-overview">ARM Exception Model Overview<a href="#arm-exception-model-overview"></a></h2>
+<p>ARM specification将Exception定义为“a condition that changes the normal flow of control in a program” <a href="#fn:4">1</a>.</p>
+<p>你会经常看到&quot;Exception&quot;和&quot;Interrupt&quot;交替出现. 在ARM文档中, &ldquo;Interrupt&quot;用来描述&quot;Exception&quot;的一种.
+Exception包含以下3部分标识信息:</p>
+<ul>
+<li><strong>Exception Number</strong> - 表示特定类型Exception的唯一编号(从1开始).
+这个编号也用作<strong>Vector Table</strong>的offset, 这种类型的Exception对应routine的address可以在这里找到.
+这样的routine通常被称为<strong>Exception Handler</strong>或者<strong>Interrupt Service Routine</strong> (<strong>ISR</strong>),它是在Exception触发时会被执行的函数.
+当Exception被触发时,ARM硬件会自动的从<strong>Vector Table</strong>中寻找对应的函数指针并执行.</li>
+<li><strong>Priority Level</strong> / <strong>Priority Number</strong> - 每种Exception都有一个优先级.
+大部分exception的Priority Number是可配置的. 反直觉的地方是, 更小的priority number意味着更高的优先级.
+所以如果priority level 1的exception和priority level 2的exception同时发生, priority level 1的exception会先被处理.
+当本文说一个exception有最高优先级时, 意味着这个exception有最小的<strong>Priority Number</strong>.
+如果两个exception有相同的<strong>Priority Number</strong>, <strong>Exception Number</strong>更小的那个会先被处理.</li>
+<li><strong>Synchronous</strong> 或 <strong>Asynchronous</strong> - 有一些exception触发时被立即被处理(例如 <code>SVCall</code>), 称为 <em>synchronous</em>.
+另一些exception触发时不会被立刻处理, 称为 <em>asynchronous</em>.</li>
+</ul>
+<p>一个exception可以处于以下4种状态中的一种:</p>
+<ul>
+<li><strong>Pending</strong> - MCU检测到了exception并进行了调度,但是还没有调用handler.</li>
+<li><strong>Active</strong> - MCU已经开始执行handler但是还没执行结束. handler处于这种状态下的原因可能是因为被更高优先级的handler抢占.</li>
+<li><strong>Pending &amp; Active</strong> - 只有asynchronous exceptions可能处于这种状态, 这种状态基本上意味着MCU正在处理一个相同类型的exception.</li>
+<li><strong>Inactive</strong> - exception既不处于Pending也不处于Active.</li>
+</ul>
+<p>某些exception可以选择性的Enabled或Disabled.</p>
+<blockquote>
+<p>注意: 即使一个exception已经disabled, 它仍然可以处于<strong>pending</strong>状态. 一旦enabled, 它就会转移到active状态.
+所以, 在启用一个interrupt时, 最好清空所有<strong>pending</strong>状态下的exception.</p>
+</blockquote>
+<p>接下来探讨ARM Cortex-M MCU上不同类型的exception.</p>
+<h3 id="built-in-exceptions">Built in Exceptions<a href="#built-in-exceptions"></a></h3>
+<p>These are exceptions that are part of <em>every</em> ARM Cortex-M core. The ARM Cortex-M specifications reserve <strong>Exception Numbers</strong> <strong>1</strong>-<strong>15</strong>, inclusive, for these.</p>
+<blockquote>
+<p>NOTE: <a href="#exception-number">Recall</a> that the <strong>Exception Number</strong> maps to an offset within the <strong>Vector Table</strong>. Index 0 of the <strong>Vector Table</strong> holds the reset value of the Main stack pointer. The rest of the <strong>Vector Table</strong>, starting at Index 1, holds <strong>Exception Handler</strong> pointers.</p>
+</blockquote>
+<p>Six exceptions are always supported and depending on the Cortex-M variant, additional handlers will be implemented as well. The minimum set is:</p>
+<ul>
+<li><strong>Reset</strong> - This is the routine executed when a chip comes out of reset. More details can be found within the <a href="/tag/zero-to-main">Zero to main() series of posts</a>.</li>
+<li><strong>Non Maskable Interrupt</strong> (<code>NMI</code>) - As the name implies, this interrupt cannot be disabled. If errors happen in other exception handlers, a NMI will be triggered. Aside from the <code>Reset</code> exception, it has the highest priority of all exceptions.</li>
+<li><strong>HardFault</strong> - The catchall for assorted system failures that can take place such as accesses to bad memory, divide-by-zero errors and illegal unaligned accesses. It’s the only handler for faults on the ARMv6-M architecture but for ARMv7-M &amp; ARMv8-M, finer granularity fault handlers can be enabled for specific error classes (i.e <code>MemManage</code>, <code>BusFault</code>, <code>UsageFault</code>). <a href="#fn:3">2</a></li>
+<li><strong>SVCall</strong> - Exception handler invoked when an <em>Supervisor Call</em> (<code>svc</code>) instruction is executed.</li>
+<li><strong>PendSV</strong> &amp; <strong>SysTick</strong> - System level interrupts triggered by software. They are typically used when running a RTOS to manage when the scheduler runs and when context switches take place.</li>
+</ul>
+<h3 id="external-interrupts">External Interrupts<a href="#external-interrupts"></a></h3>
+<p>ARM cores also support interrupt lines which are “external” to the core itself. These interrupt lines are usually routed to vendor-specific peripherals on the MCU such as Direct Memory Access (<strong>DMA</strong>) engines or General Purpose Input/Output Pins (<strong>GPIO</strong>s). All of these interrupts are configured via a peripheral known as the <em>Nested Vectored Interrupt Controller</em> (<strong>NVIC</strong>).</p>
+<p>The <strong>Exception Number</strong> for external interrupts starts at <strong>16</strong>. The ARMv7-M reference manual has a good graphic which displays the Exception number mappings:</p>
+<p><img src="./images/armv-m-exceptions/exception-numbers.png" alt=""></p>
+<h2 id="registers-used-to-configure-cortex-m-exceptions">Registers used to configure Cortex-M Exceptions<a href="#registers-used-to-configure-cortex-m-exceptions"></a></h2>
+<p>Exceptions are configured on Cortex-M devices using a small set of registers within the <strong>System Control Space</strong> (<strong>SCS</strong>). An in-depth list of all the registers involved in exception handling can be found in the ARMv7-M reference manual <a href="#fn:11">3</a>. A great way to build out an understanding of how the exception subsystem works is to walk through the registers used to configure it. In the sections below we will explore the highlights.</p>
+<blockquote>
+<p>If you already have a good feel for Cortex-M exception configuration, I’d recommend skipping to the <a href="#advanced-topics">advanced topics section</a> which covers a few of the more subtle details about Cortex-M exceptions worth noting or to test your knowledge with a more <a href="#complex-config-example">complex configuration example</a>!</p>
+</blockquote>
+<h3 id="interrupt-control-and-state-register-icsr---0xe000ed04">Interrupt Control and State Register (ICSR) - 0xE000ED04<a href="#icsr-register"></a></h3>
+<p><code>ICSR</code> bit assignments: <img src="./images/icsr.png" alt=""></p>
+<p>This register lets one control the NMI, PendSV, and SysTick exceptions and view a summary of the current interrupt state of the system.</p>
+<p>The most useful status fields are:</p>
+<ul>
+<li><strong>VECTACTIVE</strong> - The Exception Number of the currently running interrupt or 0 if none are active. This number is also stored in the <code>IPSR</code> field of the Program Status Register (<code>xPSR</code>).</li>
+<li><strong>RETTOBASE</strong> - A value of <em>0</em> means another interrupt is active aside from the currently executing one. This basically reveals whether or not pre-emption took place. This field is not implemented in ARMv6-M devices.</li>
+<li><strong>VECTPENDING</strong> - The Exception Number of the highest outstanding pending interrupt or 0 if there is None.</li>
+</ul>
+<h3 id="application-interrupt-and-reset-control-register-aircr---0xe000ed0c">Application Interrupt and Reset Control Register (AIRCR) - 0xE000ED0C<a href="#application-interrupt-and-reset-control-register-aircr---0xe000ed0c"></a></h3>
+<p><code>AIRCR</code> bit assignments: <img src="./images/aircr.png" alt=""></p>
+<p>The highlights with respect to exceptions are:</p>
+<ul>
+<li><strong>SYSRESETREQ</strong> - Writing 1 will trigger a system reset resulting in the System Reset Handler getting invoked.</li>
+<li><strong>PRIGROUP</strong> - This field lets you split exception priorities into two parts known as the <em>group priority</em> and <em>subpriority</em>. The setting here indicates how many bits make up the <em>subpriority</em>. The <em>group priority</em> is used to control which interrupts can preempt one another. The subpriority controls the order in which exceptions in the same group will be processed. This field is <em>not</em> implemented in ARMv6-M based devices. This can be helpful if you only want certain groups of interrupts to be able to preempt one another.</li>
+</ul>
+<blockquote>
+<p>NOTE: In order to issue a write to this register, the <code>VECTKEY</code> field must be set to <code>0x05FA</code>.</p>
+</blockquote>
+<h3 id="system-handler-priority-register-shpr1-shpr3---0xe000ed18---0xe000ed20">System Handler Priority Register (SHPR1-SHPR3) - 0xE000ED18 - 0xE000ED20<a href="#system-handler-priority-register-shpr1-shpr3---0xe000ed18---0xe000ed20"></a></h3>
+<p>This bank of registers allows for the priority of system faults with configurable priority to be updated. Note that the register bank index starts at <strong>1</strong> instead of <strong>0</strong>. This is because the first exception numbers (corresponding to <code>Reset</code>, <code>NMI</code>, and <code>Hardfault</code>, respectively) do <em>not</em> have a configurable priority so writing to anything in <strong>SHPR0</strong> has no effect.</p>
+<p>Each priority configuration occupies 8 bits of a register bank. That means the configuration for Exception Number 11, <code>SVCall</code>, would be in bits 24-32 of <code>SHPR2</code>. The default priority value for all System Exceptions is 0, the highest configurable priority level. For most applications, it’s not typical to need and change these values.</p>
+<h3 id="system-handler-control-and-state-register-shcsr---0xe000ed24">System Handler Control and State Register (SHCSR) - 0xE000ED24<a href="#system-handler-control-and-state-register-shcsr---0xe000ed24"></a></h3>
+<p>This register lets you view the status of or enable various built in exception handlers:</p>
+<p><img src="./images/shcsr.png" alt=""></p>
+<blockquote>
+<p>NOTE: For ARMv6-M devices the only value which is implemented is <code>SVCALLPENDED</code></p>
+</blockquote>
+<h3 id="interrupt-controller-type-register-ictr---0xe000e004">Interrupt Controller Type Register (ICTR) - 0xE000E004<a href="#interrupt-controller-type-register-ictr---0xe000e004"></a></h3>
+<p>This register allows you to determine the total number of external interrupt lines supported by an implementation. For ARMv6-M devices (Cortex-M0, Cortex-M0+), this register is not implemented because the number is always 32. For other Cortex-M MCUs, up to 496 lines may be supported! The layout of the register looks like this:</p>
+<p><img src="./images/ictr.png" alt=""></p>
+<p>The exact number of interrupts supported is easily computed as <code>32 * (INTLINESNUM + 1)</code></p>
+<h3 id="nvic-registers">NVIC Registers<a href="#nvic-registers"></a></h3>
+<p>The NVIC has sets of registers for configuring the “external” interrupt lines. The address ranges are allocated to support the maximum number of external interrupts which can be implemented, 496, but usually a smaller set of the registers will be implemented.</p>
+<p>Four of the register types have a single bit allocated per external interrupt. Each type is in a contiguous bank of 32-bit registers. So if we want to configure <strong>external interrupt 65</strong>, the configuration will be bit 1 of the 3rd 32-bit register in the bank. <a href="#exception-number-diagram">Recall</a> <strong>external interrupts</strong> start at offset 16 in the vector table so the <strong>Exception Number</strong> (index in the vector table) for this interrupt will be 16 + 65 = 81.</p>
+<blockquote>
+<p>NOTE 1: Utilizing an <strong>external interrupt</strong> is usually a little bit more involved than it first appear to be. In addition to configuring the NVIC registers for the interrupt, you usually need to configure the MCU specific peripheral to generate the interrupt as well.<a href="#fn:12">4</a></p>
+</blockquote>
+<blockquote>
+<p>NOTE 2: While less common in real-world applications, it’s also possible to re-purpose any NVIC interrupt and trigger it via software. We’ll walk through an example of this in the code examples later in the article.</p>
+</blockquote>
+<h4 id="interrupt-set-enable-nvic_iser-and-clear-enable-nvic_icer-registers">Interrupt Set-Enable (NVIC_ISER) and Clear-Enable (NVIC_ICER) Registers<a href="#interrupt-set-enable-nvic_iser-and-clear-enable-nvic_icer-registers"></a></h4>
+<ul>
+<li><code>NVIC_ISER0</code>-<code>NVIC_ISER15</code>: <code>0xE000E100</code>-<code>0xE000E13C</code></li>
+<li><code>NVIC_ICER0</code>-<code>NVIC_ICER15</code>: <code>0xE000E180</code>-<code>0xE000E1BC</code></li>
+</ul>
+<p>Writing a 1 to the correct bit offset of the register pair will enable or disable the interrupt and a read will return 1 if the interrupt is enabled.</p>
+<h4 id="interrupt-set-pending-nvic_ispr-and-clear-pending-nvic_icpr-registers">Interrupt Set-Pending (NVIC_ISPR) and Clear-Pending (NVIC_ICPR) Registers<a href="#nvic-ispr"></a></h4>
+<ul>
+<li><code>NVIC_ISPR0</code>-<code>NVIC_ISPR15</code>: <code>0xE000E200</code>-<code>0xE000E23C</code></li>
+<li><code>NVIC_ICPR0</code>-<code>NVIC_ICPR15</code>: <code>0xE000E280</code>-<code>0xE000E2BC</code></li>
+</ul>
+<p>Writing a 1 to the correct bit offset of the register pair will set or clear the pending state of the interrupt and a read will return 1 if the interrupt is already pending.</p>
+<h4 id="interrupt-active-bit-registers-nvic_iabr">Interrupt Active Bit Registers (NVIC_IABR)<a href="#iabr-register"></a></h4>
+<ul>
+<li><code>NVIC_IABR0</code>-<code>NVIC_IABR15</code>: <code>0xE000E300</code>-<code>0xE000E33C</code></li>
+</ul>
+<p>A read only bank of registers which return whether or not the interrupt is active. One thing to note is this register is <strong>not</strong> implemented in the ARMv6-M architecture (Cortex-M0 &amp; Cortex-M0+).</p>
+<h4 id="interrupt-priority-registers-nvic_ipr">Interrupt Priority Registers (NVIC_IPR)<a href="#nvic-ipr"></a></h4>
+<ul>
+<li><code>NVIC_IPR0</code>-<code>NVIC_IPR123</code>: <code>0xE000E400</code>-<code>0xE000E5EC</code></li>
+</ul>
+<p>The final NVIC configuration register is used to configure the priority of the interrupt. 8 bits are used to configure the priority of each interrupt. The number of supported priority levels is implementation defined and is in the range of 4-256. When less than 256 priority levels are implemented, the lower bits in the field read-as-zero. So, somewhat confusingly, if only 2 bits are implemented, the valid values from highest priority to lowest priority would be <strong>0b000.0000</strong> (<strong>0x0</strong>), <strong>0b0100.0000</strong> (<strong>0x40</strong>), <strong>0b1000.0000</strong> (<strong>0x80</strong>) and <strong>0b1100.0000</strong> (<strong>0xC0</strong>).</p>
+<h3 id="software-triggered-interrupt-register-stir---0xe000ef00">Software Triggered Interrupt Register (STIR) - 0xE000EF00<a href="#software-triggered-interrupt-register-stir---0xe000ef00"></a></h3>
+<p>This register can be used to set an NVIC interrupt to pending. It’s equivalent to setting the appropriate bit in the <code>NVIC_ISPR</code> to 1. The value that needs to be written to the register is the <strong>External Interrupt Number</strong> (<strong>Exception Number - 16</strong>). This register is <strong>not</strong> implemented for the ARMv6-M architecture</p>
+<h2 id="advanced-exception-topics">Advanced Exception Topics<a href="#advanced-topics"></a></h2>
+<h3 id="exception-entry--exit">Exception Entry &amp; Exit<a href="#exception-entry--exit"></a></h3>
+<p>One of my favorite parts about ARM exception entry is that the hardware itself implements the ARM Architecture Procedure Calling Standard (AAPCS). <a href="#fn:5">5</a> The AAPCS specification defines a set of conventions that must be followed by compilers. One of these requirements is around the registers which must be saved by a C function when calling another function. When an exception is invoked, the hardware will automatically stack the registers that are caller-saved. The hardware will then encode in the link register (<code>$lr</code>) a value known as the <code>EXC_RETURN</code> value. This value tells the ARM core that a return from an exception is taking place and the core can then unwind the stack and return correctly to the code which was running before the exception took place</p>
+<p>By leveraging these features, exceptions and thread mode code can share the same set of registers <em>and</em> exception entries can be regular C functions! For other architectures, exception handlers often have to be written in assembly.</p>
+<h3 id="tail-chaining">Tail-Chaining<a href="#tail-chaining"></a></h3>
+<p>Usually when exiting an exception, the hardware needs to pop and restore at least eight caller-saved registers. However, when exiting an ISR while a new exception is already pended, this pop and subsequent push can be skipped since it would be popping and then pushing the exact same registers! This optimization is known as “Tail-Chaining”.</p>
+<p>For example, on a Cortex-M3, when using zero wait state memory, it takes 12 clock cycles to start executing an ISR after it has been asserted and 12 cycles to return from the ISR upon its completion. When the register pop and push is skipped, it only takes 6 cycles to exit from one exception and start another one, saving 18 cycles in total!</p>
+<h3 id="late-arriving-preemption">Late-arriving Preemption<a href="#late-arriving-preemption"></a></h3>
+<p>The ARM core can detect a higher priority exception while in the “exception entry phase” (stacking caller registers &amp; fetching the ISR routine to execute). A “late arriving” interrupt is detected during this period. The optimization is that the higher priority ISR can be fetched and executed but the register state saving that has already taken place can be skipped. This reduces the latency for the higher priority interrupt and, conveniently, upon completion of the late arriving exception handler, the processor can then tail-chain into the initial exception that was going to be serviced.</p>
+<h3 id="lazy-state-preservation">Lazy State Preservation<a href="#lazy-state-preservation"></a></h3>
+<p>ARMv7 &amp; ARMv8 devices can implement an optional <strong>Floating Point Unit</strong> (<code>FPU</code>) for native floating point support. This comes with the addition of 33 four-byte registers (<code>s0</code>-<code>s31</code> &amp; <code>fpscr</code>). 17 of these are “caller” saved and need to be dealt with by the ARM exception entry handler. Since FPU registers are not often used in ISRs, there is an optimization (“lazy context save”)<a href="#fn:10">6</a> that can be enabled which defers the actual saving of the FPU registers on the stack until a floating point instruction is used in the exception. By deferring the actual push of the registers, interrupt latency can usually be reduced by the push and pop of these 17 registers!</p>
+<blockquote>
+<p>A full discussion of FPU stacking optimizations is outside the scope of this article but better managing how the registers are stacked can also be a very helpful tool for reducing stack overflows and memory usage in embedded environments … Preserving FPU state across RTOS context switches requires an additional 132 bytes (33 registers) of data to be tracked for each thread! For further reading, ARM wrote a great application note highlighting the lazy preservation FPU features.<a href="#fn:8">7</a></p>
+</blockquote>
+<h3 id="execution-priority--priority-boosting">Execution Priority &amp; Priority Boosting<a href="#execution-priority--priority-boosting"></a></h3>
+<p>If no exception is active, the current “execution priority” of the system can be thought of as being the “highest configurable priority level” + 1 – essentially meaning if any exception is pended, the currently running code will be interrupted and the ISR will run.</p>
+<p>There are a few ways in software that the “execution priority” can be manipulated to be above the default priority of thread mode or the exception that is active. This is known as “priority boosting”. This can be useful to do in software when running code that <em>cannot</em> be interrupted such as the logic dealing with context switching in a RTOS.</p>
+<p><strong>Priority boosting</strong> is usually controlled via three register fields:</p>
+<ul>
+<li><strong>PRIMASK</strong> - Typically configured in code using the CMSIS <code>__disable_irq()</code> and <code>__enable_irq()</code> routines or the <code>cpsid i</code> and <code>cpsie i</code> assembly instructions directly. Setting the PRIMASK to 1 disables all exceptions of <strong>configurable priority</strong>. This means, only <code>NMI</code>, <code>Hardfault</code>, &amp; <code>Reset</code> exceptions can still occur.</li>
+<li><strong>FAULTMASK</strong> - Typically configured in code using the CMSIS <code>__disable_fault_irq()</code> and <code>__enable_fault_irq()</code> routines or the <code>cpsid f</code> and <code>cpsie f</code> assembly instructions directly. Setting the FAULTMASK disables all exceptions except the <code>NMI</code> exception. This register is <strong>not</strong> available for ARMv6-M devices.</li>
+<li><strong>BASEPRI</strong>- Typically configured using the CMSIS <code>__set_BASEPRI()</code> routine. The register can be used to prevent exceptions up to a certain priority from being activated. It has no effect when set to 0 and can be set anywhere from the highest priority level, N, to 1. It’s also <strong>not</strong> available for ARMv6-M based MCUs.</li>
+</ul>
+<h3 id="interruptible-continuable-instructions">Interruptible-continuable instructions<a href="#interruptible-continuable-instructions"></a></h3>
+<p>Most ARM instructions run to completion before an interrupt is executed and are atomic. For example, any aligned 32-bit memory access is an atomic operation. However, to minimize interrupt latency, some of the longer multi-cycle instructions can be aborted and re-started after the exception completes. These include divide instructions (<code>udiv</code> &amp; <code>sdiv</code>) and double word load/store instructions (<code>ldrd</code> &amp; <code>strd</code>).</p>
+<p>Some instructions are also “interruptible-continuable” which means they can be interrupted but will resume from where they left off on exception return. These include the Load and Store Multiple registers instructions (<code>ldm</code> and <code>stm</code>). This feature is <strong>not</strong> supported for ARMv6-M and instead the instructions will just be aborted and restarted.</p>
+<blockquote>
+<p>NOTE: It’s generally a good idea to refrain from using load-multiple or store-multiple instructions to memory regions or variables where repeated reads or writes could cause issues or to guard these accesses in a critical section by disabling interrupts.</p>
+</blockquote>
+<h2 id="code-examples">Code Examples<a href="#examples"></a></h2>
+<p>For this setup we will use a nRF52840-DK<a href="#fn:6">8</a> running the blinky demo application from the v15.2 SDK<a href="#fn:7">9</a> with a modified main.c that can be found <a href="https://github.com/memfault/interrupt/tree/master/example/arm-cortex-m-exceptions/main.c">here</a>. However, you should be able to run similar code snippets on pretty much any Cortex-M MCU.</p>
+<p>We’ll use SEGGER’s JLinkGDBServer<a href="#fn:9">10</a> as our debugger to step through these examples.</p>
+<h3 id="setup-prep">Setup Prep<a href="#setup-prep"></a></h3>
+<p>Most SDKs have a pre-defined vector table with default <strong>Exception Handlers</strong>. The definitions for the Handlers are usually defined as “weak” so they can be overridden.</p>
+<blockquote>
+<p><strong>CAUTION</strong>: The default <strong>exception handler</strong> provided in most vendor SDKs is usually defined as a <code>while(1){}</code> loop – even for fault handlers! This means when a fault occurs the MCU will just sit in an infinite loop. The device will only recover in this situation if it’s manually reset or runs out of power. It’s generally a good idea to make sure all exception handlers at least reboot the device when a fault occurs to give the device a chance to recover</p>
+</blockquote>
+<p>When building the blinky app for the NRF52840 with gcc, this vector table definition can be found at <code>modules/nrfx/mdk/gcc_startup_nrf52840.S</code>:</p>
+<pre><code>    .section .isr_vector
+    .align 2
+    .globl __isr_vector
+__isr_vector:
+    .long   __StackTop                  /* Top of Stack */
+    .long   Reset_Handler
+    .long   NMI_Handler
+    .long   HardFault_Handler
+    .long   MemoryManagement_Handler
+    .long   BusFault_Handler
+    .long   UsageFault_Handler
+    .long   0                           /*Reserved */
+    .long   0                           /*Reserved */
+    .long   0                           /*Reserved */
+    .long   0                           /*Reserved */
+    .long   SVC_Handler
+    .long   DebugMon_Handler
+    .long   0                           /*Reserved */
+    .long   PendSV_Handler
+    .long   SysTick_Handler
+
+     /* External Interrupts */
+    .long   POWER_CLOCK_IRQHandler
+    .long   RADIO_IRQHandler
+    .long   UARTE0_UART0_IRQHandler
+    .long   SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0_IRQHandler
+    .long   SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQHandler
+    .long   NFCT_IRQHandler
+    .long   GPIOTE_IRQHandler
+    .long   SAADC_IRQHandler
+    .long   TIMER0_IRQHandler
+    .long   TIMER1_IRQHandler
+    .long   TIMER2_IRQHandler
+    .long   RTC0_IRQHandler
+    .long   TEMP_IRQHandler
+    .long   RNG_IRQHandler
+    [...]
+</code></pre>
+<p>We can pretty easily compute the <strong>Exception Number</strong> by counting the offset within this table. <code>__StackTop</code> is <strong>0</strong>, <code>Reset_Handler</code> is <strong>1</strong>, <code>POWER_CLOCK_IRQHandler</code> is <strong>16</strong>.</p>
+<p>Most vendors also provide a CMSIS compatible <code>IRQn_Type</code> define which gives you the enumerated list of <strong>External Interrupt Numbers</strong> (<strong>Exception Number</strong> - 16). We will want this when we go to configure external interrupts that are part of the NVIC. For the NRF52840, this can be found at <code>modules/nrfx/mdk/nrf52840.h</code> and looks something like this:</p>
+<pre><code>typedef enum {
+[...]
+  POWER_CLOCK_IRQn          =   0,              /*!&lt; 0  POWER_CLOCK                                                            */
+  RADIO_IRQn                =   1,              /*!&lt; 1  RADIO                                                                  */
+  UARTE0_UART0_IRQn         =   2,              /*!&lt; 2  UARTE0_UART0                                                           */
+  SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0_IRQn=   3,  /*!&lt; 3  SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0                                      */
+  SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQn=   4,  /*!&lt; 4  SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1                                      */
+  NFCT_IRQn                 =   5,              /*!&lt; 5  NFCT                                                                   */
+  GPIOTE_IRQn               =   6,              /*!&lt; 6  GPIOTE                                                                 */
+  SAADC_IRQn                =   7,              /*!&lt; 7  SAADC                                                                  */
+  TIMER0_IRQn               =   8,              /*!&lt; 8  TIMER0                                                                 */
+  TIMER1_IRQn               =   9,              /*!&lt; 9  TIMER1                                                                 */
+  TIMER2_IRQn               =  10,              /*!&lt; 10 TIMER2                                                                 */
+  RTC0_IRQn                 =  11,              /*!&lt; 11 RTC0                                                                   */
+[...]
+  } IRQn_Type;
+</code></pre>
+<p>As discussed <a href="#nvic-ipr">above</a>, the actual number of interrupt priority levels is implementation specific. You can find the number of levels implemented in the vendors data sheet for the MCU being used or determine it dynamically with gdb. Unimplemented bits are Read-as-Zero (RAZ) in the <code>NVIC_IPR</code> registers so if we write 0xff and read it back we can figure out the number of levels. Let’s give it a try in GDB:</p>
+<pre><code>(gdb) p/x *(uint32_t*)0xE000E400
+$1 = 0x0
+(gdb) set *(uint32_t*)0xE000E400=0xff
+(gdb) p/x *(uint32_t*)0xE000E400
+$2 = 0xe0
+</code></pre>
+<p>Great! We see the top 3 bits “stuck” which means the NRF52840 MCU supports 8 priority levels (0-7).</p>
+<h3 id="triggering-a-built-in-exception-pendsv">Triggering a Built In Exception (PendSV)<a href="#pendsv-example"></a></h3>
+<p>Let’s first start by generating a common built in exception, often used for RTOS context switching, the PendSV exception handler. To make it easier to step through the code with a debugger and examine register state, let’s utilize breakpoint instructions.</p>
+<pre><code>void PendSV_Handler(void) {
+  __asm(&quot;bkpt 1&quot;);
+}
+
+__attribute__((optimize(&quot;O0&quot;)))
+static void trigger_pendsv(void) {
+  volatile uint32_t *icsr = (void *)0xE000ED04;
+  // Pend a PendSV exception using by writing 1 to PENDSVSET at bit 28
+  *icsr = 0x1 &lt;&lt; 28;
+  // flush pipeline to ensure exception takes effect before we
+  // return from this routine
+  __asm(&quot;isb&quot;);
+}
+</code></pre>
+<p>Let’s call <code>trigger_pendsv()</code> from our main loop and see what happens!</p>
+<pre><code>(gdb) c
+Continuing.
+
+Program received signal SIGTRAP, Trace/breakpoint trap.
+PendSV_Handler () at ../../../main.c:48
+48    __asm(&quot;bkpt 1&quot;);
+(gdb)
+</code></pre>
+<p>Great we see the <code>PendSV_Handler</code> was invoked. We can read the <code>ICSR</code> register (specifically <code>VECTACTIVE</code>, <code>RETTOBASE</code>, &amp; <code>VECTPENDING</code>) described <a href="#icsr-register">above</a> for additional context:</p>
+<pre><code>(gdb) p/x (*(uint32_t*)0xE000ED04)&amp;0xff
+$2 = 0xe
+(gdb) p/x (*(uint32_t*)0xE000ED04)&gt;&gt;11&amp;0x1
+$3 = 0x1
+(gdb) p/x (*(uint32_t*)0xE000ED04)&gt;&gt;12&amp;0xff
+$4 = 0x0
+</code></pre>
+<p>The first 8 bits (<code>VECTACTIVE</code>) tell us that Exception Number 0xe is active. This is the PendSV Exception so that matches what we expect! We see <code>RETTOBASE</code> is <code>1</code> so no other exceptions are active. And bits 12-20 (<code>VECTPENDING</code>) are zero so we also know no other exceptions are pended.</p>
+<h3 id="pre-emption-of-an-nvic-interrupt">Pre-emption of an NVIC Interrupt<a href="#pre-emption-of-an-nvic-interrupt"></a></h3>
+<p>Now let’s configure one interrupt in the NVIC and then call <code>trigger_pendsv()</code> from that interrupt to check out pre-emption!</p>
+<pre><code>__attribute__((optimize(&quot;O0&quot;)))
+void POWER_CLOCK_IRQHandler(void) {
+  __asm(&quot;bkpt 2&quot;);
+  trigger_pendsv();
+  __asm(&quot;bkpt 3&quot;);
+}
+
+static void trigger_nvic_int0(void) {
+  // Let's set the interrupt priority to be the
+  // lowest possible for the NRF52. Note the default
+  // NVIC priority is zero which would match our current pendsv
+  // config so no pre-emption would take place if we didn't change this
+  volatile uint32_t *nvic_ipr = (void *)0xE000E400;
+  *nvic_ipr = 0xe0;
+
+  // Enable the POWER_CLOCK_IRQ (External Interrupt 0)
+  volatile uint32_t *nvic_iser = (void *)0xE000E100;
+  *nvic_iser |= 0x1;
+
+  // Pend an interrupt
+  volatile uint32_t *nvic_ispr = (void *)0xE000E200;
+  *nvic_ispr |= 0x1;
+
+  // flush pipeline to ensure exception takes effect before we
+  // return from this routine
+  __asm(&quot;isb&quot;);
+}
+</code></pre>
+<p>Let’s call <code>trigger_nvic_int0</code> from our main loop and explore what happens!</p>
+<pre><code>Program received signal SIGTRAP, Trace/breakpoint trap.
+POWER_CLOCK_IRQHandler () at ../../../main.c:53
+53    __asm(&quot;bkpt 2&quot;);
+(gdb) p/x *(uint32_t*)0xE000ED04
+$1 = 0x810
+</code></pre>
+<p>Reading the ICSR register again, we see the active exception number is 0x10 corresponding to external interrupt 0 and that no other exceptions are pended or active. Let’s continue!</p>
+<pre><code>(gdb) next
+54    trigger_pendsv();
+(gdb) c
+Continuing.
+
+Program received signal SIGTRAP, Trace/breakpoint trap.
+PendSV_Handler () at ../../../main.c:38
+38    __asm(&quot;bkpt 1&quot;);
+(gdb) bt
+#0  PendSV_Handler () at ../../../main.c:38
+#1  &lt;signal handler called&gt;
+#2  0x00000306 in trigger_pendsv () at ../../../main.c:48
+#3  0x00000322 in POWER_CLOCK_IRQHandler () at ../../../main.c:54
+#4  &lt;signal handler called&gt;
+#5  0x000003a8 in trigger_nvic_int0 () at ../../../main.c:76
+#6  main (a=&lt;optimized out&gt;, argv=&lt;optimized out&gt;) at ../../../main.c:129
+(gdb) p/x *(uint32_t*)0xE000ED04
+$2 = 0xe
+</code></pre>
+<p>The active exception is 0xe, PendSV – just like we saw in the <a href="#pendsv-example">first example</a>. We see the <code>RETTOBASE</code> bit is clear meaning another exception is active (NVIC Interrupt 0). We can also check this by looking at the <code>NVIC_IABR</code> registers described <a href="#iabr-register">above</a> and confirming bit 1 is set:</p>
+<pre><code>(gdb) p/x *(uint32_t[16] *)0xE000E300
+$3 = {0x1, 0x0 &lt;repeats 15 times&gt;}
+</code></pre>
+<p>We can continue from here and confirm we drop back to the first exception:</p>
+<pre><code>(gdb) next
+POWER_CLOCK_IRQHandler () at ../../../main.c:55
+55    __asm(&quot;bkpt 3&quot;);
+(gdb) p/x *(uint16_t[16] *)0xE000E300
+$4 = {0x1, 0x0 &lt;repeats 15 times&gt;}
+(gdb) p/x *(uint32_t*)0xE000ED04
+$5 = 0x810
+</code></pre>
+<h3 id="three-nvic-interrupts-pended-at-once">Three NVIC Interrupts Pended At Once<a href="#complex-config-example"></a></h3>
+<p>For our final example, let’s pend a couple exceptions at the same time so we can inspect hands on how the ARM core executes them in priority order.</p>
+<p>Can you tell from the example code the order the breakpoints will be hit in?</p>
+<pre><code>// External Interrupt 9
+void TIMER1_IRQHandler(void) {
+  __asm(&quot;bkpt 4&quot;);
+}
+
+// External Interrupt 10
+void TIMER2_IRQHandler(void) {
+  __asm(&quot;bkpt 5&quot;);
+}
+
+// External Interrupt 11
+void RTC0_IRQHandler(void) {
+  __asm(&quot;bkpt 6&quot;);
+}
+
+static void trigger_nvic_int9_int10_int11(void) {
+  // Let's prioritize the interrupts with 9 having the lowest priority
+  // and 10 &amp; 11 having the same higher priority.
+
+  // Each interrupt has 8 config bits allocated so
+  // 4 interrupts can be configured per 32-bit register. This
+  // means 9, 10, 11 are next to each other in IPR[2]
+  volatile uint32_t *nvic_ipr2 = (void *)(0xE000E400 + 8);
+  // Only 3 priority bits are implemented so we need to program
+  // the upper 3 bits of each mask
+  *nvic_ipr2 |= (0x7 &lt;&lt; 5) &lt;&lt; 8;
+  *nvic_ipr2 |= (0x6 &lt;&lt; 5) &lt;&lt; 16;
+  *nvic_ipr2 |= (0x6 &lt;&lt; 5) &lt;&lt; 24;
+
+  // Enable interrupts for TIMER1_IRQHandler,
+  // TIMER2_IRQHandler &amp; RTC0_IRQHandler
+  volatile uint32_t *nvic_iser = (void *)0xE000E100;
+  *nvic_iser |= (0x1 &lt;&lt; 9) | (0x1 &lt;&lt; 10) | (0x1 &lt;&lt; 11);
+
+  // Pend an interrupt
+  volatile uint32_t *nvic_ispr = (void *)0xE000E200;
+  *nvic_ispr |= (0x1 &lt;&lt; 9) | (0x1 &lt;&lt; 10) | (0x1 &lt;&lt; 11);
+
+  // flush pipeline to ensure exception takes effect before we
+  // return from this routine
+  __asm(&quot;isb&quot;);
+}
+</code></pre>
+<p>Let’s call <code>trigger_nvic_int9_int10_int11()</code> and try it out!</p>
+<pre><code>(gdb) c
+Continuing.
+
+Program received signal SIGTRAP, Trace/breakpoint trap.
+TIMER2_IRQHandler () at ../../../main.c:81
+81    __asm(&quot;bkpt 5&quot;);
+(gdb)
+</code></pre>
+<p>So the external interrupt 10 (exception number 26) fired first. It has the same priority as NVIC Interrupt 11 but the ARM core prioritizes higher <a href="#exception-number">exception numbers</a> first which is why External Interrupt 10 is the first one that runs. We would expect NVIC Interrupt 11 to run next.</p>
+<p>Let’s check and see what info is in the <code>ICSR</code> register this time:</p>
+<pre><code>(gdb) p/x *(uint32_t*)0xE000ED04
+$9 = 0x41b81a
+(gdb) p/d (*(uint32_t*)0xE000ED04)&amp;0xff
+$10 = 26
+(gdb) p/d (*(uint32_t*)0xE000ED04)&gt;&gt;12&amp;0x1
+$11 = 1
+(gdb) p/d (*(uint32_t*)0xE000ED04)&gt;&gt;12&amp;0xff
+$12 = 27
+</code></pre>
+<p><code>VECTACTIVE</code> is 26 which matches what we expect. This time <code>VECTPENDING</code> is set too! The value is 27 which confirms that External Interrupt 11 (27-16) should be the next one to fire.</p>
+<p>We can see all the NVIC interrupts that are pended by looking at the <code>NVIC_ISPR</code> register described <a href="#nvic-ispr">above</a>. We should see bits 9 and 11 set since those interrupts haven’t run yet</p>
+<pre><code>(gdb) p/x *(uint32_t[16] *)0xE000E200
+$13 = {0xa00, 0x0 &lt;repeats 15 times&gt;}
+</code></pre>
+<p>Let’s step through the rest of the code and confirm we see <strong>bkpt 6</strong> followed by <strong>bkpt 4</strong>:</p>
+<pre><code>(gdb) c
+Continuing.
+
+Program received signal SIGTRAP, Trace/breakpoint trap.
+RTC0_IRQHandler () at ../../../main.c:86
+86    __asm(&quot;bkpt 6&quot;);
+(gdb) next
+main (a=&lt;optimized out&gt;, argv=&lt;optimized out&gt;) at ../../../main.c:127
+127       bsp_board_led_invert(i);
+(gdb) c
+Continuing.
+
+Program received signal SIGTRAP, Trace/breakpoint trap.
+TIMER1_IRQHandler () at ../../../main.c:76
+76    __asm(&quot;bkpt 4&quot;);
+</code></pre>
+<h2 id="closing">Closing<a href="#closing"></a></h2>
+<p>I hope this post gave you a useful overview of how the ARM Cortex-M Exception model works and that maybe you learned something new! There’s a lot of different reference manuals and books about the topic but I’ve always found it hard to find a single place that aggregates the useful information.</p>
+<p>Are there any other topics related to interrupts you’d like us to delve into? (No pun intended :D) Do you leverage any of ARMs fancy exception configuration features in your products? Let us know in the discussion area below!</p>
+<blockquote>
+<p>Interested in learning more about debugging HardFaults? <a href="https://go.memfault.com/debugging-arm-cortex-m-mcu-webinar?utm_campaign=Debugging%20Cortex%20M%20Webinar&amp;utm_source=blog&amp;utm_medium=Interrupt&amp;utm_term=Debug">Watch this webinar recording.</a>.</p>
+</blockquote>
+<p>See anything you&rsquo;d like to change? Submit a pull request or open an issue at <a href="https://github.com/memfault/interrupt">GitHub</a></p>
+<h2 id="additional-reading">Additional Reading<a href="#additional-reading"></a></h2>
+<p>If you’d like to read even more here’s some other discussions about Cortex-M exceptions that I’ve found to be interesting:</p>
+<ul>
+<li><a href="https://www.embeddedrelated.com/showarticle/878.php">Cortex-M Exception Handling</a></li>
+<li><a href="https://community.arm.com/developer/ip-products/system/b/embedded-blog/posts/cutting-through-the-confusion-with-arm-cortex-m-interrupt-priorities?CommentId=18f96346-52cf-4869-9345-d74c796b6dcd">Cutting Through the Confusion with Arm Cortex-M Interrupt Priorities</a></li>
+<li><a href="https://community.arm.com/developer/ip-products/processors/f/cortex-m-forum/11166/interruptible-instructions-on-cortex-m4">Interruptible Instructions</a></li>
+</ul>
+<h2 id="reference-links">Reference Links<a href="#reference-links"></a></h2>
+<ol>
+<li>
+<p><a href="https://static.docs.arm.com/ddi0403/eb/DDI0403E_B_armv7m_arm.pdf">ARMv7-M Specification</a> <a href="#fnref:4">↩</a></p>
+</li>
+<li>
+<p><a href="https://static.docs.arm.com/ddi0403/eb/DDI0403E_B_armv7m_arm.pdf">See “Overview of the exceptions supported” section</a> <a href="#fnref:3">↩</a></p>
+</li>
+<li>
+<p><a href="https://static.docs.arm.com/ddi0403/eb/DDI0403E_B_armv7m_arm.pdf">See “Exception status and control” section</a> <a href="#fnref:11">↩</a></p>
+</li>
+<li>
+<p><a href="https://infocenter.nordicsemi.com/pdf/nRF52840_PS_v1.1.pdf">See “GPIO tasks and events” for NRF52 GPIOTE interrupt configuration details</a> <a href="#fnref:12">↩</a></p>
+</li>
+<li>
+<p><a href="http://infocenter.arm.com/help/topic/com.arm.doc.ihi0042f/IHI0042F_aapcs.pdf">ARM Architecture Procedure Calling Standard (AAPCS)</a> <a href="#fnref:5">↩</a></p>
+</li>
+<li>
+<p><a href="https://static.docs.arm.com/ddi0403/eb/DDI0403E_B_armv7m_arm.pdf">See “Lazy context save of FP state” for more details</a> <a href="#fnref:10">↩</a></p>
+</li>
+<li>
+<p><a href="https://static.docs.arm.com/dai0298/a/DAI0298A_cortex_m4f_lazy_stacking_and_context_switching.pdf">Cortex-M4F Lazy Stacking and Context Switch App note</a> <a href="#fnref:8">↩</a></p>
+</li>
+<li>
+<p><a href="https://www.nordicsemi.com/Software-and-Tools/Development-Kits/nRF52840-DK">nRF52840 Development Kit</a> <a href="#fnref:6">↩</a></p>
+</li>
+<li>
+<p><a href="https://developer.nordicsemi.com/nRF5_SDK/nRF5_SDK_v15.x.x/nRF5_SDK_15.2.0_9412b96.zip">v15.2 SDK</a> <a href="#fnref:7">↩</a></p>
+</li>
+<li>
+<p><a href="https://www.segger.com/products/debug-probes/j-link/tools/j-link-gdb-server/about-j-link-gdb-server/">JLinkGDBServer</a> <a href="#fnref:9">↩</a></p>
+</li>
+</ol>
+<ul class="pa0">
+  
+   <li class="list di">
+     <a href="/tags/arm/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">Arm</a>
+   </li>
+  
+</ul>
+
+      
+    </div></article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white white-70 dn dib-ns pv2 ph3 no-underline" href="http://localhost:1313/" >
+    &copy;  My New Hugo Project 2026 
+  </a>
+    <div><div class="ananke-socials"></div>
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts on My New Hugo Project</title>
+    <link>http://localhost:1313/posts/</link>
+    <description>Recent content in Posts on My New Hugo Project</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 01 Aug 2024 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Tcp for Interprocess Communication</title>
+      <link>http://localhost:1313/posts/tcp-for-interprocess-communication/</link>
+      <pubDate>Thu, 01 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/posts/tcp-for-interprocess-communication/</guid>
+      <description>&lt;p&gt;Features of TCP (Transmission Control Protocol) are decided by TCP specification, also influence behaviors of TCP application.&lt;/p&gt;&#xA;&lt;p&gt;This post relates features (in theory) and behaviors (in practice) of TCP.&lt;/p&gt;&#xA;&lt;h2 id=&#34;features-of-tcp&#34;&gt;Features of TCP&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;connection-oriented protocol (must establish connection before data transmission)&lt;/li&gt;&#xA;&lt;li&gt;end-to-end communication&lt;/li&gt;&#xA;&lt;li&gt;reliable&lt;/li&gt;&#xA;&lt;li&gt;full duplex&lt;/li&gt;&#xA;&lt;li&gt;data is transmitted as bytes stream&lt;/li&gt;&#xA;&lt;li&gt;the transmitted data has no message boundary (consistent with 4)&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h2 id=&#34;connection-oriented&#34;&gt;Connection-Oriented&lt;/h2&gt;&#xA;&lt;p&gt;At first, TCP communication must establish connection. So how to establish connection in theory?&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

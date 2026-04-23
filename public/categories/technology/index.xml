@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Technology on My New Hugo Project</title>
+    <link>http://localhost:1313/categories/technology/</link>
+    <description>Recent content in Technology on My New Hugo Project</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 04 Nov 2023 15:53:37 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/categories/technology/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>PulseAudio Under the Hood</title>
+      <link>http://localhost:1313/posts/pulseaudio/</link>
+      <pubDate>Sat, 04 Nov 2023 15:53:37 +0000</pubDate>
+      <guid>http://localhost:1313/posts/pulseaudio/</guid>
+      <description>&lt;h2 id=&#34;preface&#34;&gt;&lt;figure&gt;&lt;img src=&#34;http://localhost:1313/posts/pulseaudio/images/pulse_audio.png&#34;&gt;&lt;figcaption&gt;&#xA;      &lt;h4&gt;Diagram of PulseAudio&lt;/h4&gt;&#xA;    &lt;/figcaption&gt;&#xA;&lt;/figure&gt;&#xA;&#xA;Pipewire is an alternative.&#xA;Preface&lt;/h2&gt;&#xA;&lt;p&gt;I’m working on the &lt;a href=&#34;https://roc-streaming.org/&#34;&gt;Roc Toolkit&lt;/a&gt; open-source project, a development kit for realtime audio streaming over the network. You can read more about the project in these two articles: &lt;a href=&#34;https://gavv.net/articles/new-network-transport/&#34;&gt;1&lt;/a&gt;, &lt;a href=&#34;https://gavv.net/articles/roc-tutorial/&#34;&gt;2&lt;/a&gt;.&lt;/p&gt;&#xA;&lt;p&gt;We decided to implement a set of PulseAudio modules that will allow PulseAudio to use Roc as a network transport. Many Linux distros employ PulseAudio, and their users will be able to improve network service quality without changing the workflow. This led me to dig into PulseAudio internals and eventually to this document.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>
