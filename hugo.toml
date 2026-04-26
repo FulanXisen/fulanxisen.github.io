@@ -1,7 +1,7 @@
 baseURL = 'https://fulanxisen.github.io/'
 locale = 'en-us'
 title = "FulanXisen's blog"
-theme = 'ananke'
+theme = 'hugo-xmin'
 
 [caches]
   [caches.images]

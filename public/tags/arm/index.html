@@ -1,223 +1,54 @@
 <!DOCTYPE html>
 <html lang="en-us">
-  <head>
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ARM | FulanXisen&#39;s blog</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
     
-    <title>FulanXisen&#39;s blog</title>
-    <meta name="viewport" content="width=device-width,minimum-scale=1">
-    <meta name="description" content="">
-    <meta name="generator" content="Hugo 0.160.1">
-    
-    
-    
-      <meta name="robots" content="index, follow">
-    
-    
+  </head>
 
-    
-<link rel="stylesheet" href="/ananke/css/main.min.efe4d852f731d5d1fbb87718387202a97aafd768cdcdaed0662bbe6982e91824.css" >
-
-
-
-
-    
-
-
-    
+  <body>
+    <nav>
+    <ul class="menu">
       
-
-    
-
-    
-    
-      <link href="/tags/arm/index.xml" rel="alternate" type="application/rss+xml" title="FulanXisen&#39;s blog" />
-      <link href="/tags/arm/index.xml" rel="feed" type="application/rss+xml" title="FulanXisen&#39;s blog" />
-      
-    
-
-    
-      <link rel="canonical" href="https://fulanxisen.github.io/tags/arm/">
-    
-
-    
-    
-    <meta property="og:url" content="https://fulanxisen.github.io/tags/arm/">
-  <meta property="og:site_name" content="FulanXisen&#39;s blog">
-  <meta property="og:title" content="ARM">
-  <meta property="og:locale" content="en_us">
-  <meta property="og:type" content="website">
-
-  <meta itemprop="name" content="ARM">
-  <meta itemprop="datePublished" content="2023-05-03T14:28:46+08:00">
-  <meta itemprop="dateModified" content="2023-05-03T14:28:46+08:00">
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="ARM">
-
-      
-      
-    
-	
-  </head><body class="ma0 avenir bg-near-white production is-term">
-    
-
-  <header>
-    <div class="pb3-m pb6-l bg-black">
-      <nav class="pv3 ph3 ph4-ns" role="navigation">
-  <div class="flex-l center items-center justify-between">
-    <a href="/" class="f3 fw2 hover-white white-90 dib no-underline">
-      
-        FulanXisen&#39;s blog
-      
-    </a>
-    <div class="flex-l items-center">
-      
-
-      
-      <div class="ananke-socials"></div>
-
-    </div>
-  </div>
-</nav>
-
-      <div class="tc-l pv3 ph3 ph4-ns">
-        <h1 class="f2 f-subheadline-l fw2 light-silver mb0 lh-title">
-          ARM
-        </h1>
-        
-      </div>
-    </div>
-  </header>
+    </ul>
+    <hr/>
+    </nav>
 
 
-    <main class="pb7" role="main">
-      
-  <article class="pa3 pa4-ns nested-copy-line-height">
-    <section class="cf ph3 ph5-l pv3 pv4-l f4 tc-l center measure-wide lh-copy nested-links mid-gray"></section>
-    <section class="flex-ns mt5 flex-wrap justify-around">
-      
-        <div class="w-100 w-30-l mb4 relative bg-white">
-          <div class="w-100 mb4 nested-copy-line-height relative bg-white">
-  <div class="mb3 pa4 gray overflow-hidden bg-white">
-    <span class="f6 db">Posts</span>
-    <h1 class="f3 near-black">
-      <a href="/posts/p04-using-psp-msp-limit-registers-for-stack-overflow/" class="link black dim">
-        A Guide to Using ARM Stack Limit Registers
-      </a>
-    </h1>
-    <div class="nested-links f5 lh-copy nested-copy-line-height">
-      <h2 id="a-guide-to-using-arm-stack-limit-registers">A Guide to Using ARM Stack Limit Registers<a href="#a-guide-to-using-arm-stack-limit-registers"></a></h2>
-<p>14 Feb 2023 by <a href="/authors/jonkurtz">Jon Kurtz</a></p>
-<p>堆栈溢出一直是开发过程中的一个严重问题。它们经常没有被检测到，并以难以理解的方式出现。我们已经实施了软件机制来保护它们，但这些机制有限，并且仍不能保护所有条件。</p>
-<p>随着ARM架构的成熟，使用一个百分百可靠的机制来检测溢出难道不是更好吗？</p>
-<p>我们将探索在ARM Cortex-M33架构上使用MSP Limit和PSP Limit寄存器来检测堆栈溢出。我们将在Renesas DA1469x上进行实现，并查看检测堆栈溢出的实际示例。此外，我们还将查看MSPLIM和PSPLIM功能不足的情况下的补充选项。</p>
-<h2 id="table-of-contents">Table of Contents<a href="#table-of-contents"></a></h2>
+
+<h1>ARM</h1>
+
+
+
+
 <ul>
-<li><a href="#basic-terminology">Basic Terminology</a></li>
-<li><a href="#how-does-it-work">How does it work?</a></li>
-<li><a href="#implementing-the-limit-registers">Implementing the Limit Registers</a>
-<ul>
-<li><a href="#initializing-the-msplim-register">Initializing the MSPLIM Register</a></li>
-<li><a href="#initializing-the-psplim-register">Initializing the PSPLIM Register</a></li>
-<li><a href="#setting-up-the-usagefault_handler">Setting up the UsageFault_Handler</a></li>
-<li><a href="#testing-our-implementation">Testing our Implementation</a></li>
+  
+  
+  
+  <li>
+    <span class="date">2023/05/03</span>
+    <a href="/posts/p04-using-psp-msp-limit-registers-for-stack-overflow/">A Guide to Using ARM Stack Limit Registers</a>
+  </li>
+  
+  <li>
+    <span class="date">0001/01/01</span>
+    <a href="/posts/armv-m-exception/">A Practical guide to ARM Cortex-M Exception Handling</a>
+  </li>
+  
+  <li>
+    <span class="date">0001/01/01</span>
+    <a href="/posts/armv-m-context-switch/">ARM Cortex-M RTOS Context Switching</a>
+  </li>
+  
 </ul>
-</li>
-<li><a href="#limitations-and-further-improvements">Limitations and Further Improvements</a>
-<ul>
-<li><a href="#stack-canary">Stack Canary</a></li>
-<li><a href="#freertos-buffer-overflow-protection">FreeRTOS Buffer Overflow protection</a></li>
-<li><a href="#compiler-enabled-overflow-detection">Compiler Enabled Overflow Detection</a></li>
-<li><a href="#gcc-ssp-example">GCC SSP Example</a></li>
-</ul>
-</li>
-<li><a href="#practical-implementations-for-gcc-stack-canaries">Practical implementations for GCC stack Canaries</a></li>
-<li><a href="#closing">Closing</a></li>
-<li><a href="#references">References</a></li>
-</ul>
-<h2 id="basic-terminology">Basic Terminology<a href="#basic-terminology"></a></h2>
-<p>The ARM Cortex-M33 introduced two new stack limit registers, PSPLIM and MSPLIM <a href="#fn:m33-psplim_msplim">1</a>. ARM has included this in its ARMv8 specification, so any processors before this will not have support.</p>
-    </div>
-    <a href="/posts/p04-using-psp-msp-limit-registers-for-stack-overflow/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
-  </div>
-</div>
 
-        </div>
-      
-        <div class="w-100 w-30-l mb4 relative bg-white">
-          <div class="w-100 mb4 nested-copy-line-height relative bg-white">
-  <div class="mb3 pa4 gray overflow-hidden bg-white">
-    <span class="f6 db">Posts</span>
-    <h1 class="f3 near-black">
-      <a href="/posts/armv-m-exception/" class="link black dim">
-        A Practical guide to ARM Cortex-M Exception Handling
-      </a>
-    </h1>
-    <div class="nested-links f5 lh-copy nested-copy-line-height">
-      <p>几乎所有嵌入式系统都在某种程度上依赖于处理异步事件的能力。
-例如，它从加速度计读取外部传感器数据，以便计算步数
-或处理周期性计时器事件以触发RTOS的上下文切换。</p>
-<p>在本文中，我们将深入研究ARM Cortex-M 的Exception Model如何支持异步事件的处理。
-本文将介绍支持的不同异常类型、术语(NVIC、ISR、Priority)、configuration registers及其常用设置、与Exception有关的Advanced Topic以及一些用C编写的examples。</p>
-<blockquote>
-<p>注意:在大多数情况下，所有Cortex-M处理器(ARMv6-M、ARMv7-M和ARMv8-M体系结构)的异常处理机制是相同的。本文将在下面的相关章节中指出它们的差异。</p>
-</blockquote>
-<h2 id="arm-exception-model-overview">ARM Exception Model Overview<a href="#arm-exception-model-overview"></a></h2>
-<p>ARM specification将Exception定义为“a condition that changes the normal flow of control in a program” <a href="#fn:4">1</a>.</p>
-<p>你会经常看到&quot;Exception&quot;和&quot;Interrupt&quot;交替出现. 在ARM文档中, &ldquo;Interrupt&quot;用来描述&quot;Exception&quot;的一种.
-Exception包含以下3部分标识信息:</p>
-<ul>
-<li><strong>Exception Number</strong> - 表示特定类型Exception的唯一编号(从1开始).
-这个编号也用作<strong>Vector Table</strong>的offset, 这种类型的Exception对应routine的address可以在这里找到.
-这样的routine通常被称为<strong>Exception Handler</strong>或者<strong>Interrupt Service Routine</strong> (<strong>ISR</strong>),它是在Exception触发时会被执行的函数.
-当Exception被触发时,ARM硬件会自动的从<strong>Vector Table</strong>中寻找对应的函数指针并执行.</li>
-<li><strong>Priority Level</strong> / <strong>Priority Number</strong> - 每种Exception都有一个优先级.
-大部分exception的Priority Number是可配置的. 反直觉的地方是, 更小的priority number意味着更高的优先级.
-所以如果priority level 1的exception和priority level 2的exception同时发生, priority level 1的exception会先被处理.
-当本文说一个exception有最高优先级时, 意味着这个exception有最小的<strong>Priority Number</strong>.
-如果两个exception有相同的<strong>Priority Number</strong>, <strong>Exception Number</strong>更小的那个会先被处理.</li>
-<li><strong>Synchronous</strong> 或 <strong>Asynchronous</strong> - 有一些exception触发时被立即被处理(例如 <code>SVCall</code>), 称为 <em>synchronous</em>.
-另一些exception触发时不会被立刻处理, 称为 <em>asynchronous</em>.</li>
-</ul>
-<p>一个exception可以处于以下4种状态中的一种:</p>
-    </div>
-    <a href="/posts/armv-m-exception/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
-  </div>
-</div>
-
-        </div>
-      
-        <div class="w-100 w-30-l mb4 relative bg-white">
-          <div class="w-100 mb4 nested-copy-line-height relative bg-white">
-  <div class="mb3 pa4 gray overflow-hidden bg-white">
-    <span class="f6 db">Posts</span>
-    <h1 class="f3 near-black">
-      <a href="/posts/armv-m-context-switch/" class="link black dim">
-        ARM Cortex-M RTOS Context Switching
-      </a>
-    </h1>
-    <div class="nested-links f5 lh-copy nested-copy-line-height">
-      <p>Many embedded systems reach a level of complexity where having a basic set of scheduling primitives and ability to run different tasks can be helpful. The operation of switching from one task to another is known as a <strong>context switch</strong>. A <em>Real Time Operating System</em> (<strong>RTOS</strong>) will typically provide this functionality. Having a foundational knowledge of how the core of an <strong>RTOS</strong> works can be a valuable skill set for an embedded engineer to have.</p>
-    </div>
-    <a href="/posts/armv-m-context-switch/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
-  </div>
-</div>
-
-        </div>
-      
-    </section>
-    </article>
-
-    </main>
-    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
-  <div class="flex justify-between">
-  <a class="f4 fw4 hover-white white-70 dn dib-ns pv2 ph3 no-underline" href="https://fulanxisen.github.io/" >
-    &copy;  FulanXisen's blog 2026 
-  </a>
-    <div><div class="ananke-socials"></div>
-</div>
-  </div>
-</footer>
-
+  <footer>
+  
+  
+  </footer>
   </body>
 </html>
+

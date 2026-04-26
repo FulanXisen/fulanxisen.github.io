@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Neovim Beginner | FulanXisen&#39;s blog</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    
+  </head>
+
+  <body>
+    <nav>
+    <ul class="menu">
+      
+    </ul>
+    <hr/>
+    </nav>
+
+<div class="article-meta">
+<h1><span class="title">Neovim Beginner</span></h1>
+<h2 class="author">fanyuxin</h2>
+<h2 class="date">2023/10/15</h2>
+</div>
+
+<main>
+<h1 id="neovim-beginner">Neovim Beginner</h1>
+<h2 id="initlua">init.lua</h2>
+<h3 id="installsh">Install.sh</h3>
+<p><code>plugins.lua</code> is where we start to configure Neovim.</p>
+<p>All Lua configuration files are under the lua folder (:h lua-require).</p>
+<h3 id="startup-screen">Startup Screen</h3>
+<p>Use alpha.nvim as the startup screen.</p>
+<p>The configuration file is <code>lua/config/alpha.lua</code>.</p>
+<p><code>alpha.lua</code>:</p>
+<ul>
+<li>pcall is used to prevent errors requiring a non-existent module or a module with syntax errors.</li>
+<li>We specify an ASCII art header, some convenient shortcuts, and a footer to indicate the number of plugins, date and time, and a quote.</li>
+</ul>
+<h3 id="git">Git</h3>
+<p>use <code>Neogit</code> for version control.</p>
+<p>The configuration file is <code>lua/config/neogit.lua</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-lua" data-lang="lua"><span style="display:flex;"><span><span style="color:#66d9ef">local</span> M <span style="color:#f92672">=</span> {}<span style="color:#66d9ef">function</span> <span style="color:#a6e22e">M</span>.<span style="color:#a6e22e">setup</span>()
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">local</span> status_ok, neogit <span style="color:#f92672">=</span> pcall(require, <span style="color:#e6db74">&#34;neogit&#34;</span>)
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> status_ok <span style="color:#66d9ef">then</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">end</span>  neogit.setup {}
+</span></span><span style="display:flex;"><span>endreturn M
+</span></span></code></pre></div><ul>
+<li>pcall is used to prevent errors requiring a non-existent module or a module with syntax errors.</li>
+<li>For now, we use the default configuration for Neogit.</li>
+</ul>
+<h3 id="options">options</h3>
+<p>Besides Vimscript files, Lua files can be loaded automatically from special folders in your runtimepath (:h load-plugins). All *.vim files are sourced before *.lua files.
+We configure a few default settings by using after/plugin/defaults.lua.</p>
+<p>defaults.lua</p>
+<p>We configure <!-- raw HTML omitted --> as the Leader key (:h <!-- raw HTML omitted -->).</p>
+<p>For each setting, you can check out the help documentation for more details. We shall see how to further customize Neovim with sensible defaults later.
+We configure an autocmd to highlight the text when yanking or copying.
+We also configure a file type plugin (:h ftplugin) for Lua files with buffer-specific settings.</p>
+<p>A filetype plugin is like a global plugin, except it only sets options and
+defines mappings for the current buffer.</p>
+<p>vim.bo.shiftwidth = 2
+vim.bo.tabstop = 2
+vim.bo.softtabstop = 2
+vim.bo.textwidth = 120
+To remove the configuration, simply delete the ~/.config/nvim-beginner folder.</p>
+<p>If we want to start nvb in a new terminal without installing all the plugins again, put the following lines in the RC files, e.g. .zshrc, or .bashrc.</p>
+<h2 id="key-mappings-ans-whichkey">Key Mappings ans WhichKey</h2>
+<h2 id="plugin-management">Plugin Management</h2>
+<h2 id="status-line">Status Line</h2>
+<h2 id="fuzzy-file-search">Fuzzy File Search</h2>
+<h2 id="file-explorer">File Explorer</h2>
+<h2 id="buffer">Buffer</h2>
+<h2 id="motion">Motion</h2>
+<h2 id="built-in-completion">Built-in Completion</h2>
+<h2 id="completion-plugin">Completion Plugin</h2>
+<h2 id="auto-pairs">Auto Pairs</h2>
+<h2 id="lsp">LSP</h2>
+<h2 id="lsp-using-null-lsnvim">LSP using null-ls.nvim</h2>
+<h2 id="lsp-plugin">LSP Plugin</h2>
+<h2 id="debuging-using-dap">Debuging using DAP</h2>
+<h2 id="testing">Testing</h2>
+<h2 id="debugging-using-vimspector">Debugging using vimspector</h2>
+<h2 id="performance">Performance</h2>
+<h2 id="snippets">Snippets</h2>
+<h2 id="lua-autocmd-and-keymap-functions">Lua Autocmd and Keymap Functions</h2>
+<h2 id="color-scheme">Color Scheme</h2>
+<h2 id="remote-plugins">Remote Plugins</h2>
+<h2 id="session">Session</h2>
+<h2 id="snippets-using-lua">Snippets using Lua</h2>
+<h2 id="refactoring">Refactoring</h2>
+<h2 id="code-annotation-and-documentation">Code Annotation and Documentation</h2>
+<h2 id="note-taking-writing-diagramming-and-presentation">Note Taking, Writing, Diagramming, and Presentation</h2>
+<h2 id="source-code-control">Source Code Control</h2>
+<h2 id="window-bar">Window Bar</h2>
+<h2 id="user-interface">User Interface</h2>
+<h2 id="python-remote-debugging">Python Remote Debugging</h2>
+<h2 id="python-code-refactoring">Python Code Refactoring</h2>
+<h2 id="plugins-for-key-mapping">Plugins for Key Mapping</h2>
+<h2 id="code-folding">Code Folding</h2>
+<h2 id="terminal-debugger">Terminal Debugger</h2>
+<h2 id="gui">GUI</h2>
+<h2 id="cheatsheet-and-coding-assistant">Cheatsheet and Coding Assistant</h2>
+<h2 id="conventional-commits">Conventional Commits</h2>
+<h2 id="database-explorer">Database Explorer</h2>
+<h2 id="code-context">Code Context</h2>
+
+</main>
+
+  <footer>
+  
+  
+  </footer>
+  </body>
+</html>
+

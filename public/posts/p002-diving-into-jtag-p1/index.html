@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>Diving into JTAG - Overview (Part 1/6) | FulanXisen&#39;s blog</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="As the first segment of a three-part series on JTAG, this post will give
+an overview of JTAG to set up some more in-depth discussions on debugging and JTAG Boundary-Scan. We will dive into the intricacies of the interface, such as the Test Access Port (TAP), key registers, instructions, and JTAG’s finite state machine.
+Like Interrupt? Subscribe to get our latest posts straight to your inbox.
+Table of Contents Anchor
+
+Introduction
+Test Access Point (TAP)
+Control signals
+Registers
+Shift register
+JTAG Instruction  - The IDCODE instruction
+
+The BYPASS instruction
+The SAMPLE/PRELOAD instruction
+
+
+State Machine
+Example
+References
+
+Introduction Anchor
+JTAG (Joint Test Action Group) is a specialized hardware interface based on the IEEE 1149.1 standard. This interface is designed to connect complex chips and devices to standard test and debugging hardware.">
+    <meta name="generator" content="Hugo 0.160.1">
+    
+    
+    
+      <meta name="robots" content="noindex, nofollow">
+    
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.css" >
+
+
+
+
+    
+
+
+    
+      
+
+    
+
+    
+
+    
+      <link rel="canonical" href="http://localhost:1313/posts/p002-diving-into-jtag-p1/">
+    
+
+    
+    
+    <meta property="og:url" content="http://localhost:1313/posts/p002-diving-into-jtag-p1/">
+  <meta property="og:site_name" content="FulanXisen&#39;s blog">
+  <meta property="og:title" content="Diving into JTAG - Overview (Part 1/6)">
+  <meta property="og:description" content="As the first segment of a three-part series on JTAG, this post will give an overview of JTAG to set up some more in-depth discussions on debugging and JTAG Boundary-Scan. We will dive into the intricacies of the interface, such as the Test Access Port (TAP), key registers, instructions, and JTAG’s finite state machine.
+Like Interrupt? Subscribe to get our latest posts straight to your inbox.
+Table of Contents Anchor Introduction Test Access Point (TAP) Control signals Registers Shift register JTAG Instruction - The IDCODE instruction The BYPASS instruction The SAMPLE/PRELOAD instruction State Machine Example References Introduction Anchor JTAG (Joint Test Action Group) is a specialized hardware interface based on the IEEE 1149.1 standard. This interface is designed to connect complex chips and devices to standard test and debugging hardware.">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-04-26T21:45:53+08:00">
+    <meta property="article:modified_time" content="2026-04-26T21:45:53+08:00">
+
+  <meta itemprop="name" content="Diving into JTAG - Overview (Part 1/6)">
+  <meta itemprop="description" content="As the first segment of a three-part series on JTAG, this post will give an overview of JTAG to set up some more in-depth discussions on debugging and JTAG Boundary-Scan. We will dive into the intricacies of the interface, such as the Test Access Port (TAP), key registers, instructions, and JTAG’s finite state machine.
+Like Interrupt? Subscribe to get our latest posts straight to your inbox.
+Table of Contents Anchor Introduction Test Access Point (TAP) Control signals Registers Shift register JTAG Instruction - The IDCODE instruction The BYPASS instruction The SAMPLE/PRELOAD instruction State Machine Example References Introduction Anchor JTAG (Joint Test Action Group) is a specialized hardware interface based on the IEEE 1149.1 standard. This interface is designed to connect complex chips and devices to standard test and debugging hardware.">
+  <meta itemprop="datePublished" content="2026-04-26T21:45:53+08:00">
+  <meta itemprop="dateModified" content="2026-04-26T21:45:53+08:00">
+  <meta itemprop="wordCount" content="2637">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Diving into JTAG - Overview (Part 1/6)">
+  <meta name="twitter:description" content="As the first segment of a three-part series on JTAG, this post will give an overview of JTAG to set up some more in-depth discussions on debugging and JTAG Boundary-Scan. We will dive into the intricacies of the interface, such as the Test Access Port (TAP), key registers, instructions, and JTAG’s finite state machine.
+Like Interrupt? Subscribe to get our latest posts straight to your inbox.
+Table of Contents Anchor Introduction Test Access Point (TAP) Control signals Registers Shift register JTAG Instruction - The IDCODE instruction The BYPASS instruction The SAMPLE/PRELOAD instruction State Machine Example References Introduction Anchor JTAG (Joint Test Action Group) is a specialized hardware interface based on the IEEE 1149.1 standard. This interface is designed to connect complex chips and devices to standard test and debugging hardware.">
+
+	
+  </head><body class="ma0 avenir bg-near-white development is-page is-page page-p002-diving-into-jtag-p1">
+    
+   
+  
+
+  <header>
+    <div class="bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l center items-center justify-between">
+    <a href="/" class="f3 fw2 hover-white white-90 dib no-underline">
+      
+        FulanXisen&#39;s blog
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      <div class="ananke-socials"></div>
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+
+  <article class="page-p002-diving-into-jtag-p1 flex-l mw7 center ph3 flex-wrap justify-between">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked ttu">
+          
+        Posts
+      </aside><div id="sharing" class="mt3 ananke-socials"></div>
+<h1 class="f1 athelas mt3 mb1">Diving into JTAG - Overview (Part 1/6)</h1>
+      
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2026-04-26T21:45:53+08:00">April 26, 2026</time>
+      
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-100-l"><p>As the first segment of a three-part series on JTAG, this post will give
+an overview of JTAG to set up some more in-depth discussions on debugging and JTAG Boundary-Scan. We will dive into the intricacies of the interface, such as the Test Access Port (TAP), key registers, instructions, and JTAG’s finite state machine.</p>
+<p>Like Interrupt? <a href="https://go.memfault.com/interrupt-subscribe"><strong>Subscribe</strong></a> to get our latest posts straight to your inbox.</p>
+<h2 id="table-of-contents-anchor">Table of Contents <a href="https://interrupt.memfault.com/blog/diving-into-jtag-part1#table-of-contents">Anchor</a></h2>
+<ul>
+<li><a href="https://interrupt.memfault.com/blog/diving-into-jtag-part1#introduction">Introduction</a></li>
+<li><a href="https://interrupt.memfault.com/blog/diving-into-jtag-part1#test-access-point-tap">Test Access Point (TAP)</a></li>
+<li><a href="https://interrupt.memfault.com/blog/diving-into-jtag-part1#control-signals">Control signals</a></li>
+<li><a href="https://interrupt.memfault.com/blog/diving-into-jtag-part1#registers">Registers</a></li>
+<li><a href="https://interrupt.memfault.com/blog/diving-into-jtag-part1#shift-register">Shift register</a></li>
+<li><a href="https://interrupt.memfault.com/blog/diving-into-jtag-part1#jtag-instruction">JTAG Instruction</a>  - <a href="https://interrupt.memfault.com/blog/diving-into-jtag-part1#the-idcode-instruction">The <code>IDCODE</code> instruction</a>
+<ul>
+<li><a href="https://interrupt.memfault.com/blog/diving-into-jtag-part1#the-bypass-instruction">The <code>BYPASS</code> instruction</a></li>
+<li><a href="https://interrupt.memfault.com/blog/diving-into-jtag-part1#the-samplepreload-instruction">The <code>SAMPLE/PRELOAD</code> instruction</a></li>
+</ul>
+</li>
+<li><a href="https://interrupt.memfault.com/blog/diving-into-jtag-part1#state-machine">State Machine</a></li>
+<li><a href="https://interrupt.memfault.com/blog/diving-into-jtag-part1#example">Example</a></li>
+<li><a href="https://interrupt.memfault.com/blog/diving-into-jtag-part1#references">References</a></li>
+</ul>
+<h2 id="introduction-anchor">Introduction <a href="https://interrupt.memfault.com/blog/diving-into-jtag-part1#introduction">Anchor</a></h2>
+<p>JTAG (Joint Test Action Group) is a specialized hardware interface based on the IEEE 1149.1 standard. This interface is designed to connect complex chips and devices to standard test and debugging hardware.</p>
+<p>Nowadays JTAG is mainly used for:</p>
+<ul>
+<li>Output control of microcircuits</li>
+<li>Testing of printed circuit boards</li>
+<li>Flashing of microchips with memory</li>
+<li>Chip software debugging</li>
+</ul>
+<p>The testing method implemented in the standard is called Boundary Scan. The name reflects the idea of the process: Functional blocks within the chip are isolated, and specific signal combinations are applied to their inputs. The state of each block’s output is then evaluated. The whole process is performed by special commands via the JTAG interface, and no physical intervention is required.</p>
+<h2 id="test-access-point-tap-anchor">Test Access Point (TAP) <a href="https://interrupt.memfault.com/blog/diving-into-jtag-part1#test-access-point-tap">Anchor</a></h2>
+<p>The Test Access Port (TAP) is one of the key elements of the JTAG protocol designed to control and configure chips connected to the JTAG chain.</p>
+<p>The TAP operates as a simple finite-state machine that is controlled by the <code>TMS</code> (Test Mode Select) signal. It allows access to the internal registers of microcontrollers and other devices through JTAG commands.</p>
+<p>Each device connected to the JTAG chain has its own TAP, which consists of the <code>IR</code> (Instruction Register) and DR (Data Register) registers. The <code>IR</code> the register is used to select the instruction to be executed on the device and the DR the register is used to transfer data.</p>
+<h2 id="control-signals-anchor">Control signals <a href="https://interrupt.memfault.com/blog/diving-into-jtag-part1#control-signals">Anchor</a></h2>
+<p>The Test Access Port comprises four mandatory signals (<code>TCK</code>, <code>TMS</code>, <code>TDI</code>, <code>TDO</code>) and one optional signal (<code>TRST</code>).</p>
+<ul>
+<li><code>TDI</code> (Test Data Input) — test data input. The commands and data are inserted into the chip through this pin on the rising edge of the signal <code>TCK</code>.</li>
+<li><code>TDO</code> (Test Data Output) — serial data output. Commands and data are output from the chip through this pin on the falling edge of the signal <code>TCK</code>.</li>
+<li><code>TCK</code> (Test Clock) — clock input.</li>
+<li><code>TMS</code> (Test Mode Select) — controls the transitions between states of the finite state machine TAP.</li>
+<li><code>TRST</code> (Test Reset) — reset signal of the TAP finite state machine.</li>
+</ul>
+<p>The standard is that the JTAG module reads data from the <code>TMS</code> and <code>TDI</code> lines on the rising edge of the <code>TCK</code> line. The JTAG module in any chip must also change the logic value on the <code>TDO</code> line on the falling edge of <code>TCK</code>. In the diagram below, the moments of reading data by the JTAG module are shown with the red dotted line and the moments of writing data are shown with the green dotted line.</p>
+<p><img src="https://interrupt.memfault.com/img/jtag-part1/jtag-control-signals.png" alt="JTAG control signals"></p>
+<h2 id="registers-anchor">Registers <a href="https://interrupt.memfault.com/blog/diving-into-jtag-part1#registers">Anchor</a></h2>
+<p>The TAP state machine allows access to two special registers, the <code>IR</code>, and a symbolic register called DR.</p>
+<p>The instruction registers store the current instruction to be executed. The value of this register is used by the TAP controller to decide what to do with incoming signals. The most commonly used instruction specifies which data register the incoming data should go into.</p>
+<p>The Data Register is a placeholder for the register that is currently selected with the current content of the <code>IR</code>. Thus, <code>IR</code> is an index into a number of registers, and DR is the currently selected register. There are three main types of data registers:</p>
+<ul>
+<li>BSR (Boundary Scan Register) — The main register for testing. It is used to transfer data to and from the pins of the chip.</li>
+<li><code>BYPASS</code> is a single-bit register that transfers data from <code>TDI</code> to <code>TDO</code>. It allows testing other chips connected in series with minimum delays.</li>
+<li><code>IDCODE</code>S — stores the ID code and revision number of the chip.</li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part1/debug-tap.gif" alt="JTAG Debug TAP"></p>
+<p>In the picture above you can see an approximate illustration of the principle of operation of the DR register: the switchers SW3 and SW4 choose the current register depending on the instruction in <code>IR</code>.</p>
+<p>The size of the <code>IR</code> is implementation specific and usually varies between 4 and 32 bits. Since the selected register is directly accessed when scanning DR, the size DR depends on the current instruction.</p>
+<p>JTAG registers are an important part of the microcontroller debugging process because they allow you to control and monitor the state of the microcontroller during program execution. Each microcontroller manufacturer may use its own JTAG registers, so you should consult the documentation of your particular microcontroller for details on the JTAG registers it supports.</p>
+<h2 id="shift-register-anchor">Shift register <a href="https://interrupt.memfault.com/blog/diving-into-jtag-part1#shift-register">Anchor</a></h2>
+<p>Data transfer (read/write) in the JTAG protocol is performed by the shift register principle. In a shift register, the data is transferred sequentially, bit by bit, one per clock cycle.</p>
+<p><img src="https://interrupt.memfault.com/img/jtag-part1/shift-reg.gif" alt="JTAG Debug TAP"></p>
+<p>This register is located between the <code>TDI</code> and <code>TDO</code> pins and is used to receive information from the <code>TDI</code> pin and output information to the <code>TDO</code> pin. Every time you want to write something to the TAP via JTAG protocol - you set the necessary signals to the <code>TDI</code> pin - these signals are synchronously written to the shift register starting from the highest bit and gradually moving to the lowest bit of the register with each new clock, and the value of the lowest bit of the shift register with each clock is moved to the <code>TDO</code> pin, from which we can read it.</p>
+<blockquote>
+<p><strong>Note</strong>: I have not found detailed information about this anywhere, but from
+a general understanding, I can assume that for each register accessible
+via JTAG protocol, there is a separate version of the shift register.
+I.e. assuming we have we have a TAP with <code>IR</code> register 4 bits length,
+<code>BYPASS</code> register 1 bit length, <code>IDCODE</code> register 32 bits length, then for
+each of these registers there will be a separate version of the shift
+register which will be integrated into the scan chain between <code>TDI</code> and
+<code>TDO</code> pins every time the corresponding <code>IR</code>, <code>BYPASS</code>, or <code>IDCODE</code>
+registers are selected. But this is just my assumption, which has not
+been documented yet.</p>
+</blockquote>
+<h2 id="jtag-instruction-anchor">JTAG Instruction <a href="https://interrupt.memfault.com/blog/diving-into-jtag-part1#jtag-instruction">Anchor</a></h2>
+<p>JTAG instructions are commands that interact with the TAP, enabling test, debug, programming, and configuration functions.</p>
+<p>As described in the previous chapter even though selecting an instruction will usually not directly trigger any action, merely select the proper register as DR.</p>
+<p>Let’s look at some of the most common instructions.</p>
+<h3 id="the-idcode-instruction-anchor">The <code>IDCODE</code> instruction <a href="https://interrupt.memfault.com/blog/diving-into-jtag-part1#the-idcode-instruction">Anchor</a></h3>
+<p>The <code>IDCODE</code> instruction in JTAG is used to get the unique identifier of the device connected to the JTAG circuit. Each device that supports JTAG has its own unique ID code, which can be read using the <code>IDCODE</code> command. This can be useful to identify the device type, manufacturer, and version.</p>
+<p>This identifier is 32-bit in size and consists of next fields:</p>
+<p><img src="https://interrupt.memfault.com/img/jtag-part1/idcode-instruction-reg.png" alt="IDCODE"></p>
+<p>So when you load <code>IDCODE</code> instruction in <code>IR</code> register this will force the <code>IDCODE</code> register to be selected as the data register.</p>
+<h3 id="the-bypass-instruction-anchor">The <code>BYPASS</code> instruction <a href="https://interrupt.memfault.com/blog/diving-into-jtag-part1#the-bypass-instruction">Anchor</a></h3>
+<p>The <code>BYPASS</code> instruction in the JTAG protocol allows you to bypass one or more components in the JTAG chain without including them in the scan chain. This can be useful when the device does not support JTAG protocol commands or when you want to check other components in the chain.</p>
+<p>When the <code>BYPASS</code> instruction is passed to a JTAG chain, it skips the device it is targeting and passes control to the next device in the chain. Thus, the <code>BYPASS</code> command avoids addressing a device that cannot be scanned by the JTAG protocol and continues to scan devices that are further up the chain.</p>
+<p>In addition, the <code>BYPASS</code> instruction can be used to speed up a JTAG chain scan since skipping the device reduces the number of cycles required to go through the chain.</p>
+<p>So when you load <code>BYPASS</code> instruction in <code>IR</code> register this will force the 1 bit <code>BYPASS</code> register to be selected as the data register.</p>
+<h3 id="the-samplepreload-instruction-anchor">The <code>SAMPLE/PRELOAD</code> instruction <a href="https://interrupt.memfault.com/blog/diving-into-jtag-part1#the-samplepreload-instruction">Anchor</a></h3>
+<blockquote>
+<p><strong>Note</strong>: This command and a few others: <code>EXTEST</code>, <code>INTEST</code>, <code>HIGHZ</code> are
+actively used in the board testing process and will be discussed in detail
+in the second part of this article on the subject of using the JTAG
+protocol for board testing. In the same article they are specified by reference.</p>
+</blockquote>
+<p>This command closes the <code>TDI</code> and <code>TDO</code> to the BSR (Boundary Scan Register). However, the chip remains in a state of normal operation. During the execution of this command register BSR can be used to capture data, which the chip is exchanged during normal operation. In other words with this command, we can read signals from the pin of the microcontroller without disturbing its operation.</p>
+<p>So when you load <code>SAMPLE/PRELOAD</code> instruction in <code>IR</code> register this will force the BSR register to be selected as the data register.</p>
+<h2 id="state-machine-anchor">State Machine <a href="https://interrupt.memfault.com/blog/diving-into-jtag-part1#state-machine">Anchor</a></h2>
+<p>The JTAG protocol’s finite state automaton comprises a set of states that the TAP can assume, depending on the signals received at its inputs. Each state corresponds to a specific combination of signal values for the <code>TMS</code> and <code>TDI</code> inputs.</p>
+<p>The transitions between states depend on the <code>TMS</code> signal at the moment of rising level of <code>TCK</code>.</p>
+<p>The initial state after resetting is Test Logic-Reset. As defined by the standard the LSB is pushed in and pulled out first for all shift registers.</p>
+<p>The State Machine is quite simple and has two ways of working:</p>
+<ul>
+<li>Instruction register selection (blue blocks) is used to select the current command.</li>
+<li>Data register selection (green blocks) is used to read/write data into the data registers.</li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part1/jtag-state-machine.png" alt="JTAG Debug TAP"></p>
+<p>All states have two outputs, and transitions are arranged so that any state can be reached by controlling the dispenser with a single <code>TMS</code> signal (synchronized by <code>TCK</code>). There are two distinct sequences of states: one for reading or writing to the data register and one for working with the instruction register.</p>
+<p>Let’s describe the most important states. But since <code>IR</code> path and DR path have identical states, I will describe these states for both paths at once specifying the differences if necessary.</p>
+<ul>
+<li><strong>Test-Logic-Reset</strong> — all test logic is disabled, chip behaves normally.</li>
+<li><strong>Run-Test/Idle</strong> — first state to initialize test logic and default idling state</li>
+<li><strong>Select-DR/IR-Scan</strong> — this state is necessary to select the current path: data or instruction. I think this can be visualized as the operation of the switches: SW1, SW1, SW3, SW4. When the Select-DR-Scan the state is hit, the switches SW1, SW1, SW3, SW4 are switched to the corresponding DR register. When the Select-IR-Scan state is reached - switches SW1, SW1 are switched to the <code>IR</code> register.</li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part1/debug-tap-2.gif" alt="Select DR and IR switching"></p>
+<ul>
+<li><strong>Capture-DR</strong> — In this state, there is a parallel loading of the value stored in the selected DR register into the shift register if you follow the Select-DR-Scan state branch and loading of a special pattern if we follow the Select-IR-Scan state path, the value 0x01 is usually selected as the pattern.</li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part1/capture-dr-state-dr.gif" alt="DR register during capture-DR state"></p>
+<ul>
+<li><strong>Shift-DR</strong> — register shifts data from <code>TDI</code> one step forward <code>TDO</code>. The Shift-DR and Shift-IR states are the main states for serial-loading data into either data registers or the instruction register.</li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part1/shift-dr-state.gif" alt="DR register during shift-DR state"></p>
+<ul>
+<li><strong>Update-DR</strong> — the state in which the data in the shift register is written to the corresponding register in the chip. The Update-DR and Update-IR states latch the data into the registers, setting the data in the instruction register as the current instruction</li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part1/update-dr-state-ir.gif" alt="DR register during shift-DR state"></p>
+<ul>
+<li><strong>Pause-DR/IR</strong> — temporarily halt data shifting from <code>TDI</code> to <code>TDO</code></li>
+</ul>
+<p>The state machine progresses on the test clock (<code>TCK</code>) edge, with the value of the test mode select (<code>TMS</code>) pin controlling the behavior.</p>
+<blockquote>
+<p><strong>Note</strong>: Regardless of the initial state of the TAP controller,
+the Test-Logic-Reset state can always be entered by holding the TMS logic 1 for 5 clock cycles of TCK.</p>
+</blockquote>
+<h2 id="example-anchor">Example <a href="https://interrupt.memfault.com/blog/diving-into-jtag-part1#example">Anchor</a></h2>
+<p>Now that we’ve covered the theory, it’s time to see the JTAG protocol in action. Let’s consider an example where we read the ID code value from a chip, with an <code>IR</code> length of 4 bits.The sequence of bits on pins <code>TMS</code>, <code>TDI</code>, <code>TDO</code>, state machine transitions, and states of switches SW1 - SW4 are shown in the following gif:</p>
+<p><img src="https://interrupt.memfault.com/img/jtag-part1/jtag-example.gif" alt="Example of JTAG state transitions"></p>
+<p>So, initially we are in the <code>Run-Test/Idle</code> state. In order to read the chip ID code we need to write the instruction code <code>IDCODE</code> into <code>IR</code> (let it be <code>0b1110</code> for our example). To write the instruction to <code>IR</code> we need to select the blue branch of our state machine. Images <code>2</code> and <code>3</code> show this transition. Image <code>3</code> shows how the keys <code>SW1</code> and <code>SW2</code> are switched when entering the <code>Select-IR-Scan</code> state. Next, at step <code>4</code> in the <code>Capture-IR</code> state, the <code>0b0001</code> pattern is loaded into the shift register. In step <code>5</code>, a transition to the <code>Shift-IR</code> state is made and at this transition, bit <code>1</code> of the loaded pattern is advanced to the <code>TDO</code> pin.</p>
+<p>Steps <code>6-7</code> show the sequential shift of the <code>IDCODE (0b1110)</code> instruction bit by bit into the shift register with the last bit being shifted in at the moment of transition to the <code>Exit1-IR</code> state (step <code>8</code>). At step <code>9</code> (state <code>Update-IR</code>), the instruction code written to the shift register is latched into the <code>IR</code> register. At <code>10</code> we return to the initial state. We have written the instruction code, now we need to read the data corresponding to this instruction, for this purpose we will use the green branch of the automaton. At step <code>11</code> we go to the <code>Select-DR-Scan</code> state, at that the keys <code>SW1</code> and <code>SW2</code> are switched to the <code>DR</code> register and the <code>ID</code> register is selected because during the <code>IR</code> phase we selected the instruction <code>IDCODE</code>. In step <code>12</code> the <code>Capture-DR</code> state, 32 bits of <code>ID</code> code are loaded into the shift register. At step <code>13</code> the transition to the <code>Shift-DR</code> state is performed and at this transition the low-order bit of the <code>ID</code> code is advanced to the <code>TDO</code> output. Steps <code>14-20</code> show the sequential shift of the chip id code <code>(0b111001101)</code> bit by bit. At step <code>21</code>, a transition to the <code>Exit1-DR</code> state is made and the last bit of the <code>ID</code> of the code is promoted. Step <code>22</code> (<code>Update-DR</code> state) - there should be a latch of the code written to the shift register into the selected <code>DR</code> register, but in case of <code>IDCODE</code> command this does not happen. At step <code>23</code> we return to the initial state again.</p>
+<p>In Part 2 of this series, we’ll dive into debugging with JTAG.</p>
+<blockquote>
+<p><strong>Note</strong>: This article was originally published by Aliaksandr on his blog. You can find the original article <a href="https://medium.com/@aliaksandr.kavalchuk/diving-into-jtag-protocol-part-1-overview-fbdc428d3a16">here</a>.</p>
+</blockquote>
+<h2 id="references-anchor">References <a href="https://interrupt.memfault.com/blog/diving-into-jtag-part1#references">Anchor</a></h2>
+<ul>
+<li><a href="https://www.allaboutcircuits.com/technical-articles/introduction-to-jtag-test-access-port-tap/">Introduction to JTAG and the Test Access Port (TAP)</a></li>
+<li><a href="https://www.allaboutcircuits.com/technical-articles/jtag-test-access-port-tap-state-machine/">The JTAG Test Access Port (TAP) State Machine</a></li>
+<li><a href="https://www.fpga4fun.com/JTAG.html">JTAG.FPGA4Fun</a></li>
+<li><a href="https://youtu.be/TlWlLeC5BUs">EEVblog — What is JTAG and Boundary Scan?</a></li>
+<li><a href="https://circuitcellar.com/research-design-hub/design-solutions/bringing-jtag-boundary-scan-into-2021/">Bringing JTAG Boundary Scan into 2021</a></li>
+<li><a href="https://www.allaboutcircuits.com/technical-articles/jtag-implementation-arm-core-devices/">JTAG Implementation in Arm Core Devices</a></li>
+<li><a href="http://www.seabrooks.plus.com/jworker/internals.pdf">Jworker — How it works</a></li>
+<li><a href="https://www.actuatedrobots.com/debugging-with-jtag/">DEBUGGING WITH JTAG</a></li>
+<li><a href="https://tomverbeure.github.io/2021/10/30/Intel-JTAG-Primitive.html">The Intel JTAG Primitive — Using JTAG without Virtual JTAG</a></li>
+<li><a href="https://www.cyrozap.com/2015/05/31/programming-a-spartan-6-fpga-via-jtag/">Programming a Spartan-6 FPGA via JTAG</a></li>
+<li><a href="https://semiconshorts.com/2023/02/11/boundary-scan-jtag/">Boundary Scan/JTAG</a></li>
+<li><a href="https://fahrplan.events.ccc.de/congress/2009/Fahrplan/attachments/1435_JTAG.pdf">Blackbox JTAG Reverse Engineering</a></li>
+<li><a href="https://media.ccc.de/v/26c3-3670-en-blackbox_jtag_reverse_engineering#t=238">Blackbox JTAG Reverse Engineering — video</a></li>
+<li><a href="https://www.youtube.com/watch?v=ZmBfahwV3ss">Ghetto Tools for Embedded Analysis — Nathan Fain — REcon 2011</a></li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/author/zamuhrishka.jpeg" alt=""><a href="https://interrupt.memfault.com/authors/zamuhrishka">Aliaksandr Kavalchuk</a> is a firmware engineer with over 10 years of experience.</p>
+<p>Diving into JTAG - Overview (Part 1) | Interrupt - Blog - Interrupt<a href="https://community.memfault.com/t/diving-into-jtag-overview-part-1-interrupt/769">Start Discussion</a> 0 replies</p>
+<h3 id="search">Search</h3>
+<table>
+  <thead>
+      <tr>
+          <th></th>
+          <th></th>
+          <th></th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td></td>
+          <td></td>
+          <td></td>
+      </tr>
+      <tr>
+          <td>&mdash;</td>
+          <td>&mdash;</td>
+          <td></td>
+      </tr>
+      <tr>
+          <td></td>
+          <td>×</td>
+          <td></td>
+      </tr>
+  </tbody>
+</table>
+<p>Custom Search</p>
+<table>
+  <thead>
+      <tr>
+          <th></th>
+          <th></th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td></td>
+          <td>Sort by<!-- raw HTML omitted -->Relevance<!-- raw HTML omitted -->Date</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="subscribe"><strong>Subscribe</strong></h3>
+<p><strong>Enter your email below to receive new Interrupt posts straight to your mailbox.</strong></p>
+<p>Email*</p>
+<h3 id="latest-blog-posts">Latest Blog Posts</h3>
+<p>See the latest content from the Interrupt community.</p>
+<p><a href="https://interrupt.memfault.com/#latest-blog-posts">View latest blog posts\
+<img src="https://interrupt.memfault.com/img/chevron-right.svg" alt=""></a></p>
+<h3 id="top-blog-posts">Top Blog Posts</h3>
+<p>Read the posts that readers love the most.</p>
+<p><a href="https://interrupt.memfault.com/#top-blog-posts">View top blog posts\
+<img src="https://interrupt.memfault.com/img/chevron-right.svg" alt=""></a></p>
+<p><img src="https://interrupt.memfault.com/img/memfault-logo.png" alt="">
+Brought to you with ❤️ by Memfault.</p>
+<p><a href="https://memfault.com/">Learn more\
+<img src="https://interrupt.memfault.com/img/chevron-right.svg" alt=""></a></p>
+<h3 id="share-on">Share on:</h3>
+<p><a href="https://interrupt.memfault.com/feed.xml">RSS</a> <a href="https://interrupt-slack.herokuapp.com/">Slack</a> <a href="https://go.memfault.com/interrupt-subscribe">Subscribe</a> <a href="https://interrupt.memfault.com/contributing">Contribute</a> <a href="https://community.memfault.com/">Community</a> <a href="https://memfault.com/">Memfault.com</a></p>
+<p>© 2026 - Memfault, Inc.</p>
+<table>
+  <thead>
+      <tr>
+          <th></th>
+          <th></th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td></td>
+          <td></td>
+      </tr>
+  </tbody>
+</table>
+<ul class="pa0">
+  
+</ul>
+
+      
+    </div></article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white white-70 dn dib-ns pv2 ph3 no-underline" href="http://localhost:1313/" >
+    &copy;  FulanXisen's blog 2026 
+  </a>
+    <div><div class="ananke-socials"></div>
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>

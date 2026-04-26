@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>深入JTAG - 调试（第2部分/共6部分） | FulanXisen&#39;s blog</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    
+  </head>
+
+  <body>
+    <nav>
+    <ul class="menu">
+      
+    </ul>
+    <hr/>
+    </nav>
+
+<div class="article-meta">
+<h1><span class="title">深入JTAG - 调试（第2部分/共6部分）</span></h1>
+<h2 class="author">[FanYuxin Aliaksandr Kavalchuk]</h2>
+<h2 class="date">2026/04/26</h2>
+</div>
+
+<main>
+<p>正如我在上一篇文章<a href="https://interrupt.memfault.com/blog/diving-into-jtag-part1">深入JTAG协议。第1部分 - 概述</a>中所述，JTAG最初是为测试集成电路和印刷电路板而开发的。然而，人们逐渐认识到它在调试方面的潜力，现在JTAG已成为微控制器调试的标准协议。许多固件和嵌入式工程师首次接触它就是在这种背景下。</p>
+<p>在JTAG深度探讨系列的第二部分中，我们将深入了解如何与微控制器的内存交互，以及如何与处理器核心和调试寄存器交互。虽然JTAG在测试中的使用相当标准化，但在调试方面，每个处理器架构都有其独特的细微差别。考虑到这一点，本文将重点介绍在ARM Cortex-M架构上使用JTAG进行调试，具体来说是使用STM32F407VG微控制器。</p>
+<p>要成功进行调试，仅仅了解JTAG的基础知识是不够的。理解ARM调试访问端口的工作原理也至关重要，它是允许访问控制器内部寄存器和内存的关键组件。我在文章<a href="https://piolabs.com/blog/engineering/diving-into-arm-debug-access-port.html">深入ARM调试访问端口</a>中详细介绍了这个模块。有了这些基础，让我们深入JTAG调试的世界。</p>
+<h2 id="目录">目录</h2>
+<ul>
+<li><a href="#%E9%80%9A%E8%BF%87jtag%E8%AE%BF%E9%97%AEstm32f407vg%E6%8E%A7%E5%88%B6%E5%99%A8">通过JTAG访问STM32F407VG控制器</a></li>
+<li><a href="#%E8%AF%BB%E5%8F%96id-code">读取ID CODE</a></li>
+<li><a href="#%E5%86%85%E5%AD%98%E4%BA%A4%E4%BA%92">内存交互</a></li>
+<li><a href="#%E5%90%91%E5%86%85%E5%AD%98%E5%86%99%E5%85%A5%E5%8F%98%E9%87%8F">向内存写入变量</a></li>
+<li><a href="#%E4%BB%8E%E5%86%85%E5%AD%98%E8%AF%BB%E5%8F%96%E5%8F%98%E9%87%8F">从内存读取变量</a></li>
+<li><a href="#%E4%B8%8E%E5%A4%84%E7%90%86%E5%99%A8%E6%A0%B8%E5%BF%83%E4%BA%A4%E4%BA%92">与处理器核心交互</a></li>
+<li><a href="#%E7%BB%93%E8%AF%AD">结语</a></li>
+</ul>
+<h2 id="通过jtag访问stm32f407vg控制器">通过JTAG访问STM32F407VG控制器</h2>
+<p>在通过JTAG协议连接到STM32F407VG控制器之前，我们需要确定以下信息：<code>IR</code>寄存器的长度和连接到JTAG链的TAP控制器数量。官方文档，特别是<a href="https://www.st.com/resource/en/reference_manual/rm0090-stm32f405415-stm32f407417-stm32f427437-and-stm32f429439-advanced-armbased-32bit-mcus-stmicroelectronics.pdf">RM0090：参考手册</a>，可以在这方面提供帮助。</p>
+<p>根据该文档，STM32F407VG有两个TAP控制器：STM32边界扫描和CoreSight JTAG-DP。链中的第一个是边界扫描TAP，<code>IR</code>寄存器大小为5位。紧随其后的是CoreSight JTAG-DP TAP，<code>IR</code>寄存器大小为4位。</p>
+<p><img src="https://interrupt.memfault.com/img/tap-controllers.png" alt=""></p>
+<p>这些知识对我们至关重要，因为它决定了在访问不同TAP控制器时要在JTAG链中发送多少位以及以什么顺序发送。根据这些信息，我们可以连接到CoreSight JTAG-DP TAP控制器并尝试读取其<code>IDCODE</code>。</p>
+<h2 id="读取id-code">读取ID CODE</h2>
+<p>读取CoreSight JTAG-DP TAP控制器的<code>IDCODE</code>的位序列如下：</p>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/idcode-bits.png" alt=""></p>
+<p>让我们详细分析这个序列：</p>
+<ul>
+<li>第一步是将TAP状态机复位到初始状态<code>Test-Logic-Reset</code>，以确保我们处于已知状态。要实现这一点，只需将<code>TMS</code>保持在逻辑1状态5个<code>TCK</code>时钟周期。粉色位序列负责此步骤：</li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/test-logic-reset-state.png" alt=""></p>
+<ul>
+<li>接下来，我们需要将<code>IDCODE</code>命令代码加载到<code>IR</code>寄存器中，为此我们要将TAP状态机置于<code>Shift-IR</code>状态。要做到这一点，在<code>TMS</code>线上输入序列[0, 1, 1, 0, 0]。蓝色位序列负责此步骤：</li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/shift-ir-state.png" alt=""></p>
+<p>正如你可以在最后一小节的<code>TDO</code>线上看到有一个1。让我们找出它从哪里来的。事实上，在通过<code>Capture-IR</code>状态时，TAP控制器将<code>0b0001</code>的值加载到CoreSight JTAG-DP TAP的移位寄存器中，而边界扫描TAP是<code>0b00001</code>，它开始从这个测量开始沿<code>TDO</code>线移动，LSB位在前。因此，在接下来的9个时钟周期（包括这一个）中，我们将得到<code>TDO</code>序列<code>0b100010000</code>。</p>
+<ul>
+<li>下一步是直接将<code>IDCODE</code>命令代码加载到CoreSight JTAG-DP TAP的<code>IR</code>寄存器中，并将<code>BYPASS</code>命令代码加载到边界扫描TAP的<code>IR</code>寄存器中。我认为CoreSight JTAG-DP TAP的情况很清楚，但应该解释一下为什么我们要将<code>BYPASS</code>命令加载到边界扫描TAP。你记得我们的JTAG链中有两个TAP控制器串联连接，如果不向边界扫描TAP写入某些东西，我们就无法访问CoreSight JTAG-DP TAP寄存器，而边界扫描的<code>IR</code>寄存器大小为5位，<code>DR</code>寄存器为32位，所以要向CoreSight JTAG-DP TAP的<code>DR</code>寄存器写入新数据，我们需要向JTAG电路写入32 + 32 = 64位序列。这不太方便。<code>BYPASS</code>命令在这里可以帮助我们。当这个命令在<code>IR</code>寄存器中时，所选TAP的数据寄存器变成1位长。所以现在我们需要写入33位序列而不是64位。<code>IDCODE</code>代码是<code>0b1110</code>，<code>BYPASS</code>命令代码是<code>0b11111</code>，总共需要推送9位：<code>0b011111111</code>。在输入8个LSB位期间，<code>TMS</code>输入必须保持在逻辑0，以便机器保持在<code>Shift-IR</code>状态。指令的MSB位在通过将<code>TMS</code>设置为逻辑1退出此状态时被推送。红色位序列负责此步骤：</li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/capture-ir-state.png" alt=""></p>
+<p><code>TDO</code>线继续输出在<code>Capture-IR</code>状态加载的序列<code>0b100010000</code>。</p>
+<p>此步骤后，我们处于<code>Exit1-IR</code>状态。</p>
+<ul>
+<li>很好，必要的命令已在<code>IR</code>寄存器中设置，现在我们需要返回<code>Run Test/Idle</code>状态以便进一步工作。此时，由于<code>TMS</code>线上的最后一个1，我们处于<code>Exit-1-IR状态</code>，因此根据状态图，我们需要在<code>TMS</code>线上设置以下位序列到<code>Run Test/Idle</code>：<code>[1, 0]</code>。橙色位序列负责此步骤：</li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/exit-1-ir-state.png" alt=""></p>
+<ul>
+<li>在<code>IR</code>寄存器中设置<code>IDCODE</code>命令后，我们需要从<code>DR</code>寄存器读取<code>IDCODE</code>。为此，第一步是进入<code>Shift-DR</code>状态。要做到这一点，假设我们此刻处于<code>Run Test/Idle</code>状态，我们需要在<code>TMS</code>引脚上设置以下位序列<code>[1, 0, 0]</code>。黄色位序列负责此步骤：</li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/shift-dr-state.png" alt=""></p>
+<p>在<code>TDO</code>线上我们有序列：<code>[0, 0, 1]</code>。最后一个已经是我们芯片ID的LSB。事实上，在通过<code>Capture-DR</code>状态时，我们的芯片ID被加载到移位寄存器中，并在下一个时钟周期开始向外移动。</p>
+<ul>
+<li>在<code>Shift-DR</code>状态下，芯片ID的其余位被卸载。要保持在<code>Shift-DR</code>状态，除了MSB位外，在所有位的输入期间<code>TMS</code>输入必须保持在逻辑0。当通过将<code>TMS</code>设置为逻辑1退出此状态时，MSB数据被推出。绿色位序列负责此步骤：</li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/shift-dr-state-2.png" alt=""></p>
+<p>这样我们得到了如下类型的芯片ID：</p>
+<blockquote>
+<p>11101110001000000000010111010010</p>
+</blockquote>
+<p>让我们根据文档检查这个代码：</p>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/jtag-dp-reg.png" alt=""></p>
+<p>这里有问题。问题在于LSB在图中处于通常位置，但我们获取时是倒序的。让我们纠正这个情况：</p>
+<blockquote>
+<p>01001011101000000000010001110111</p>
+</blockquote>
+<ul>
+<li>最后一步是返回<code>Run Test/Idle</code>状态：</li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/run-test-idle-state.png" alt=""></p>
+<h2 id="内存交互">内存交互</h2>
+<p>很好，JTAG连接正常工作，我们已经读取了<code>IDCODE</code>。现在让我们继续尝试通过向内存写入值然后读取回来与微控制器的内存交互。毕竟，在调试微控制器时，读/写内存是主要操作之一。</p>
+<p>要与微控制器的内存交互，我们需要了解其背后的机制。JTAG协议本身没有提供这方面的具体细节。对ARM架构控制器内部资源（如内存）的访问是由一个称为DAP（调试访问端口）的特殊模块促进的。我在文章<a href="https://piolabs.com/blog/engineering/diving-into-arm-debug-access-port.html">深入ARM调试访问端口</a>中详细介绍了这个模块。不幸的是，没有这些知识，进一步前进可能会有挑战。因此，我强烈建议阅读那篇文章或官方文档<a href="https://developer.arm.com/documentation/ihi0031/latest/">IHI0031 — ARM调试接口</a>。</p>
+<p>对于通过DAP模块访问具有ARM架构微控制器的内部资源的任何访问操作，第一步是请求调试模块的时钟和电源。这通过在DP <code>CTRL/STAT</code>寄存器中设置<code>CSYSPWRUPREQ</code>和<code>CDBGPWRUPREQ</code>位来完成。</p>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/step-1-access-internals.png" alt=""></p>
+<p>完成此初始设置后，我们可以开始内存操作。</p>
+<p>在以下两个章节中，我将大量参考文章<a href="https://piolabs.com/blog/engineering/diving-into-arm-debug-access-port.html">深入ARM调试访问端口</a>中的&quot;实践部分&quot;。本节描述了通过与DAP模块交互读/写内存的算法。此外，我将用位序列补充这个算法，说明从JTAG协议的角度来看这将是什么样子。</p>
+<h2 id="向内存写入变量">向内存写入变量</h2>
+<p>好的，让我们将值<code>0xAA55AA55</code>写入地址<code>0x20000000</code>：</p>
+<p>首先，将<code>0b1010</code>（<code>DPACC</code>寄存器代码）写入<code>IR</code>寄存器。<code>AP</code>寄存器<code>CSW</code>中的一些设置需要配置。要访问此寄存器，我们需要在<code>DP SELECT</code>寄存器中选择相应的AP和寄存器银行。写入<code>DR</code>寄存器：</p>
+<ul>
+<li>DATA[31:0] = <code>0x00</code></li>
+<li>APSEL[31:24] = <code>0x00</code></li>
+<li>APBANKSEL[7:4] = <code>0x00</code></li>
+<li>A[3:2] = <code>0b10</code>（<code>SELECT</code>寄存器的地址）</li>
+<li>RnW = <code>0b0</code></li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/step-2-access-internals.png" alt=""></p>
+<p>接下来，我们需要写入<code>CSW</code>寄存器。由于这是<code>AP</code>寄存器，我们需要使用<code>APACC</code>寄存器来访问它：</p>
+<ul>
+<li>将<code>0b1011</code>（<code>APACC</code>寄存器代码）写入<code>IR</code>寄存器。</li>
+</ul>
+<p>创建配置数据：将写入的数据大小设置为32位（<code>Size[0:2] = 0b010</code>），禁用地址自动递增功能（<code>AddrInc[5:4] = 0b00</code>）。写入<code>DR</code>：</p>
+<ul>
+<li>DATA[31:0] = <code>0x00000002</code></li>
+<li>A[3:2] = <code>0b00</code>（CSW寄存器的地址）</li>
+<li>RnW = <code>0b0</code></li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/step-3-access-internals.png" alt=""></p>
+<p>然后我们需要设置要写入数据的内存单元的地址。这通过<code>AP</code>寄存器<code>TAR</code>完成。由于此寄存器属于与<code>CSW</code>相同的<code>AP</code>且在同一个银行，我们可以省略对<code>DP SELECT</code>寄存器的引用，立即写入地址值。写入DR：</p>
+<ul>
+<li>DATA[31:0] = <code>0x20000000</code></li>
+<li>A[3:2] = <code>0b01</code>（<code>TAR</code>寄存器的地址）</li>
+<li>RnW = <code>0b0</code></li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/step-4-access-internals.png" alt=""></p>
+<p>最后一步是实际写入数据。为此，我们需要将数据写入DRW寄存器。写入DR：</p>
+<ul>
+<li>DATA[31:0] = <code>0xAA55AA55</code></li>
+<li>A[3:2] = <code>0b11</code>（<code>DRW</code>寄存器的地址）</li>
+<li>RnW = <code>0b0</code></li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/step-5-access-internals.png" alt=""></p>
+<h2 id="从内存读取变量">从内存读取变量</h2>
+<p>让我们尝试从地址<code>0x20000000</code>的内存单元读取值。</p>
+<p>首先，将<code>0b1010</code>（<code>DPACC</code>寄存器代码）写入<code>IR</code>寄存器。接下来，我们需要在<code>AP</code>的<code>CSW</code>寄存器中配置一些设置。要访问此寄存器，我们需要在<code>DP SELECT</code>寄存器中选择相应的<code>AP</code>和寄存器银行。使用表中的数据，我们形成35位数据并将其写入<code>DR</code>寄存器：</p>
+<ul>
+<li>DATA[31:0] = <code>0x00</code></li>
+<li>APSEL[31:24] = <code>0x00</code></li>
+<li>APBANKSEL[7:4] = <code>0x00</code></li>
+<li>A[3:2] = <code>0b10</code>（<code>SELECT</code>寄存器的地址）</li>
+<li>RnW = <code>0b0</code></li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/step-6-access-internals.png" alt=""></p>
+<p>接下来，我们需要直接写入<code>CSW</code>寄存器。由于这是<code>AP</code>寄存器，我们需要使用<code>APACC</code>寄存器来访问它：</p>
+<ul>
+<li>将<code>0b1011</code>（<code>APACC</code>寄存器代码）写入<code>IR</code>寄存器。</li>
+</ul>
+<p>我们创建配置数据：将写入的数据大小设置为32位（<code>Size[0:2] = 0b010</code>），禁用地址自动递增功能（<code>AddrInc[5:4] = 0b00</code>）。写入<code>DR</code>：</p>
+<ul>
+<li>DATA[31:0] = <code>0x00000002</code></li>
+<li>A[3:2] = <code>0b00</code>（<code>CSW</code>寄存器的地址）</li>
+<li>RnW = <code>0b0</code></li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/step-7-access-internals.png" alt=""></p>
+<p>接下来，我们需要设置要从中读取数据的内存单元的地址。这通过<code>AP</code>的<code>TAR</code>寄存器完成。由于此寄存器属于与<code>CSW</code>相同的<code>AP</code>且在同一个银行，我们可以跳过<code>DP SELECT</code>寄存器访问，立即写入地址值：</p>
+<ul>
+<li>DATA[31:0] = <code>0x20000000</code></li>
+<li>A[3:2] = <code>0b01</code>（<code>TAR</code>寄存器的地址）</li>
+<li>RnW = <code>0b0</code></li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/step-8-access-internals.png" alt=""></p>
+<p>我们形成读取请求。为此，我们写入<code>DRW</code>寄存器：</p>
+<ul>
+<li>DATA[31:0] = <code>0x00</code></li>
+<li>A[3:2] = <code>0b11</code>（<code>DRW</code>寄存器的地址）</li>
+<li>RnW = <code>0b1</code></li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/step-9-access-internals.png" alt=""></p>
+<p>通过从<code>DR</code>寄存器读取35位来读取<code>DRW</code>寄存器。</p>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/read-drw-register.png" alt=""></p>
+<h2 id="与处理器核心交互">与处理器核心交互</h2>
+<p>我们已经探讨了调试器如何与微控制器的内存交互。现在，让我们深入了解调试器如何暂停程序执行、单步执行代码、读取处理器寄存器等。对于STM32F407VG微控制器，这是通过特殊寄存器实现的：</p>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/register-descriptions.png" alt=""></p>
+<p>正如<a href="https://developer.arm.com/documentation/ddi0403/latest/">ARMv7-M架构参考手册</a>的C1.6调试系统寄存器部分详述的，这些寄存器在调试中起着关键作用。</p>
+<p>我们现在需要理解的关键点是，通过设置<code>DHCSR</code>寄存器的<code>C_DEBUGEN</code>和<code>C_HALT</code>位，我们可以暂停程序的执行。同样，通过设置<code>C_DEBUGEN</code>和<code>C_STEP</code>位，我们可以逐步执行程序。</p>
+<p>通过DAP模块访问这些寄存器本质上与访问内存相同。不是提供内存地址，而是提供所需寄存器的地址。例如，对于<code>DHCSR</code>寄存器，地址是<code>0xE000EDF0</code>。如果你允许的话，我不会深入讨论位序列的示例，因为它与内存交互章节中的示例相同。</p>
+<h2 id="结语">结语</h2>
+<p>我们已经简要探讨了JTAG在微控制器调试中的使用。这个主题很大，单篇文章很难涵盖。在本文中，我们专注于侵入式调试，而非侵入式调试甚至没有提到。然而，撰写本文时这不是目标。对于想要更深入了解这个主题的人，我建议学习下面列出的链接列表。至于我们，我们将继续前进，在下一篇文章中，我们将讨论使用JTAG协议测试印刷电路板的主题。</p>
+<p>感谢你的时间！:)</p>
+<blockquote>
+<p><strong>注意</strong>：本文最初由Aliaksandr发表在他的博客上。你可以在<a href="https://medium.com/@aliaksandr.kavalchuk/diving-into-jtag-protocol-part-2-debugging-56a566db3cf8">这里</a>找到原文。</p>
+</blockquote>
+<h2 id="参考链接">参考链接</h2>
+<ul>
+<li><a href="https://www.st.com/resource/en/reference_manual/rm0090-stm32f405415-stm32f407417-stm32f427437-and-stm32f429439-advanced-armbased-32bit-mcus-stmicroelectronics.pdf">RM0090：参考手册</a></li>
+<li><a href="https://developer.arm.com/documentation/ddi0403/latest/">ARMv7-M架构参考手册</a></li>
+<li><a href="https://medium.com/@aliaksandr.kavalchuk/diving-into-jtag-protocol-part-2-debugging-56a566db3cf8#:~:text=Cortex%2DM4.Technical%20Reference%20Manual">Cortex-M4技术参考手册</a></li>
+<li><a href="https://documentation-service.arm.com/static/5f900a19f86e16515cdc041e?token=">ARM CoreSight架构规范</a></li>
+<li><a href="https://www.actuatedrobots.com/debugging-with-jtag/">使用JTAG进行调试</a></li>
+<li><a href="https://interrupt.memfault.com/blog/cortex-m-debug-monitor">Cortex-M上无调试器的单步调试</a></li>
+<li><a href="https://interrupt.memfault.com/blog/cortex-m-breakpoints">断点是如何工作的？</a></li>
+<li><a href="https://interrupt.memfault.com/blog/a-deep-dive-into-arm-cortex-m-debug-interfaces?utm_source=platformio&amp;utm_medium=piohome">深入ARM Cortex-M调试接口</a></li>
+<li><a href="https://interrupt.memfault.com/blog/profiling-firmware-on-cortex-m">在Cortex-M上分析固件</a></li>
+</ul>
+<p>Aliaksandr Kavalchuk是一位拥有10多年经验的固件工程师。</p>
+
+</main>
+
+  <footer>
+  
+  
+  </footer>
+  </body>
+</html>
+

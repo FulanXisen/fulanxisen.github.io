@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RP2350 UART启动指南 | FulanXisen&#39;s blog</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    
+  </head>
+
+  <body>
+    <nav>
+    <ul class="menu">
+      
+    </ul>
+    <hr/>
+    </nav>
+
+<div class="article-meta">
+<h1><span class="title">RP2350 UART启动指南</span></h1>
+<h2 class="author">Thomas Pfister</h2>
+<h2 class="date">2025/05/03</h2>
+</div>
+
+<main>
+<h1 id="通过uart启动rp2350">通过UART启动RP2350</h1>
+<h2 id="2025年5月3日">2025年5月3日</h2>
+<p>RP2350是树莓派推出的一款微控制器。最近我有个新项目，需要大量PWM通道。RP2350B有24个PWM通道，确实不少——但还是不够用。我至少需要33个PWM通道，再加上一些额外的GPIO，单靠一个RP2350根本不够。于是我想到了用端口扩展器&hellip;用第二个RP2350做端口扩展器如何？</p>
+<p>这个芯片价格便宜（大概0.90美元），外围电路简单，但固件是个问题。同一个板子上跑多个控制器，固件管理会让人头疼。我很不喜欢固件版本兼容性这类琐事，所以想找个简单的端口扩展器方案。</p>
+<p>翻了一下RP2350的<a href="https://datasheets.raspberrypi.com/rp2350/rp2350-datasheet.pdf">数据手册</a>（第5.8章），发现这芯片不仅有USB启动加载器——多数人应该都用这个给芯片烧程序——还有个UART启动加载器（RP2350对比RP2040的新特性！）。在微控制器上实现UART比USB简单多了，而且芯片间通信用UART也很合适。</p>
+<p><em>我录了个<a href="https://youtu.be/eno0hiFSr18">YouTube视频</a>讲这个话题，感兴趣的话可以看看！</em></p>
+<h2 id="原理">原理</h2>
+<p>通过UART向芯片烧录固件的流程相当简单：先用魔术码做&quot;解锁&quot;，然后把固件镜像切成32字节一块发送过去，传完执行就行了。</p>
+<p>附上RP2350的启动加载器源码：<a href="https://github.com/raspberrypi/pico-bootrom-rp2350/blob/master/src/nsboot/nsboot_uart_client.S">戳这里</a></p>
+<p>当然也有缺点：</p>
+<ul>
+<li>固件必须在SRAM里跑，会占SRAM空间。不过RP2350有520 KiB，做端口扩展器应该够了吧？（确实够！）</li>
+<li>每次启动都要花点时间。实测通过UART传镜像不到一秒就搞定（取决于文件大小）。我的应用场景没问题，但其他场景可能不行。</li>
+</ul>
+<p>网上搜了一圈，发现没多少人折腾过这个，那就开干吧！</p>
+<p>启用UART启动加载器的硬件改动很简洁：Flash接口的CSn要拉低（顺便也启用了USB启动加载器），同时把SD1拉高。</p>
+<p>芯片这样配置启动后，会在SD2（TX）和SD3（RX）引脚上启用1MBaud的UART。</p>
+<p>可惜手头没有Pico 2，只有自己画的板子（后续会详细分享），做这些改动很容易，用的是大封装的Flash：</p>
+<p><img src="https://pfister.dev/blog/2025/P1001178.jpg" alt="">
+（两个跳线帽分别接CSn和SD1，针座是TX和RX）</p>
+<p>我们的目标：</p>
+<ul>
+<li>让RP2350二进制文件在SRAM运行</li>
+<li>通过UART把二进制文件传进板子</li>
+<li>把它嵌到另一个MCU的固件里</li>
+<li>从那边启动</li>
+<li>考虑长线缆下的可靠连接</li>
+</ul>
+<h2 id="sram运行的二进制文件">SRAM运行的二进制文件</h2>
+<p>这个其实不难。在makefile里加一行 <code>set(PICO_NO_FLASH 1)</code> 就行（按照<a href="https://datasheets.raspberrypi.com/pico/raspberry-pi-pico-c-sdk.pdf">SDK文档</a>第6.4章的说法，<code>set(PICO_DEFAULT_BINARY_TYPE no_flash)</code> 应该等价，但<a href="https://github.com/raspberrypi/pico-sdk/issues/2279">目前不生效</a>。）</p>
+<p>就这些。编译完会在&quot;build&quot;子目录生成bin文件：</p>
+<p><img src="https://pfister.dev/blog/2025/Bildschirmfoto%20vom%202025-02-16%2019-06-44.png" alt="Bildschirmfoto vom 2025-02-16 19-06-44.png"></p>
+<p>这个文件就是我们要通过UART发送的。测试的话，用生成的uf2文件通过USB烧录到RP2350也行。但注意它是从RAM运行的，断电就没了。</p>
+<h2 id="uart传输固件">UART传输固件</h2>
+<p>先写了个简单的Python脚本，负责发送固件，还加了校验。7.3 KiB的固件发送约160ms，校验约150ms。</p>
+<p>不算差，但来算一下理论速度。</p>
+<h3 id="波特率和实际速率">波特率和实际速率</h3>
+<p>UART模式是<code>8n1</code>：1个起始位，8个数据位，无奇偶校验，1个停止位。每个符号10位，但有效数据8位。所以实际速率是 1000000 波特/10位×8位/8 = <strong>100 kB/s</strong>（0.1 MB/s）</p>
+<p>测试二进制文件7256字节，但要切成32字节一块，末尾填零后总长7264字节。每个块前的写命令产生1字节开销，总共227字节开销。7491字节理论耗时74.91ms。</p>
+<p>不解释为啥Python脚本花了双倍时间（可能我哪里写岔了？）。总之各种中间层（Linux、USB什么的）的影响，实际没有跑满带宽。觉得这里不太关键，跳过！</p>
+<h2 id="固件嵌套">固件嵌套</h2>
+<p>要让RP2350从另一个MCU启动，得把前者的固件嵌到后者的固件里。</p>
+<p>可以用各种在线工具，把二进制转成包含大数组的C头文件。</p>
+<p>我想要更自动化的方式。C++23倒是加入了 <a href="https://en.cppreference.com/w/c/preprocessor/embed">#embed预处理指令</a>，但我在pico SDK 2.1.0上跑不通。设了 <code>set(CMAKE_CXX_STANDARD 23)</code> 还是报错。可能是GCC<a href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105863">还没实现</a>C++23的#embed？</p>
+<p>最后在<a href="https://stackoverflow.com/a/56006001">Stackoverflow</a>上找到个半自动方案，试了试能用（见我的代码<a href="https://codeberg.org/retsifp/rp2350_uart/src/branch/master/main_controller/CMakeLists.txt#L61">这里</a>）。</p>
+<h2 id="从另一个mcu启动rp2350">从另一个MCU启动RP2350</h2>
+<p>准备就绪：Python验证有了，固件二进制也嵌进另一个MCU的固件里了。把Python代码差不多翻译成C，经过几轮死循环调试&hellip;跑通了！代码在<a href="https://codeberg.org/retsifp/rp2350_uart/src/branch/master/main_controller/main_controller.cpp">这里</a>。</p>
+<p>看看速度，脚本输出：</p>
+<pre tabindex="0"><code>Hello, world!
+Device is there!
+Start addr is 0x20001055
+Finished sending FW, 7264 bytes were written!
+The end. This took 74750 us
+</code></pre><p>比理论最快还快0.2ms。不知道怎么做到的，不过不亏 ;-)</p>
+<h2 id="缺失的功能">缺失的功能</h2>
+<p>启动加载器用的引脚在另一个GPIO bank，SDK里没法当串口用。发了<a href="https://github.com/raspberrypi/pico-sdk/issues/2280">GitHub issue</a>后，很快就有人给了个<a href="https://github.com/raspberrypi/pico-examples/pull/571">解决方案的链接</a>。试了一下，完美。估计后续会合并进SDK，关注着吧！</p>
+<h2 id="长距离可靠连接">长距离可靠连接</h2>
+<p>UART长线缆信号衰减是个问题。线缆超过一米可能就不稳定了。</p>
+<p>解法很简单：把单端UART转成差分信号。我用了TI的THVD1450做RS-485转换。做了块小PCB，两个收发器加RJ-45接口。RS-485通常用120欧姆线缆，我直接上了100欧姆网线，好买又便宜。</p>
+<p><img src="https://pfister.dev/blog/2025/P1001175.jpg" alt="P1001175.jpg"></p>
+<p>两边各接这块板子，10米线缆都能启动远程RP2350（家里最长就10米了）。理论上能跑100米，但10米对我够用了。</p>
+<p><img src="https://pfister.dev/blog/2025/P1001181.jpg" alt="P1001181.jpg"></p>
+<p>板子是透明工作的，跟直连一样，所以到手即用，非常可靠。我的方案就定这个了。拭目以待！</p>
+<p><em>有问题或想法可以邮件联系，或者在<a href="https://youtu.be/eno0hiFSr18">YouTube视频</a>评论区留言。</em></p>
+
+</main>
+
+  <footer>
+  
+  
+  </footer>
+  </body>
+</html>
+

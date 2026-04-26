@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>P002 Diving Into Jtag P2 | FulanXisen&#39;s blog</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="Diving into JTAG — Debugging (Part 2) Anchor
+29 Feb 2024by Aliaksandr Kavalchuk
+As noted in my previous article Diving into JTAG protocol. Part 1 — Overview, JTAG was initially developed for testing integrated circuits and printed circuit boards. However, its potential for debugging was realized over time, and now JTAG has become the standard protocol for microcontroller debugging. Many Firmware and Embedded engineers first encountered it in this particular context.
+In this second part of a JTAG deep-dive series, we take an in-depth look at interacting with a microcontroller’s memory and engaging with the processor core and debug registers. While the use of JTAG in testing is fairly standardized when it comes to debugging, each processor architecture has its unique nuances. With that in mind, this article will focus on debugging using JTAG on the ARM Cortex-M architecture, specifically with the STM32F407VG microcontroller.">
+    <meta name="generator" content="Hugo 0.160.1">
+    
+    
+    
+      <meta name="robots" content="noindex, nofollow">
+    
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.css" >
+
+
+
+
+    
+
+
+    
+      
+
+    
+
+    
+
+    
+      <link rel="canonical" href="http://localhost:1313/posts/p002-diving-into-jtag-p2/">
+    
+
+    
+    
+    <meta property="og:url" content="http://localhost:1313/posts/p002-diving-into-jtag-p2/">
+  <meta property="og:site_name" content="FulanXisen&#39;s blog">
+  <meta property="og:title" content="P002 Diving Into Jtag P2">
+  <meta property="og:description" content="Diving into JTAG — Debugging (Part 2) Anchor 29 Feb 2024by Aliaksandr Kavalchuk
+As noted in my previous article Diving into JTAG protocol. Part 1 — Overview, JTAG was initially developed for testing integrated circuits and printed circuit boards. However, its potential for debugging was realized over time, and now JTAG has become the standard protocol for microcontroller debugging. Many Firmware and Embedded engineers first encountered it in this particular context.
+In this second part of a JTAG deep-dive series, we take an in-depth look at interacting with a microcontroller’s memory and engaging with the processor core and debug registers. While the use of JTAG in testing is fairly standardized when it comes to debugging, each processor architecture has its unique nuances. With that in mind, this article will focus on debugging using JTAG on the ARM Cortex-M architecture, specifically with the STM32F407VG microcontroller.">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-04-26T22:18:19+08:00">
+    <meta property="article:modified_time" content="2026-04-26T22:18:19+08:00">
+
+  <meta itemprop="name" content="P002 Diving Into Jtag P2">
+  <meta itemprop="description" content="Diving into JTAG — Debugging (Part 2) Anchor 29 Feb 2024by Aliaksandr Kavalchuk
+As noted in my previous article Diving into JTAG protocol. Part 1 — Overview, JTAG was initially developed for testing integrated circuits and printed circuit boards. However, its potential for debugging was realized over time, and now JTAG has become the standard protocol for microcontroller debugging. Many Firmware and Embedded engineers first encountered it in this particular context.
+In this second part of a JTAG deep-dive series, we take an in-depth look at interacting with a microcontroller’s memory and engaging with the processor core and debug registers. While the use of JTAG in testing is fairly standardized when it comes to debugging, each processor architecture has its unique nuances. With that in mind, this article will focus on debugging using JTAG on the ARM Cortex-M architecture, specifically with the STM32F407VG microcontroller.">
+  <meta itemprop="datePublished" content="2026-04-26T22:18:19+08:00">
+  <meta itemprop="dateModified" content="2026-04-26T22:18:19+08:00">
+  <meta itemprop="wordCount" content="2589">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="P002 Diving Into Jtag P2">
+  <meta name="twitter:description" content="Diving into JTAG — Debugging (Part 2) Anchor 29 Feb 2024by Aliaksandr Kavalchuk
+As noted in my previous article Diving into JTAG protocol. Part 1 — Overview, JTAG was initially developed for testing integrated circuits and printed circuit boards. However, its potential for debugging was realized over time, and now JTAG has become the standard protocol for microcontroller debugging. Many Firmware and Embedded engineers first encountered it in this particular context.
+In this second part of a JTAG deep-dive series, we take an in-depth look at interacting with a microcontroller’s memory and engaging with the processor core and debug registers. While the use of JTAG in testing is fairly standardized when it comes to debugging, each processor architecture has its unique nuances. With that in mind, this article will focus on debugging using JTAG on the ARM Cortex-M architecture, specifically with the STM32F407VG microcontroller.">
+
+	
+  </head><body class="ma0 avenir bg-near-white development is-page is-page page-p002-diving-into-jtag-p2">
+    
+   
+  
+
+  <header>
+    <div class="bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l center items-center justify-between">
+    <a href="/" class="f3 fw2 hover-white white-90 dib no-underline">
+      
+        FulanXisen&#39;s blog
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      <div class="ananke-socials"></div>
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+
+  <article class="page-p002-diving-into-jtag-p2 flex-l mw7 center ph3 flex-wrap justify-between">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked ttu">
+          
+        Posts
+      </aside><div id="sharing" class="mt3 ananke-socials"></div>
+<h1 class="f1 athelas mt3 mb1">P002 Diving Into Jtag P2</h1>
+      
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2026-04-26T22:18:19+08:00">April 26, 2026</time>
+      
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-100-l"><h2 id="diving-into-jtag--debugging-part-2-anchor">Diving into JTAG — Debugging (Part 2) <a href="https://interrupt.memfault.com/blog/diving-into-jtag-part-2#diving-into-jtag-%E2%80%94-debugging-part-2">Anchor</a></h2>
+<p>29 Feb 2024by <a href="https://interrupt.memfault.com/authors/zamuhrishka">Aliaksandr Kavalchuk</a></p>
+<p>As noted in my previous article <a href="https://interrupt.memfault.com/blog/diving-into-jtag-part1">Diving into JTAG protocol. Part 1 — Overview</a>, JTAG was initially developed for testing integrated circuits and printed circuit boards. However, its potential for debugging was realized over time, and now JTAG has become the standard protocol for microcontroller debugging. Many Firmware and Embedded engineers first encountered it in this particular context.</p>
+<p>In this second part of a JTAG deep-dive series, we take an in-depth look at interacting with a microcontroller’s memory and engaging with the processor core and debug registers. While the use of JTAG in testing is fairly standardized when it comes to debugging, each processor architecture has its unique nuances. With that in mind, this article will focus on debugging using JTAG on the ARM Cortex-M architecture, specifically with the STM32F407VG microcontroller.</p>
+<p>For successful debugging, it’s not enough to simply know the basics of JTAG. It’s also essential to understand the workings of the ARM Debug Access Port, a key component that allows access to the controller’s internal registers and memory. I’ve detailed this module in the article <a href="https://piolabs.com/blog/engineering/diving-into-arm-debug-access-port.html">A Deep Dive into the ARM Debug Access Port</a>. With that groundwork laid, let’s dive into the world of debugging through JTAG.</p>
+<p>Like Interrupt? <a href="https://go.memfault.com/interrupt-subscribe"><strong>Subscribe</strong></a> to get our latest posts straight to your inbox.</p>
+<h2 id="table-of-contents-anchor">Table of Contents <a href="https://interrupt.memfault.com/blog/diving-into-jtag-part-2#table-of-contents">Anchor</a></h2>
+<ul>
+<li><a href="https://interrupt.memfault.com/blog/diving-into-jtag-part-2#jtag-access-to-the-stm32f407vg-controller">JTAG Access to the STM32F407VG Controller</a></li>
+<li><a href="https://interrupt.memfault.com/blog/diving-into-jtag-part-2#read-of-id-code">Read of ID CODE</a></li>
+<li><a href="https://interrupt.memfault.com/blog/diving-into-jtag-part-2#interaction-with-memory">Interaction with memory</a></li>
+<li><a href="https://interrupt.memfault.com/blog/diving-into-jtag-part-2#writing-a-variable-to-memory">Writing a variable to memory</a></li>
+<li><a href="https://interrupt.memfault.com/blog/diving-into-jtag-part-2#reading-a-variable-from-memory">Reading a variable from memory</a></li>
+<li><a href="https://interrupt.memfault.com/blog/diving-into-jtag-part-2#interacting-with-the-processor-core">Interacting with the Processor Core</a></li>
+<li><a href="https://interrupt.memfault.com/blog/diving-into-jtag-part-2#closing">Closing</a></li>
+</ul>
+<h2 id="jtag-access-to-the-stm32f407vg-controller-anchor">JTAG Access to the STM32F407VG Controller <a href="https://interrupt.memfault.com/blog/diving-into-jtag-part-2#jtag-access-to-the-stm32f407vg-controller">Anchor</a></h2>
+<p>Before connecting to the STM32F407VG controller via the JTAG protocol, we need to determine the following: the length of the <code>IR</code> register and the number of TAP controllers connected to the JTAG chain. The official documentation, specifically the <a href="https://www.st.com/resource/en/reference_manual/rm0090-stm32f405415-stm32f407417-stm32f427437-and-stm32f429439-advanced-armbased-32bit-mcus-stmicroelectronics.pdf">RM0090: Reference manual</a>, can assist us in this.</p>
+<p>According to this document, the STM32F407VG has two TAP controllers: the STM32 Boundary Scan and the CoreSight JTAG-DP. The first in the chain is the Boundary Scan TAP with a <code>IR</code> register size of 5 bits. Following it is the CoreSight JTAG-DP TAP with a <code>IR</code> register size of 4 bits.</p>
+<p><img src="https://interrupt.memfault.com/img/tap-controllers.png" alt=""></p>
+<p>This knowledge is crucial for us because it determines how many bits to send in the JTAG chain and in what sequence to do so when accessing different TAP controllers. According to this information, we can connect to the CoreSight JTAG-DP TAP controller and attempt to read its <code>IDCODE</code>.</p>
+<h2 id="read-of-id-code-anchor">Read of ID CODE <a href="https://interrupt.memfault.com/blog/diving-into-jtag-part-2#read-of-id-code">Anchor</a></h2>
+<p>The sequence of bits for reading the <code>IDCODE</code> of the CoreSight JTAG-DP TAP controller will look as follows:</p>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/idcode-bits.png" alt=""></p>
+<p>Let’s analyze this sequence in detail:</p>
+<ul>
+<li>So the first step is to reset the TAP State Machine to the initial state <code>Test-Logic-Reset</code> in order to be sure that we are in a known state. To achieve this, simply hold the <code>TMS</code> in logic 1 for 5 clock cycles of <code>TCK</code>. The pink bit sequence is responsible for this step:</li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/test-logic-reset-state.png" alt=""></p>
+<ul>
+<li>Next, we need to load the <code>IDCODE</code> command code into the <code>IR</code> register, and to do this we put the TAP State Machine into the <code>Shift-IR</code> state. To do this, feed the <code>TMS</code> line with the sequence [0, 1, 1, 0, 0]. A sequence of blue bits is responsible for this step:</li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/shift-ir-state.png" alt=""></p>
+<p>As you can see on the <code>TDO</code> line in the last measure there is a one. Let’s find out where it came from. The thing is that going through the <code>Capture-IR</code> state, the TAP controller loads into the shift register a value of <code>0b0001</code> for CoreSight JTAG-DP TAP and <code>0b00001</code> for Boundary Scan TAP which starts to move along the <code>TDO</code> line from this measure and LSB bits forward. So, over the next 9 clock cycles (including this one) we will get a <code>TDO</code> sequence of <code>0b100010000</code>.</p>
+<ul>
+<li>The next step is to directly load the <code>IDCODE</code> command code into the CoreSight JTAG-DP TAP <code>IR</code> register and the <code>BYPASS</code> command code into the Boundary Scan TAP <code>IR</code> register. I think the situation for the CoreSight JTAG-DP TAP is clear, but why we load the <code>BYPASS</code> command into the Boundary Scan TAP should be explained. You remember that there are two TAP controllers in our JTAG chain connected in series and we can not access the CoreSight JTAG-DP TAP registers without having to write something to the Boundary Scan TAP, and the size of the <code>IR</code> register for Boundary Scan is 5 bits, and the <code>DR</code> register is 32 bits, so to write a new data to the <code>DR</code> register of the CoreSight JTAG-DP TAP we need to write a 32 + 32 = 64 bits sequence of bits to the JTAG circuit. This is not very convenient. The <code>BYPASS</code> command will help us here. When this command is in the register <code>IR</code> the data register of the selected TAP becomes 1 bit long. So now we need to write a sequence of 33 bits Instead of 64. The <code>IDCODE</code> code is <code>0b1110</code>, and the <code>BYPASS</code> command code is <code>0b11111</code> total we need to push 9 bits: <code>0b011111111</code>. The <code>TMS</code> input must be held at logical 0 during the 8 LSB input in order for the machine to remain in <code>Shift-IR</code> state. The MSB bit of the instruction is pushed in when there is an exit from this state by setting <code>TMS</code> to logical 1. The red bit sequence is responsible for this step:</li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/capture-ir-state.png" alt=""></p>
+<p>The <code>TDO</code> wire continues to output the sequence <code>0b100010000</code> which was loaded in the <code>Capture-IR</code> state.</p>
+<p>After this step, we are in the <code>Exit1-IR</code> state.</p>
+<ul>
+<li>Great, the necessary commands are set in the <code>IR</code> registers and now we need to return to the <code>Run Test/Idle</code> state for further work. At this point, thanks to the last 1 on the <code>TMS</code> line we are in the <code>Exit-1-IR state</code> and hence according to the state diagram we need to set the following bit sequence on the <code>TMS</code> line to <code>Run Test/Idle</code>: [1, 0]. The orange bit sequence is responsible for this step:</li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/exit-1-ir-state.png" alt=""></p>
+<ul>
+<li>After setting the <code>IDCODE</code> command in the <code>IR</code> register we need to read <code>IDCODE</code> from the <code>DR</code> register. To do this the first step is to go to the <code>Shift-DR</code> state. To do this we set the following bit sequence [1, 0, 0] on the <code>TMS</code> pin considering that we are in the <code>Run Test/Idle</code> state at the moment. The yellow bit sequence is responsible for this step:</li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/shift-dr-state.png" alt=""></p>
+<p>On the <code>TDO</code> line we have the sequence: [0, 0, 1]. The last one is already the LSB of our chip ID. The fact is that passing through the <code>Capture-DR</code> state our chip ID is loaded into the shift register and begins to move outward in the next clock cycles.</p>
+<ul>
+<li>In the <code>Shift-DR</code> state the remaining bits of the chip ID are unloaded. To remain in the <code>Shift-DR</code> state the <code>TMS</code> input must be held at logic 0 during the input of all bits except the MSB bit. The MSB data is pulled out when this state is exited by setting <code>TMS</code> to a logical 1. The green bit sequence is responsible for this step:</li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/shift-dr-state-2.png" alt=""></p>
+<p>So we got a chip ID of the following kind:</p>
+<blockquote>
+<p>11101110001000000000010111010010</p>
+</blockquote>
+<p>Let’s check this code according to the documentation:</p>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/jtag-dp-reg.png" alt=""></p>
+<p>Something is wrong here. What is wrong is that the LSB is in the usual position in the figure, but we took it in the inverted order. Let’s correct this situation:</p>
+<blockquote>
+<p>01001011101000000000010001110111</p>
+</blockquote>
+<ul>
+<li>And the final step is to go back to the <code>Run Test/Idle</code> state:</li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/run-test-idle-state.png" alt=""></p>
+<h2 id="interaction-with-memory-anchor">Interaction with memory <a href="https://interrupt.memfault.com/blog/diving-into-jtag-part-2#interaction-with-memory">Anchor</a></h2>
+<p>Great, the JTAG connection works and we’ve read the <code>IDCODE</code>. Let’s now proceed and try interacting with the microcontroller’s memory by writing a value to it and reading it back. After all, reading/writing memory is one of the primary operations when debugging a microcontroller.</p>
+<p>To interact with the microcontroller’s memory, we need to understand the mechanism behind it. The JTAG protocol itself doesn’t provide any specifics about this. Access to the internal resources of ARM architecture controllers (such as memory) is facilitated by a special module called DAP (Debug Access Port). I’ve detailed this module extensively in this article <a href="https://piolabs.com/blog/engineering/diving-into-arm-debug-access-port.html">A Deep Dive into the ARM Debug Access Port</a>. Unfortunately, without this knowledge, advancing further might be challenging. Therefore, I highly recommend reading that article or the official documentation <a href="https://developer.arm.com/documentation/ihi0031/latest/">IHI0031 — ARM Debug Interface</a>.</p>
+<p>The first step for any access operation to the internal resources of an ARM architecture microcontroller with a DAP module is to request clocking and power for the debug module. This is done by setting the <code>CSYSPWRUPREQ</code> and <code>CDBGPWRUPREQ</code> bits in the DP <code>CTRL/STAT</code> register.</p>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/step-1-access-internals.png" alt=""></p>
+<p>After this initial setup, we can begin our memory operations.</p>
+<p>In the following two sections, I will be heavily referencing the “Practical Part” from the article <a href="https://piolabs.com/blog/engineering/diving-into-arm-debug-access-port.html">A Deep Dive into the ARM Debug Access Port</a>. This section describes the algorithm for reading/writing memory through interaction with the DAP module. Additionally, I will supplement this algorithm with a sequence of bits, illustrating how this will appear from the perspective of the JTAG protocol.</p>
+<h2 id="writing-a-variable-to-memory-anchor">Writing a variable to memory <a href="https://interrupt.memfault.com/blog/diving-into-jtag-part-2#writing-a-variable-to-memory">Anchor</a></h2>
+<p>Alright, let’s write the value <code>0xAA55AA55</code> to the address <code>0x20000000</code>:</p>
+<p>First, write <code>0b1010</code> (the <code>DPACC</code> register code) into the <code>IR</code> register. Some settings in the <code>AP</code> register <code>CSW</code> need to be configured. To access this register, we need to select the corresponding AP and register bank in the <code>DP SELECT</code> register. Write to the <code>DR</code> register:</p>
+<ul>
+<li>DATA[31:0] = <code>0x00</code></li>
+<li>APSEL[31:24] = <code>0x00</code></li>
+<li>APBANKSEL[7:4] = <code>0x00</code></li>
+<li>A[3:2] = <code>0b10</code> (address of <code>SELECT</code> register)</li>
+<li>RnW = <code>0b0</code></li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/step-2-access-internals.png" alt=""></p>
+<p>Next, we need to write the <code>CSW</code> register. Since this is an <code>AP</code> register, we need to use the <code>APACC</code> register to access it:</p>
+<ul>
+<li>Write <code>0b1011</code> (the <code>APACC</code> register code) into the <code>IR</code> register.</li>
+</ul>
+<p>Create the data for the configuration: set the data size for writing to 32 bits (<code>Size[0:2] = 0b010</code>), disable the auto-increment function of the address (<code>AddrInc[5:4] = 0b00</code>). Write to <code>DR</code>.</p>
+<ul>
+<li>DATA[31:0] = <code>0x00000002</code></li>
+<li>A[3:2] = <code>0b00</code> (address of CSW register)</li>
+<li>RnW = <code>0b0</code></li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/step-3-access-internals.png" alt=""></p>
+<p>Then we need to set the address of the memory cell to which we want to write the data. This is done through the <code>AP</code> register <code>TAR</code>. And since this register belongs to the same <code>AP</code> as <code>CSW</code> and is in the same bank, we can omit the reference to the <code>DP SELECT</code> register and immediately write the address value. Write to DR:</p>
+<ul>
+<li>DATA[31:0] = <code>0x20000000</code></li>
+<li>A[3:2] = <code>0b01</code> (address of <code>TAR</code> register)</li>
+<li>RnW = <code>0b0</code></li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/step-4-access-internals.png" alt=""></p>
+<p>The last step is to actually write the data. To do this, we need to write them to the DRW register. Write to DR:</p>
+<ul>
+<li>DATA[31:0] = <code>0xAA55AA55</code></li>
+<li>A[3:2] = <code>0b11</code> (address of <code>DRW</code> register)</li>
+<li>RnW = <code>0b0</code></li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/step-5-access-internals.png" alt=""></p>
+<h2 id="reading-a-variable-from-memory-anchor">Reading a variable from memory <a href="https://interrupt.memfault.com/blog/diving-into-jtag-part-2#reading-a-variable-from-memory">Anchor</a></h2>
+<p>Let’s try to read the value from the memory cell at the address <code>0x20000000</code>.</p>
+<p>First, write <code>0b1010</code> (the <code>DPACC</code> register code) into the <code>IR</code> register. Next, we need to configure some settings in the <code>CSW</code> register of the <code>AP</code>. To access this register, we need to select the corresponding <code>AP</code> and register bank in the <code>DP SELECT</code> register. Using the data from the table, we form 35 bits of data that we write to the <code>DR</code> register:</p>
+<ul>
+<li>DATA[31:0] = <code>0x00</code></li>
+<li>APSEL[31:24] = <code>0x00</code></li>
+<li>APBANKSEL[7:4] = <code>0x00</code></li>
+<li>A[3:2] = <code>0b10</code> (address of <code>SELECT</code> register)</li>
+<li>RnW = <code>0b0</code></li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/step-6-access-internals.png" alt=""></p>
+<p>Next, we need to write directly to the <code>CSW</code> register. Since this is an <code>AP</code> register, we need to use the <code>APACC</code> register to access it:</p>
+<ul>
+<li>Write <code>0b1011</code> (the <code>APACC</code> register code) into the <code>IR</code> register.</li>
+</ul>
+<p>We create the data for configuration: we set the data size for writing to 32 bits (<code>Size[0:2] = 0b010</code>) and disable the auto-increment address function (<code>AddrInc[5:4] = 0b00</code>). Write to <code>DR</code>:</p>
+<ul>
+<li>DATA[31:0] = <code>0x00000002</code></li>
+<li>A[3:2] = 0b00 (address of <code>CSW</code> register)</li>
+<li>RnW = <code>0b0</code></li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/step-7-access-internals.png" alt=""></p>
+<p>Next, we need to set the address of the memory cell from which we will read the data. This is done through the <code>TAR</code> register of the <code>AP</code>. And since this register belongs to the same <code>AP</code> as <code>CSW</code> and is in the same bank, we can skip the <code>DP SELECT</code> register access and immediately write the address value:</p>
+<ul>
+<li>DATA[31:0] = <code>0x20000000</code></li>
+<li>A[3:2] = <code>0b01</code> (address of <code>TAR</code> register)</li>
+<li>RnW = <code>0b0</code></li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/step-8-access-internals.png" alt=""></p>
+<p>We form a read request. To do this, we write to the <code>DRW</code> register:</p>
+<ul>
+<li>DATA[31:0] = <code>0x00</code></li>
+<li>A[3:2] = <code>0b11</code> (address of <code>DRW</code> register)</li>
+<li>RnW = <code>0b1</code></li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/step-9-access-internals.png" alt=""></p>
+<p>Read the <code>DRW</code> register by reading 35 bits from the <code>DR</code> register.</p>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/read-drw-register.png" alt=""></p>
+<h2 id="interacting-with-the-processor-core-anchor">Interacting with the Processor Core <a href="https://interrupt.memfault.com/blog/diving-into-jtag-part-2#interacting-with-the-processor-core">Anchor</a></h2>
+<p>Well, we’ve explored how the debugger interacts with the microcontroller’s memory. Now, let’s delve into how the debugger can halt program execution, step through code, read the processor’s registers, and so on. In the case of the STM32F407VG microcontroller, this is achieved through special registers:</p>
+<p><img src="https://interrupt.memfault.com/img/jtag-part2/register-descriptions.png" alt=""></p>
+<p>As detailed in section <em>C1.6 Debug system registers</em> of the <a href="https://developer.arm.com/documentation/ddi0403/latest/">ARMv7-M Architecture Reference Manual</a>, these registers play a pivotal role in debugging.</p>
+<p>What’s crucial for us now is understanding that by setting the <code>C_DEBUGEN</code> and <code>C_HALT</code> bits of the <code>DHCSR</code> register, we can halt the execution of the program. Similarly, by setting the <code>C_DEBUGEN</code> and <code>C_STEP</code> bits, we can execute the program step by step.</p>
+<p>Access to these registers via the DAP module is essentially the same as accessing memory. Instead of providing a memory address, you provide the address of the desired register. For instance, in the case of the <code>DHCSR</code> register, the address is <code>0xE000EDF0</code>. If you let me, I won’t delve into an example with the bit sequence since it would be identical to the example from the chapter on memory interaction.</p>
+<h2 id="closing-anchor">Closing <a href="https://interrupt.memfault.com/blog/diving-into-jtag-part-2#closing">Anchor</a></h2>
+<p>Well, we’ve briefly explored how JTAG is used in microcontroller debugging. This topic is big, and it’s challenging to cover it fully within a single article. In this piece, we focused on invasive debugging, while non-invasive debugging wasn’t even mentioned. However, that wasn’t the goal when writing this article. For those who want to delve deeper into this topic, I recommend studying the links list listed below. As for us, we’ll move on, and in the next article, we’ll tackle the subject of testing printed circuit boards using the JTAG protocol.</p>
+<p>Thank you for your time! :)</p>
+<blockquote>
+<p><strong>Note</strong>: This article was originally published by Aliaksandr on his blog. You can find the original article <a href="https://medium.com/@aliaksandr.kavalchuk/diving-into-jtag-protocol-part-2-debugging-56a566db3cf8">here</a>.</p>
+</blockquote>
+<p>Like Interrupt? <a href="https://go.memfault.com/interrupt-subscribe"><strong>Subscribe</strong></a> to get our latest posts straight to your inbox.</p>
+<p>See anything you&rsquo;d like to change? Submit a pull request or open an issue on our <a href="https://github.com/memfault/interrupt">GitHub</a></p>
+<h2 id="links-anchor">Links <a href="https://interrupt.memfault.com/blog/diving-into-jtag-part-2#links">Anchor</a></h2>
+<ul>
+<li><a href="https://www.st.com/resource/en/reference_manual/rm0090-stm32f405415-stm32f407417-stm32f427437-and-stm32f429439-advanced-armbased-32bit-mcus-stmicroelectronics.pdf">RM0090: Reference manual</a></li>
+<li><a href="https://developer.arm.com/documentation/ddi0403/latest/">ARMv7-M Architecture Reference Manual</a></li>
+<li><a href="https://medium.com/@aliaksandr.kavalchuk/diving-into-jtag-protocol-part-2-debugging-56a566db3cf8#:~:text=Cortex%2DM4.Technical%20Reference%20Manual">Cortex-M4.Technical Reference Manual</a></li>
+<li><a href="https://documentation-service.arm.com/static/5f900a19f86e16515cdc041e?token=">ARM CoreSight Architecture Specification</a></li>
+<li><a href="https://www.actuatedrobots.com/debugging-with-jtag/">DEBUGGING WITH JTAG</a></li>
+<li><a href="https://interrupt.memfault.com/blog/cortex-m-debug-monitor">Step-through debugging with no debugger on Cortex-M</a></li>
+<li><a href="https://interrupt.memfault.com/blog/cortex-m-breakpoints">How do breakpoints even work?</a></li>
+<li><a href="https://interrupt.memfault.com/blog/a-deep-dive-into-arm-cortex-m-debug-interfaces?utm_source=platformio&amp;utm_medium=piohome">A Deep Dive into ARM Cortex-M Debug Interfaces</a></li>
+<li><a href="https://interrupt.memfault.com/blog/profiling-firmware-on-cortex-m">Profiling Firmware on Cortex-M</a></li>
+</ul>
+<p><img src="https://interrupt.memfault.com/img/author/zamuhrishka.jpeg" alt=""><a href="https://interrupt.memfault.com/authors/zamuhrishka">Aliaksandr Kavalchuk</a> is a firmware engineer with over 10 years of experience.</p>
+<p>Diving into JTAG — Debugging (Part 2) | Interrupt - Blog - Interrupt<a href="https://community.memfault.com/t/diving-into-jtag-debugging-part-2-interrupt/815/2" title="March 1, 2024, 11:12pm">March 2024</a></p>
+<p><a href="https://community.memfault.com/u/cushychicken"><img src="https://yyz2.discourse-cdn.com/flex030/user_avatar/community.memfault.com/cushychicken/45/235_2.png" alt=""></a></p>
+<h3 id="cushychicken"><a href="https://community.memfault.com/u/cushychicken">cushychicken</a></h3>
+<p>I absolutely love these images of colorized bit strings to show the different parts of the protocol. How did you make these? I’d love to swipe that technique for my own use!</p>
+<p><a href="https://community.memfault.com/t/diving-into-jtag-debugging-part-2-interrupt/815/2">1 reply</a></p>
+<p><a href="https://community.memfault.com/t/diving-into-jtag-debugging-part-2-interrupt/815/4" title="March 2, 2024, 10:43am">March 2024</a> <a href="https://community.memfault.com/t/diving-into-jtag-debugging-part-2-interrupt/815/2">▶ cushychicken</a></p>
+<p><a href="https://community.memfault.com/u/aliaksandrK"><img src="https://avatars.discourse-cdn.com/v4/letter/a/96bed5/45.png" alt=""></a></p>
+<h3 id="aliaksandrk"><a href="https://community.memfault.com/u/aliaksandrK">aliaksandrK</a></h3>
+<p>Thank you! Well, there are no magic, I draw everything manualy using the <a href="https://www.drawio.com/">draw io</a> tool <img src="https://emoji.discourse-cdn.com/apple/slight_smile.png?v=12" alt=":slight_smile:"></p>
+<p><a href="https://community.memfault.com/t/diving-into-jtag-debugging-part-2-interrupt/815/4">1 reply</a></p>
+<p><a href="https://community.memfault.com/t/diving-into-jtag-debugging-part-2-interrupt/815/5" title="March 2, 2024,  3:01pm">March 2024</a> <a href="https://community.memfault.com/t/diving-into-jtag-debugging-part-2-interrupt/815/4">▶ aliaksandrK</a></p>
+<p><a href="https://community.memfault.com/u/cushychicken"><img src="https://yyz2.discourse-cdn.com/flex030/user_avatar/community.memfault.com/cushychicken/45/235_2.png" alt=""></a></p>
+<h3 id="cushychicken-1"><a href="https://community.memfault.com/u/cushychicken">cushychicken</a></h3>
+<p>God bless draw io!</p>
+<p>I appreciate you taking the time to make these by hand. Colorizing everything by hand is no fun but it does a lot to help explain your point.</p>
+<p><a href="https://community.memfault.com/t/diving-into-jtag-debugging-part-2-interrupt/815/5">1 reply</a></p>
+<p><a href="https://community.memfault.com/t/diving-into-jtag-debugging-part-2-interrupt/815/6" title="March 3, 2024,  1:06pm">March 2024</a></p>
+<p><a href="https://community.memfault.com/u/aliaksandrK"><img src="https://avatars.discourse-cdn.com/v4/letter/a/96bed5/45.png" alt=""></a></p>
+<h3 id="aliaksandrk-1"><a href="https://community.memfault.com/u/aliaksandrK">aliaksandrK</a></h3>
+<p>Ha-ha-ha! Amen!))</p>
+<p>Thank you. I believe that visiual information is very important and easy for understanding. One time show is better then 100 times write. ))</p>
+<table>
+  <thead>
+      <tr>
+          <th></th>
+          <th></th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td></td>
+          <td></td>
+      </tr>
+  </tbody>
+</table>
+<ul class="pa0">
+  
+</ul>
+
+      
+    </div></article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white white-70 dn dib-ns pv2 ph3 no-underline" href="http://localhost:1313/" >
+    &copy;  FulanXisen's blog 2026 
+  </a>
+    <div><div class="ananke-socials"></div>
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>

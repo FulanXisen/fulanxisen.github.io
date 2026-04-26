@@ -1,143 +1,44 @@
 <!DOCTYPE html>
 <html lang="en-us">
-  <head>
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>First | FulanXisen&#39;s blog</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
     
-    <title>FulanXisen&#39;s blog</title>
-    <meta name="viewport" content="width=device-width,minimum-scale=1">
-    <meta name="description" content="">
-    <meta name="generator" content="Hugo 0.160.1">
-    
-    
-    
-      <meta name="robots" content="index, follow">
-    
-    
+  </head>
 
-    
-<link rel="stylesheet" href="/ananke/css/main.min.efe4d852f731d5d1fbb87718387202a97aafd768cdcdaed0662bbe6982e91824.css" >
-
-
-
-
-    
-
-
-    
+  <body>
+    <nav>
+    <ul class="menu">
       
-
-    
-
-    
-    
-      <link href="/tags/first/index.xml" rel="alternate" type="application/rss+xml" title="FulanXisen&#39;s blog" />
-      <link href="/tags/first/index.xml" rel="feed" type="application/rss+xml" title="FulanXisen&#39;s blog" />
-      
-    
-
-    
-      <link rel="canonical" href="https://fulanxisen.github.io/tags/first/">
-    
-
-    
-    
-    <meta property="og:url" content="https://fulanxisen.github.io/tags/first/">
-  <meta property="og:site_name" content="FulanXisen&#39;s blog">
-  <meta property="og:title" content="First">
-  <meta property="og:locale" content="en_us">
-  <meta property="og:type" content="website">
-
-  <meta itemprop="name" content="First">
-  <meta itemprop="datePublished" content="2023-04-28T15:45:15+08:00">
-  <meta itemprop="dateModified" content="2023-04-28T15:45:15+08:00">
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="First">
-
-      
-      
-    
-	
-  </head><body class="ma0 avenir bg-near-white production is-term">
-    
-
-  <header>
-    <div class="pb3-m pb6-l bg-black">
-      <nav class="pv3 ph3 ph4-ns" role="navigation">
-  <div class="flex-l center items-center justify-between">
-    <a href="/" class="f3 fw2 hover-white white-90 dib no-underline">
-      
-        FulanXisen&#39;s blog
-      
-    </a>
-    <div class="flex-l items-center">
-      
-
-      
-      <div class="ananke-socials"></div>
-
-    </div>
-  </div>
-</nav>
-
-      <div class="tc-l pv3 ph3 ph4-ns">
-        <h1 class="f2 f-subheadline-l fw2 light-silver mb0 lh-title">
-          First
-        </h1>
-        
-      </div>
-    </div>
-  </header>
+    </ul>
+    <hr/>
+    </nav>
 
 
-    <main class="pb7" role="main">
-      
-  <article class="pa3 pa4-ns nested-copy-line-height">
-    <section class="cf ph3 ph5-l pv3 pv4-l f4 tc-l center measure-wide lh-copy nested-links mid-gray"></section>
-    <section class="flex-ns mt5 flex-wrap justify-around">
-      
-        <div class="w-100 w-30-l mb4 relative bg-white">
-          <div class="w-100 mb4 nested-copy-line-height relative bg-white">
-  <div class="mb3 pa4 gray overflow-hidden bg-white">
-    <span class="f6 db">Posts</span>
-    <h1 class="f3 near-black">
-      <a href="/posts/p03-yao-impl/" class="link black dim">
-        Yao&#39;s Protocol Impl in MPCFGO
-      </a>
-    </h1>
-    <div class="nested-links f5 lh-copy nested-copy-line-height">
-      <h1 id="yaos-protocol-theory">Yao&rsquo;s Protocol Theory</h1>
-<h1 id="impl-yaos-protocol-in-mpcfgo">Impl Yao&rsquo;s Protocol in MPCFGO</h1>
-<h2 id="type-struct">Type Struct</h2>
-<p>Let&rsquo;s declare a struct to represent a Yao&rsquo;s Protocol variable.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// Yshare The label and pointer are stored in a []byte, [0:len-1]byte, is the label, and [len-1]byte is the pointer</span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Yshare</span> <span style="color:#66d9ef">struct</span> {
-</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// Yshare is a share of l bit, Plaintext is a l-bit number</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">Plaintext</span> <span style="color:#a6e22e">pub</span>.<span style="color:#a6e22e">PubNum</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">wValue</span>    [][]<span style="color:#66d9ef">byte</span>    <span style="color:#75715e">// wValue[i] is the i-th bit&#39;s label and pointer, activated</span>
-</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">wTable</span>    [][<span style="color:#ae81ff">2</span>][]<span style="color:#66d9ef">byte</span> <span style="color:#75715e">// wValue[i][0] is the i-th bit&#39;s label and pointer of value 0, wValue[i][1] of value 1</span>
-</span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p><code>Yshare</code> contains three fields:</p>
-    </div>
-    <a href="/posts/p03-yao-impl/" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">read more</a>
-  </div>
-</div>
 
-        </div>
-      
-    </section>
-    </article>
+<h1>First</h1>
 
-    </main>
-    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
-  <div class="flex justify-between">
-  <a class="f4 fw4 hover-white white-70 dn dib-ns pv2 ph3 no-underline" href="https://fulanxisen.github.io/" >
-    &copy;  FulanXisen's blog 2026 
-  </a>
-    <div><div class="ananke-socials"></div>
-</div>
-  </div>
-</footer>
 
+
+
+<ul>
+  
+  
+  
+  <li>
+    <span class="date">2023/04/28</span>
+    <a href="/posts/p03-yao-impl/">Yao&rsquo;s Protocol Impl in MPCFGO</a>
+  </li>
+  
+</ul>
+
+  <footer>
+  
+  
+  </footer>
   </body>
 </html>
+

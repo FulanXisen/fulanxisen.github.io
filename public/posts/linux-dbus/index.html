@@ -1,123 +1,30 @@
 <!DOCTYPE html>
 <html lang="en-us">
-  <head>
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Linux DBus IPC System | FulanXisen&#39;s blog</title>
-    <meta name="viewport" content="width=device-width,minimum-scale=1">
-    <meta name="description" content="DBus is an inter-process communication system in Linux environment for both singleton and distributed system.">
-    <meta name="generator" content="Hugo 0.160.1">
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
     
-    
-    
-      <meta name="robots" content="index, follow">
-    
-    <meta name="author" content="福岚溪森">
-    
+  </head>
 
-    
-<link rel="stylesheet" href="/ananke/css/main.min.efe4d852f731d5d1fbb87718387202a97aafd768cdcdaed0662bbe6982e91824.css" >
-
-
-
-
-    
-
-
-    
+  <body>
+    <nav>
+    <ul class="menu">
       
+    </ul>
+    <hr/>
+    </nav>
 
-    
+<div class="article-meta">
+<h1><span class="title">Linux DBus IPC System</span></h1>
+<h2 class="author">[福岚溪森]</h2>
+<h2 class="date">2023/09/21</h2>
+</div>
 
-    
-
-    
-      <link rel="canonical" href="https://canonical.url/to/page">
-    
-
-    
-    
-    <meta property="og:url" content="https://fulanxisen.github.io/posts/linux-dbus/">
-  <meta property="og:site_name" content="FulanXisen&#39;s blog">
-  <meta property="og:title" content="Linux DBus IPC System">
-  <meta property="og:description" content="DBus is an inter-process communication system in Linux environment for both singleton and distributed system.">
-  <meta property="og:locale" content="en_us">
-  <meta property="og:type" content="article">
-    <meta property="article:section" content="posts">
-    <meta property="article:published_time" content="2023-09-21T22:39:17+08:00">
-    <meta property="article:modified_time" content="2023-09-21T22:39:17+08:00">
-    <meta property="article:tag" content="DBus">
-    <meta property="article:tag" content="IPC">
-    <meta property="article:tag" content="Linux">
-
-  <meta itemprop="name" content="Linux DBus IPC System">
-  <meta itemprop="description" content="DBus is an inter-process communication system in Linux environment for both singleton and distributed system.">
-  <meta itemprop="datePublished" content="2023-09-21T22:39:17+08:00">
-  <meta itemprop="dateModified" content="2023-09-21T22:39:17+08:00">
-  <meta itemprop="wordCount" content="419">
-  <meta itemprop="keywords" content="DBus,IPC,Linux">
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Linux DBus IPC System">
-  <meta name="twitter:description" content="DBus is an inter-process communication system in Linux environment for both singleton and distributed system.">
-
-      
-      
-    
-	
-  </head><body class="ma0 avenir bg-near-white production is-page is-page page-linux-dbus">
-    
-   
-  
-
-  <header>
-    <div class="bg-black">
-      <nav class="pv3 ph3 ph4-ns" role="navigation">
-  <div class="flex-l center items-center justify-between">
-    <a href="/" class="f3 fw2 hover-white white-90 dib no-underline">
-      
-        FulanXisen&#39;s blog
-      
-    </a>
-    <div class="flex-l items-center">
-      
-
-      
-      <div class="ananke-socials"></div>
-
-    </div>
-  </div>
-</nav>
-
-    </div>
-  </header>
-
-
-
-    <main class="pb7" role="main">
-      
-  
-
-  <article class="page-linux-dbus flex-l mw7 center ph3 flex-wrap justify-between">
-    <header class="mt4 w-100">
-      <aside class="instapaper_ignoref b helvetica tracked ttu">
-          
-        Posts
-      </aside><div id="sharing" class="mt3 ananke-socials"></div>
-<h1 class="f1 athelas mt3 mb1">Linux DBus IPC System</h1>
-      
-      <p class="tracked"><strong>福岚溪森</strong>
-      </p>
-      
-      
-      
-      <time class="f6 mv4 dib tracked" datetime="2023-09-21T22:39:17+08:00">September 21, 2023</time>
-      
-
-      
-      
-    </header>
-    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-100-l"><h2 id="1-概述">1. 概述<a href="#overview"></a></h2>
+<main>
+<h2 id="1-概述">1. 概述<a href="#overview"></a></h2>
 <p><a href="https://linux.die.net/man/1/dbus-daemon">DBus</a>是一个消息总线系统，允许不同的进程在分布式环境中进行通信。它是Linux世界广泛采用的强大工具，使应用程序能够无缝共享数据并相互交互。</p>
 <p>在本教程中，我们将详细探讨DBus，并了解它在<a href="/linux/default-desktop-environment-start-up#setup-procedure">Linux桌面环境</a>中的使用方式。</p>
 <h2 id="2-dbus">2. DBus<a href="#dbus"></a></h2>
@@ -287,35 +194,13 @@
 <p>在本文中，我们探讨了DBus以及在Linux系统中如何实际使用它进行进程间通信。我们首先讨论了DBus的基础知识，包括其架构和组件。接下来，我们讨论了DBus在各种桌面环境中的集成，如GNOME、KDE和Xfce。</p>
 <p>然后，我们探讨了DBus的一些实际应用，包括如何将其用于系统范围的通知和管理电源管理设置。最后，我们讨论了在使用DBus时可能遇到的一些挑战。</p>
 <p>通过正确的知识和技能，我们可以利用DBus构建健壮高效的Linux桌面应用程序，满足现代用户的需求。</p>
-<ul class="pa0">
-  
-   <li class="list di">
-     <a href="/tags/dbus/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">DBus</a>
-   </li>
-  
-   <li class="list di">
-     <a href="/tags/ipc/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">IPC</a>
-   </li>
-  
-   <li class="list di">
-     <a href="/tags/linux/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">Linux</a>
-   </li>
-  
-</ul>
 
-      
-    </div></article>
+</main>
 
-    </main>
-    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
-  <div class="flex justify-between">
-  <a class="f4 fw4 hover-white white-70 dn dib-ns pv2 ph3 no-underline" href="https://fulanxisen.github.io/" >
-    &copy;  FulanXisen's blog 2026 
-  </a>
-    <div><div class="ananke-socials"></div>
-</div>
-  </div>
-</footer>
-
+  <footer>
+  
+  
+  </footer>
   </body>
 </html>
+

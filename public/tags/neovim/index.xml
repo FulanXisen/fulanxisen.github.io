@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Neovim on FulanXisen&#39;s blog</title>
+    <link>http://localhost:1313/tags/neovim/</link>
+    <description>Recent content in Neovim on FulanXisen&#39;s blog</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 15 Oct 2023 16:03:14 +0800</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/neovim/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Neovim Beginner</title>
+      <link>http://localhost:1313/posts/neovim-beginner/</link>
+      <pubDate>Sun, 15 Oct 2023 16:03:14 +0800</pubDate>
+      <guid>http://localhost:1313/posts/neovim-beginner/</guid>
+      <description>&lt;h1 id=&#34;neovim-beginner&#34;&gt;Neovim Beginner&lt;/h1&gt;&#xA;&lt;h2 id=&#34;initlua&#34;&gt;init.lua&lt;/h2&gt;&#xA;&lt;h3 id=&#34;installsh&#34;&gt;Install.sh&lt;/h3&gt;&#xA;&lt;p&gt;&lt;code&gt;plugins.lua&lt;/code&gt; is where we start to configure Neovim.&lt;/p&gt;&#xA;&lt;p&gt;All Lua configuration files are under the lua folder (:h lua-require).&lt;/p&gt;&#xA;&lt;h3 id=&#34;startup-screen&#34;&gt;Startup Screen&lt;/h3&gt;&#xA;&lt;p&gt;Use alpha.nvim as the startup screen.&lt;/p&gt;&#xA;&lt;p&gt;The configuration file is &lt;code&gt;lua/config/alpha.lua&lt;/code&gt;.&lt;/p&gt;&#xA;&lt;p&gt;&lt;code&gt;alpha.lua&lt;/code&gt;:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;pcall is used to prevent errors requiring a non-existent module or a module with syntax errors.&lt;/li&gt;&#xA;&lt;li&gt;We specify an ASCII art header, some convenient shortcuts, and a footer to indicate the number of plugins, date and time, and a quote.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h3 id=&#34;git&#34;&gt;Git&lt;/h3&gt;&#xA;&lt;p&gt;use &lt;code&gt;Neogit&lt;/code&gt; for version control.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

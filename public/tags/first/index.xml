@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>First on FulanXisen&#39;s blog</title>
-    <link>https://fulanxisen.github.io/tags/first/</link>
+    <link>http://localhost:1313/tags/first/</link>
     <description>Recent content in First on FulanXisen&#39;s blog</description>
     <generator>Hugo</generator>
     <language>en-us</language>
     <lastBuildDate>Fri, 28 Apr 2023 15:45:15 +0800</lastBuildDate>
-    <atom:link href="https://fulanxisen.github.io/tags/first/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:1313/tags/first/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Yao&#39;s Protocol Impl in MPCFGO</title>
-      <link>https://fulanxisen.github.io/posts/p03-yao-impl/</link>
+      <link>http://localhost:1313/posts/p03-yao-impl/</link>
       <pubDate>Fri, 28 Apr 2023 15:45:15 +0800</pubDate>
-      <guid>https://fulanxisen.github.io/posts/p03-yao-impl/</guid>
+      <guid>http://localhost:1313/posts/p03-yao-impl/</guid>
       <description>&lt;h1 id=&#34;yaos-protocol-theory&#34;&gt;Yao&amp;rsquo;s Protocol Theory&lt;/h1&gt;&#xA;&lt;h1 id=&#34;impl-yaos-protocol-in-mpcfgo&#34;&gt;Impl Yao&amp;rsquo;s Protocol in MPCFGO&lt;/h1&gt;&#xA;&lt;h2 id=&#34;type-struct&#34;&gt;Type Struct&lt;/h2&gt;&#xA;&lt;p&gt;Let&amp;rsquo;s declare a struct to represent a Yao&amp;rsquo;s Protocol variable.&lt;/p&gt;&#xA;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;// Yshare The label and pointer are stored in a []byte, [0:len-1]byte, is the label, and [len-1]byte is the pointer&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;type&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;Yshare&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; {&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&#x9;&lt;span style=&#34;color:#75715e&#34;&gt;// Yshare is a share of l bit, Plaintext is a l-bit number&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&#x9;&lt;span style=&#34;color:#a6e22e&#34;&gt;Plaintext&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;pub&lt;/span&gt;.&lt;span style=&#34;color:#a6e22e&#34;&gt;PubNum&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&#x9;&lt;span style=&#34;color:#a6e22e&#34;&gt;wValue&lt;/span&gt;    [][]&lt;span style=&#34;color:#66d9ef&#34;&gt;byte&lt;/span&gt;    &lt;span style=&#34;color:#75715e&#34;&gt;// wValue[i] is the i-th bit&amp;#39;s label and pointer, activated&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&#x9;&lt;span style=&#34;color:#a6e22e&#34;&gt;wTable&lt;/span&gt;    [][&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;][]&lt;span style=&#34;color:#66d9ef&#34;&gt;byte&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;// wValue[i][0] is the i-th bit&amp;#39;s label and pointer of value 0, wValue[i][1] of value 1&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;}&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;Yshare&lt;/code&gt; contains three fields:&lt;/p&gt;</description>
     </item>
   </channel>

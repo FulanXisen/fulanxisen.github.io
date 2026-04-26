@@ -1,121 +1,30 @@
 <!DOCTYPE html>
 <html lang="en-us">
-  <head>
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Example of Embedded CMakeLists Files | FulanXisen&#39;s blog</title>
-    <meta name="viewport" content="width=device-width,minimum-scale=1">
-    <meta name="description" content="Desc Text.">
-    <meta name="generator" content="Hugo 0.160.1">
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
     
-    
-    
-      <meta name="robots" content="index, follow">
-    
-    <meta name="author" content="Me">
-    
+  </head>
 
-    
-<link rel="stylesheet" href="/ananke/css/main.min.efe4d852f731d5d1fbb87718387202a97aafd768cdcdaed0662bbe6982e91824.css" >
-
-
-
-
-    
-
-
-    
+  <body>
+    <nav>
+    <ul class="menu">
       
+    </ul>
+    <hr/>
+    </nav>
 
-    
+<div class="article-meta">
+<h1><span class="title">Example of Embedded CMakeLists Files</span></h1>
+<h2 class="author">Me</h2>
+<h2 class="date">2023/05/03</h2>
+</div>
 
-    
-
-    
-      <link rel="canonical" href="https://canonical.url/to/page">
-    
-
-    
-    
-    <meta property="og:url" content="https://fulanxisen.github.io/posts/p05-example-of-embedded-cmakelists-files/">
-  <meta property="og:site_name" content="FulanXisen&#39;s blog">
-  <meta property="og:title" content="Example of Embedded CMakeLists Files">
-  <meta property="og:description" content="Desc Text.">
-  <meta property="og:locale" content="en_us">
-  <meta property="og:type" content="article">
-    <meta property="article:section" content="posts">
-    <meta property="article:published_time" content="2023-05-03T23:38:47+08:00">
-    <meta property="article:modified_time" content="2023-05-03T23:38:47+08:00">
-    <meta property="article:tag" content="CMake">
-
-  <meta itemprop="name" content="Example of Embedded CMakeLists Files">
-  <meta itemprop="description" content="Desc Text.">
-  <meta itemprop="datePublished" content="2023-05-03T23:38:47+08:00">
-  <meta itemprop="dateModified" content="2023-05-03T23:38:47+08:00">
-  <meta itemprop="wordCount" content="1127">
-  <meta itemprop="keywords" content="CMake">
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Example of Embedded CMakeLists Files">
-  <meta name="twitter:description" content="Desc Text.">
-
-      
-      
-    
-	
-  </head><body class="ma0 avenir bg-near-white production is-page is-page page-p05-example-of-embedded-cmakelists-files">
-    
-   
-  
-
-  <header>
-    <div class="bg-black">
-      <nav class="pv3 ph3 ph4-ns" role="navigation">
-  <div class="flex-l center items-center justify-between">
-    <a href="/" class="f3 fw2 hover-white white-90 dib no-underline">
-      
-        FulanXisen&#39;s blog
-      
-    </a>
-    <div class="flex-l items-center">
-      
-
-      
-      <div class="ananke-socials"></div>
-
-    </div>
-  </div>
-</nav>
-
-    </div>
-  </header>
-
-
-
-    <main class="pb7" role="main">
-      
-  
-
-  <article class="page-p05-example-of-embedded-cmakelists-files flex-l mw7 center ph3 flex-wrap justify-between">
-    <header class="mt4 w-100">
-      <aside class="instapaper_ignoref b helvetica tracked ttu">
-          
-        Posts
-      </aside><div id="sharing" class="mt3 ananke-socials"></div>
-<h1 class="f1 athelas mt3 mb1">Example of Embedded CMakeLists Files</h1>
-      
-      <p class="tracked"><strong>Me</strong>
-      </p>
-      
-      
-      
-      <time class="f6 mv4 dib tracked" datetime="2023-05-03T23:38:47+08:00">May 3, 2023</time>
-      
-
-      
-      
-    </header>
-    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-100-l"><h1 id="the-most-thoroughly-commented-embedded-cmakelists-file">The most thoroughly commented embedded CMakeLists file</h1>
+<main>
+<h1 id="the-most-thoroughly-commented-embedded-cmakelists-file">The most thoroughly commented embedded CMakeLists file</h1>
 <p>January 05, 2023 - <a href="https://dnedic.github.io/tags/cmake/">CMake</a> <a href="https://dnedic.github.io/tags/build-system/">Build System</a> <a href="https://dnedic.github.io/tags/embedded/">Embedded</a> <a href="https://dnedic.github.io/tags/stm32/">STM32</a></p>
 <p>Many embedded software engineers have had to deal with build systems that are either non cross-platform or a part of the IDE they are using, don&rsquo;t offer easy composability or per-library configuration, provide no testing support or ways to generate or package files without using a third party scripting language.</p>
 <p><a href="https://cmake.org/">CMake</a> is a build system that offers solutions to many of those problems and is already well adopted in the world of traditional software development. Inspired by <a href="https://blog.thea.codes/the-most-thoroughly-commented-linker-script/">The most thoroughly commented linker script</a> blogpost and having used CMake in two different professional environments, I have decided to write an overview of a minimal CMakeLists file for an embedded project.</p>
@@ -269,27 +178,13 @@
 <p>It is worth keeping in mind that this article is not a complete guide to CMake and doesn&rsquo;t go into toolchain files, library CMakeLists and other things required for a complete CMake-based embedded project, however the <a href="https://github.com/DNedic/most_commented_embedded_cmakelists">project on GitHub</a> used for demonstration contains all of those and can be used as a template.</p>
 <hr>
 <p>© 2023 - Djordje Nedic | Find me on <a href="https://www.linkedin.com/in/djordje-nedic/">LinkedIn</a> or <a href="https://github.com/DNedic">GitHub</a></p>
-<ul class="pa0">
+
+</main>
+
+  <footer>
   
-   <li class="list di">
-     <a href="/tags/cmake/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">CMake</a>
-   </li>
   
-</ul>
-
-      
-    </div></article>
-
-    </main>
-    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
-  <div class="flex justify-between">
-  <a class="f4 fw4 hover-white white-70 dn dib-ns pv2 ph3 no-underline" href="https://fulanxisen.github.io/" >
-    &copy;  FulanXisen's blog 2026 
-  </a>
-    <div><div class="ananke-socials"></div>
-</div>
-  </div>
-</footer>
-
+  </footer>
   </body>
 </html>
+

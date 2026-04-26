@@ -2,24 +2,24 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Technology on FulanXisen&#39;s blog</title>
-    <link>https://fulanxisen.github.io/categories/technology/</link>
+    <link>http://localhost:1313/categories/technology/</link>
     <description>Recent content in Technology on FulanXisen&#39;s blog</description>
     <generator>Hugo</generator>
     <language>en-us</language>
     <lastBuildDate>Sat, 04 Nov 2023 15:53:37 +0000</lastBuildDate>
-    <atom:link href="https://fulanxisen.github.io/categories/technology/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:1313/categories/technology/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>PulseAudio Under the Hood</title>
-      <link>https://fulanxisen.github.io/posts/pulseaudio/</link>
+      <link>http://localhost:1313/posts/pulseaudio/</link>
       <pubDate>Sat, 04 Nov 2023 15:53:37 +0000</pubDate>
-      <guid>https://fulanxisen.github.io/posts/pulseaudio/</guid>
-      <description>&lt;h2 id=&#34;preface&#34;&gt;&lt;figure&gt;&lt;img src=&#34;https://fulanxisen.github.io/posts/pulseaudio/images/pulse_audio.png&#34;&gt;&lt;figcaption&gt;&#xA;      &lt;h4&gt;Diagram of PulseAudio&lt;/h4&gt;&#xA;    &lt;/figcaption&gt;&#xA;&lt;/figure&gt;&#xA;&#xA;Pipewire is an alternative.&#xA;Preface&lt;/h2&gt;&#xA;&lt;p&gt;I’m working on the &lt;a href=&#34;https://roc-streaming.org/&#34;&gt;Roc Toolkit&lt;/a&gt; open-source project, a development kit for realtime audio streaming over the network. You can read more about the project in these two articles: &lt;a href=&#34;https://gavv.net/articles/new-network-transport/&#34;&gt;1&lt;/a&gt;, &lt;a href=&#34;https://gavv.net/articles/roc-tutorial/&#34;&gt;2&lt;/a&gt;.&lt;/p&gt;&#xA;&lt;p&gt;We decided to implement a set of PulseAudio modules that will allow PulseAudio to use Roc as a network transport. Many Linux distros employ PulseAudio, and their users will be able to improve network service quality without changing the workflow. This led me to dig into PulseAudio internals and eventually to this document.&lt;/p&gt;</description>
+      <guid>http://localhost:1313/posts/pulseaudio/</guid>
+      <description>&lt;h2 id=&#34;preface&#34;&gt;&lt;figure&gt;&lt;img src=&#34;http://localhost:1313/posts/pulseaudio/images/pulse_audio.png&#34;&gt;&lt;figcaption&gt;&#xA;      &lt;h4&gt;Diagram of PulseAudio&lt;/h4&gt;&#xA;    &lt;/figcaption&gt;&#xA;&lt;/figure&gt;&#xA;&#xA;Pipewire is an alternative.&#xA;Preface&lt;/h2&gt;&#xA;&lt;p&gt;I’m working on the &lt;a href=&#34;https://roc-streaming.org/&#34;&gt;Roc Toolkit&lt;/a&gt; open-source project, a development kit for realtime audio streaming over the network. You can read more about the project in these two articles: &lt;a href=&#34;https://gavv.net/articles/new-network-transport/&#34;&gt;1&lt;/a&gt;, &lt;a href=&#34;https://gavv.net/articles/roc-tutorial/&#34;&gt;2&lt;/a&gt;.&lt;/p&gt;&#xA;&lt;p&gt;We decided to implement a set of PulseAudio modules that will allow PulseAudio to use Roc as a network transport. Many Linux distros employ PulseAudio, and their users will be able to improve network service quality without changing the workflow. This led me to dig into PulseAudio internals and eventually to this document.&lt;/p&gt;</description>
     </item>
     <item>
       <title>Control Bluetooth Device via Bluetoothctl</title>
-      <link>https://fulanxisen.github.io/posts/control-bluetooth-device-via-bluetoothctl/</link>
+      <link>http://localhost:1313/posts/control-bluetooth-device-via-bluetoothctl/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://fulanxisen.github.io/posts/control-bluetooth-device-via-bluetoothctl/</guid>
+      <guid>http://localhost:1313/posts/control-bluetooth-device-via-bluetoothctl/</guid>
       <description>&lt;h1 id=&#34;control-a-bluetooth-device-via-bluetoothctl&#34;&gt;Control a Bluetooth Device via Bluetoothctl&lt;/h1&gt;&#xA;&lt;hr&gt;&#xA;&lt;h2 id=&#34;1-overview&#34;&gt;1. Overview&lt;a href=&#34;#overview&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&#xA;&lt;p&gt;In this tutorial, we’ll learn how to connect to a Bluetooth device via the terminal. This process involves configuring our Bluetooth controller, pairing it to our target device, and then finally connecting.&lt;/p&gt;&#xA;&lt;h2 id=&#34;2-using-the-bluetoothctlcommand&#34;&gt;2. Using the &lt;em&gt;bluetoothctl&lt;/em&gt; Command&lt;a href=&#34;#using-the-bluetoothctlcommand&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&#xA;&lt;p&gt;&lt;a href=&#34;https://git.kernel.org/pub/scm/bluetooth/bluez.git/about/&#34;&gt;BlueZ&lt;/a&gt; provides support for Bluetooth functionality and protocols through the &lt;a href=&#34;https://www.mankier.com/8/bluetoothd&#34;&gt;&lt;em&gt;bluetoothd&lt;/em&gt;&lt;/a&gt; daemon. To interact with &lt;em&gt;bluetoothd&lt;/em&gt; from the terminal, we use the &lt;a href=&#34;https://manpages.debian.org/stretch/bluez/bluetoothctl.1.en.html&#34;&gt;&lt;em&gt;bluetoothctl&lt;/em&gt;&lt;/a&gt; command.&lt;/p&gt;&#xA;&lt;p&gt;Let’s begin by running &lt;em&gt;bluetoothctl&lt;/em&gt; without any arguments:&lt;/p&gt;</description>
     </item>
   </channel>

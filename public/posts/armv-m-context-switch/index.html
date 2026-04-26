@@ -1,112 +1,30 @@
 <!DOCTYPE html>
 <html lang="en-us">
-  <head>
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ARM Cortex-M RTOS Context Switching | FulanXisen&#39;s blog</title>
-    <meta name="viewport" content="width=device-width,minimum-scale=1">
-    <meta name="description" content="Many embedded systems reach a level of complexity where having a basic set of scheduling primitives and ability to run different tasks can be helpful. The operation of switching from one task to another is known as a context switch. A Real Time Operating System (RTOS) will typically provide this functionality. Having a foundational knowledge of how the core of an RTOS works can be a valuable skill set for an embedded engineer to have.">
-    <meta name="generator" content="Hugo 0.160.1">
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
     
-    
-    
-      <meta name="robots" content="index, follow">
-    
-    
+  </head>
 
-    
-<link rel="stylesheet" href="/ananke/css/main.min.efe4d852f731d5d1fbb87718387202a97aafd768cdcdaed0662bbe6982e91824.css" >
-
-
-
-
-    
-
-
-    
+  <body>
+    <nav>
+    <ul class="menu">
       
+    </ul>
+    <hr/>
+    </nav>
 
-    
-
-    
-
-    
-      <link rel="canonical" href="https://fulanxisen.github.io/posts/armv-m-context-switch/">
-    
-
-    
-    
-    <meta property="og:url" content="https://fulanxisen.github.io/posts/armv-m-context-switch/">
-  <meta property="og:site_name" content="FulanXisen&#39;s blog">
-  <meta property="og:title" content="ARM Cortex-M RTOS Context Switching">
-  <meta property="og:description" content="Many embedded systems reach a level of complexity where having a basic set of scheduling primitives and ability to run different tasks can be helpful. The operation of switching from one task to another is known as a context switch. A Real Time Operating System (RTOS) will typically provide this functionality. Having a foundational knowledge of how the core of an RTOS works can be a valuable skill set for an embedded engineer to have.">
-  <meta property="og:locale" content="en_us">
-  <meta property="og:type" content="article">
-    <meta property="article:section" content="posts">
-    <meta property="article:tag" content="RTOS">
-    <meta property="article:tag" content="ARM">
-
-  <meta itemprop="name" content="ARM Cortex-M RTOS Context Switching">
-  <meta itemprop="description" content="Many embedded systems reach a level of complexity where having a basic set of scheduling primitives and ability to run different tasks can be helpful. The operation of switching from one task to another is known as a context switch. A Real Time Operating System (RTOS) will typically provide this functionality. Having a foundational knowledge of how the core of an RTOS works can be a valuable skill set for an embedded engineer to have.">
-  <meta itemprop="wordCount" content="6414">
-  <meta itemprop="keywords" content="RTOS,ARM">
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="ARM Cortex-M RTOS Context Switching">
-  <meta name="twitter:description" content="Many embedded systems reach a level of complexity where having a basic set of scheduling primitives and ability to run different tasks can be helpful. The operation of switching from one task to another is known as a context switch. A Real Time Operating System (RTOS) will typically provide this functionality. Having a foundational knowledge of how the core of an RTOS works can be a valuable skill set for an embedded engineer to have.">
-
-      
-      
-    
-	
-  </head><body class="ma0 avenir bg-near-white production is-page is-page page-armv-m-context-switch">
-    
-   
-  
-
-  <header>
-    <div class="bg-black">
-      <nav class="pv3 ph3 ph4-ns" role="navigation">
-  <div class="flex-l center items-center justify-between">
-    <a href="/" class="f3 fw2 hover-white white-90 dib no-underline">
-      
-        FulanXisen&#39;s blog
-      
-    </a>
-    <div class="flex-l items-center">
-      
-
-      
-      <div class="ananke-socials"></div>
-
-    </div>
-  </div>
-</nav>
-
-    </div>
-  </header>
+<div class="article-meta">
+<h1><span class="title">ARM Cortex-M RTOS Context Switching</span></h1>
 
 
+</div>
 
-    <main class="pb7" role="main">
-      
-  
-
-  <article class="page-armv-m-context-switch flex-l mw7 center ph3 flex-wrap justify-between">
-    <header class="mt4 w-100">
-      <aside class="instapaper_ignoref b helvetica tracked ttu">
-          
-        Posts
-      </aside><div id="sharing" class="mt3 ananke-socials"></div>
-<h1 class="f1 athelas mt3 mb1">ARM Cortex-M RTOS Context Switching</h1>
-      
-      
-      
-
-      
-      
-    </header>
-    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-100-l"><p>Many embedded systems reach a level of complexity where having a basic set of scheduling primitives and ability to run different tasks can be helpful. The operation of switching from one task to another is known as a <strong>context switch</strong>. A <em>Real Time Operating System</em> (<strong>RTOS</strong>) will typically provide this functionality. Having a foundational knowledge of how the core of an <strong>RTOS</strong> works can be a valuable skill set for an embedded engineer to have.</p>
+<main>
+<p>Many embedded systems reach a level of complexity where having a basic set of scheduling primitives and ability to run different tasks can be helpful. The operation of switching from one task to another is known as a <strong>context switch</strong>. A <em>Real Time Operating System</em> (<strong>RTOS</strong>) will typically provide this functionality. Having a foundational knowledge of how the core of an <strong>RTOS</strong> works can be a valuable skill set for an embedded engineer to have.</p>
 <p>In this article we will explore how <strong>context switching</strong> works on ARM Cortex-M MCUs. We will discuss how the hardware was designed to support this operation, features that impact the context switching implementation such as the Floating Point Unit (FPU), and common pitfalls seen when porting an RTOS to a platform. We will also walk through a practical example of analyzing the <strong>FreeRTOS</strong> context switcher, <code>xPortPendSVHandler</code>, utilizing <code>gdb</code> to strengthen our understanding.</p>
 <h2 id="cortex-m-arm-mcu-features">Cortex-M ARM MCU Features<a href="#cortex-m-arm-mcu-features"></a></h2>
 <p>To understand how RTOS context switching works for ARM Cortex-M MCUs, it’s critical to have foundational knowledge about the primitives the architecture provides to make it possible.</p>
@@ -850,31 +768,13 @@ vPortEnableVFP();</p>
 <p><a href="https://static.docs.arm.com/ddi0403/eb/DDI0403E_B_armv7m_arm.pdf">See “Visibility of changes in execution priority resulting from executing an MSR instruction”</a> <a href="#fnref:17">↩</a></p>
 </li>
 </ol>
-<ul class="pa0">
-  
-   <li class="list di">
-     <a href="/tags/rtos/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">RTOS</a>
-   </li>
-  
-   <li class="list di">
-     <a href="/tags/arm/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">ARM</a>
-   </li>
-  
-</ul>
 
-      
-    </div></article>
+</main>
 
-    </main>
-    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
-  <div class="flex justify-between">
-  <a class="f4 fw4 hover-white white-70 dn dib-ns pv2 ph3 no-underline" href="https://fulanxisen.github.io/" >
-    &copy;  FulanXisen's blog 2026 
-  </a>
-    <div><div class="ananke-socials"></div>
-</div>
-  </div>
-</footer>
-
+  <footer>
+  
+  
+  </footer>
   </body>
 </html>
+

@@ -2,119 +2,134 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://fulanxisen.github.io/</loc>
+    <loc>http://localhost:1313/</loc>
+    <lastmod>2026-04-26T22:21:53+08:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/posts/</loc>
+    <lastmod>2026-04-26T22:21:53+08:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/posts/p003-diving-into-jtag-p2-zh/</loc>
+    <lastmod>2026-04-26T22:21:53+08:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/posts/p002-diving-into-jtag-p1-zh/</loc>
+    <lastmod>2026-04-26T21:45:53+08:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/posts/p001-memory-usage-pattern-break-real-time-performance-zh/</loc>
+    <lastmod>2026-04-26T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/posts/rp2350-bootloader-breakdown-zh/</loc>
+    <lastmod>2025-05-03T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/posts/beyond-error-code-zh/</loc>
     <lastmod>2025-04-24T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/posts/</loc>
-    <lastmod>2025-04-24T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://fulanxisen.github.io/posts/beyond-error-code-zh/</loc>
-    <lastmod>2025-04-24T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://fulanxisen.github.io/posts/tcp-for-interprocess-communication/</loc>
+    <loc>http://localhost:1313/posts/tcp-for-interprocess-communication/</loc>
     <lastmod>2024-08-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/categories/</loc>
+    <loc>http://localhost:1313/categories/</loc>
     <lastmod>2023-11-04T15:53:37+00:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/tags/linux/</loc>
+    <loc>http://localhost:1313/tags/linux/</loc>
     <lastmod>2023-11-04T15:53:37+00:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/posts/pulseaudio/</loc>
+    <loc>http://localhost:1313/posts/pulseaudio/</loc>
     <lastmod>2023-11-04T15:53:37+00:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/tags/sound/</loc>
+    <loc>http://localhost:1313/tags/sound/</loc>
     <lastmod>2023-11-04T15:53:37+00:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/tags/</loc>
+    <loc>http://localhost:1313/tags/</loc>
     <lastmod>2023-11-04T15:53:37+00:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/categories/technology/</loc>
+    <loc>http://localhost:1313/categories/technology/</loc>
     <lastmod>2023-11-04T15:53:37+00:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/tags/bare-matel/</loc>
+    <loc>http://localhost:1313/tags/neovim/</loc>
+    <lastmod>2023-10-15T16:03:14+08:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/posts/neovim-beginner/</loc>
+    <lastmod>2023-10-15T16:03:14+08:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/tags/bare-matel/</loc>
     <lastmod>2023-10-14T16:40:08+08:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/tags/cortex-m/</loc>
+    <loc>http://localhost:1313/tags/cortex-m/</loc>
     <lastmod>2023-10-14T16:40:08+08:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/tags/embedded/</loc>
+    <loc>http://localhost:1313/tags/embedded/</loc>
     <lastmod>2023-10-14T16:40:08+08:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/posts/embedded_system_from_zero_to_main/</loc>
+    <loc>http://localhost:1313/posts/embedded_system_from_zero_to_main/</loc>
     <lastmod>2023-10-14T16:40:08+08:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/tags/dbus/</loc>
+    <loc>http://localhost:1313/tags/dbus/</loc>
     <lastmod>2023-09-21T22:39:17+08:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/tags/ipc/</loc>
+    <loc>http://localhost:1313/tags/ipc/</loc>
     <lastmod>2023-09-21T22:39:17+08:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/posts/linux-dbus/</loc>
+    <loc>http://localhost:1313/posts/linux-dbus/</loc>
     <lastmod>2023-09-21T22:39:17+08:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/tags/vim/</loc>
+    <loc>http://localhost:1313/tags/vim/</loc>
     <lastmod>2023-09-10T23:18:43+08:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/posts/neovim-usage/</loc>
+    <loc>http://localhost:1313/posts/neovim-usage/</loc>
     <lastmod>2023-09-10T23:18:43+08:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/tags/linker-script/</loc>
+    <loc>http://localhost:1313/tags/linker-script/</loc>
     <lastmod>2023-05-04T17:58:33+08:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/posts/p06-the-most-thoroughly-commented-linker-script/</loc>
+    <loc>http://localhost:1313/posts/p06-the-most-thoroughly-commented-linker-script/</loc>
     <lastmod>2023-05-04T17:58:33+08:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/tags/cmake/</loc>
+    <loc>http://localhost:1313/tags/cmake/</loc>
     <lastmod>2023-05-03T23:38:47+08:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/posts/p05-example-of-embedded-cmakelists-files/</loc>
+    <loc>http://localhost:1313/posts/p05-example-of-embedded-cmakelists-files/</loc>
     <lastmod>2023-05-03T23:38:47+08:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/posts/p04-using-psp-msp-limit-registers-for-stack-overflow/</loc>
+    <loc>http://localhost:1313/posts/p04-using-psp-msp-limit-registers-for-stack-overflow/</loc>
     <lastmod>2023-05-03T14:28:46+08:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/tags/arm/</loc>
+    <loc>http://localhost:1313/tags/arm/</loc>
     <lastmod>2023-05-03T14:28:46+08:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/tags/stack-over-flow/</loc>
+    <loc>http://localhost:1313/tags/stack-over-flow/</loc>
     <lastmod>2023-05-03T14:28:46+08:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/tags/first/</loc>
+    <loc>http://localhost:1313/tags/first/</loc>
     <lastmod>2023-04-28T15:45:15+08:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/posts/p03-yao-impl/</loc>
+    <loc>http://localhost:1313/posts/p03-yao-impl/</loc>
     <lastmod>2023-04-28T15:45:15+08:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/posts/p01-cortex-m-fault/</loc>
+    <loc>http://localhost:1313/posts/p01-cortex-m-fault/</loc>
     <lastmod>2023-04-27T21:21:59+08:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/posts/ieee745/</loc>
+    <loc>http://localhost:1313/posts/ieee745/</loc>
     <lastmod>2022-07-22T10:44:05+08:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/posts/aes/</loc>
+    <loc>http://localhost:1313/posts/aes/</loc>
     <lastmod>2022-07-21T17:31:28+08:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/posts/my-first-post-2/</loc>
+    <loc>http://localhost:1313/posts/otandcylicgroup/</loc>
     <lastmod>2022-07-19T19:03:35+08:00</lastmod>
   </url><url>
-    <loc>https://fulanxisen.github.io/posts/otandcylicgroup/</loc>
-    <lastmod>2022-07-19T19:03:35+08:00</lastmod>
+    <loc>http://localhost:1313/posts/device-rpi-4b/</loc>
   </url><url>
-    <loc>https://fulanxisen.github.io/posts/device-rpi-4b/</loc>
+    <loc>http://localhost:1313/posts/linux-kernel-module-programming-guide/</loc>
   </url><url>
-    <loc>https://fulanxisen.github.io/posts/linux-kernel-module-programming-guide/</loc>
+    <loc>http://localhost:1313/posts/armv-m-exception/</loc>
   </url><url>
-    <loc>https://fulanxisen.github.io/posts/armv-m-exception/</loc>
+    <loc>http://localhost:1313/posts/armv-m-context-switch/</loc>
   </url><url>
-    <loc>https://fulanxisen.github.io/posts/armv-m-context-switch/</loc>
+    <loc>http://localhost:1313/tags/bluetooth/</loc>
   </url><url>
-    <loc>https://fulanxisen.github.io/tags/bluetooth/</loc>
+    <loc>http://localhost:1313/posts/control-bluetooth-device-via-bluetoothctl/</loc>
   </url><url>
-    <loc>https://fulanxisen.github.io/posts/control-bluetooth-device-via-bluetoothctl/</loc>
+    <loc>http://localhost:1313/categories/hardware/</loc>
   </url><url>
-    <loc>https://fulanxisen.github.io/categories/hardware/</loc>
-  </url><url>
-    <loc>https://fulanxisen.github.io/tags/rtos/</loc>
+    <loc>http://localhost:1313/tags/rtos/</loc>
   </url>
 </urlset>
